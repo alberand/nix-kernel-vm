@@ -1,0 +1,5 @@
+result*
+*.img
+*.log
+*.qcow2
+modules
