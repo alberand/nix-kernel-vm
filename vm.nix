@@ -105,6 +105,7 @@
       linux-custom-fn = pkgs.callPackage linux-custom-pkg { };
      in 
       pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux-custom-fn);
+
 in
 {
   imports = [ 
@@ -120,7 +121,8 @@ in
   boot.postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
 
   # Set my custom kernel
-  boot.kernelPackages = kernel-custom;
+  # boot.kernelPackages = kernel-cache;
+  boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linuxKernel.kernels.kernel-cache;
 
   nixpkgs.localSystem.system = "x86_64-linux";
 
@@ -222,8 +224,59 @@ in
         progs
   ];
 
+
   # Apply overlay on the package (use different src as we replaced 'src = ')
-  nixpkgs.overlays = [ xfstests-overlay ];
+  nixpkgs.overlays = [ 
+	xfstests-overlay
+	(self: super: let
+		pkgs = self;
+	in {
+		linuxKernel = super.linuxKernel // {
+			kernels = super.linuxKernel.kernels.extend (kself: ksuper: {
+				kernel-cache = self.linuxPackages_latest.kernel.override ({
+					argsOverride = {
+						version = "6.2.0-rc2";
+						modDirVersion = "6.2.0-rc2";
+						src = /home/alberand/Projects/xfs-verity-v2-empty;
+						# configfile = pkgs.linuxConfig { 
+							#src = /home/alberand/Projects/vm/.config; 
+						#};
+						separateDebugInfo = true;
+						preConfigure = lib.optionalString config.programs.ccache.enable ''
+						export CCACHE_DIR=${config.programs.ccache.dir}
+						export CCACHE_UMASK=007
+						export NIX_CFLAGS_COMPILE="$(echo "$NIX_CFLAGS_COMPILE" | sed -e "s/-frandom-seed=[^-]*//")"
+						'';
+          extraConfig = ''
+            FS_VERITY y
+            X86_AMD_PSTATE n
+
+            DEBUG_KERNEL y
+            KGDB y
+            KGDB_SERIAL_CONSOLE y
+            DEBUG_INFO y
+          '';
+	  ignoreConfigErrors = true;
+					};
+					stdenv = pkgs.ccacheStdenv;
+					buildPackages = pkgs.buildPackages // {
+						stdenv = pkgs.ccacheStdenv;
+					};
+				});
+			});
+		};
+	})
+
+	(self: super: {
+		ccacheWrapper = super.ccacheWrapper.override {
+			extraConfig = ''
+			export CCACHE_COMPRESS=1
+			export CCACHE_DIR=/var/cache/ccache
+			export CCACHE_UMASK=007
+			'';
+		};
+	})
+  ];
 
   # xfstests related
   users.users.fsgqa = {
@@ -249,62 +302,3 @@ in
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "22.11"; # Did you read the comment?
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # boot.kernelPackages = let
-  #     linux-custom-pkg = { fetchFromGitHub, buildLinux, ... } @ args:
-  #       buildLinux (args // rec {
-  #         version = "6.1.0-rc4";
-  #         #modDirVersion = version;
-  #         #defconfig = "x86_64_defconfig";
-  #         # defconfig = "defconfig";
-  #         configfile = "/home/alberand/Projects/vm/.config";
-  #         #defconfig = "defconfig";
-
-  #         #src = fetchurl {
-  #         #  url = "https://github.com/alberand/linux/tarball/pp-test";
-  #         #  sha256 = "BzfNAS3qzgPdk31oOkek038Co70BkdAlXJBhp6fL/g0=";
-  #         #};
-  #         #src = fetchFromGitHub {
-  #         #  owner = "alberand";
-  #         #  repo = "linux";
-  #         #  rev = "3249a04140b3b1e4f4d342ca5f8f561724b7fa1e";
-  #         #  sha256 = "lI52Z9BL1A+UDmaPmWuXA+iqQEz0mPPjQhBfGsDbHoY=";
-  #         #};
-  #         src = /home/alberand/Projects/pp-test-v2;
-
-  #         #extraConfig = ''
-  #         #  FS_VERITY y
-  #         #  X86_AMD_PSTATE n
-
-  #         #  DEBUG_KERNEL y
-  #         #  KGDB y
-  #         #  KGDB_SERIAL_CONSOLE y
-  #         #  DEBUG_INFO y
-  #         #'';
-
-  #         extraMeta.branch = "pp-test";
-  #       });
-  #     linux-custom = pkgs.callPackage linux-custom-pkg { };
-  #    in 
-  #     pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux-custom);
