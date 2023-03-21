@@ -11,294 +11,282 @@
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
 {
-  config,
-  modulesPath,
-  pkgs,
-  lib,
-  ...
+	config,
+	modulesPath,
+	pkgs,
+	lib,
+	...
 }: let
-  # fstests confgiuration
-  fstyp = "xfs";
+	# fstests confgiuration
+	fstyp = "xfs";
+	testdisk = "/dev/sda";
+	totest = "-g verity";
 
-  # Custom local xfstests
-  xfstests-overlay = (self: super: {
-    xfstests = super.xfstests.overrideAttrs (prev: {
-      version = "git";
-      src = /home/alberand/Projects/xfstests-dev;
-    });
-  });
+	# Custom local xfstests
+	xfstests-overlay = (self: super: {
+		xfstests = super.xfstests.overrideAttrs (super: {
+			version = "git";
+			src = /home/alberand/Projects/xfstests-dev;
+			postInstall = super.postInstall + ''
+			  cp ${./xfstests-config} $out/xfstests-config
+			'';
+		});
+	});
 
-  progs = with pkgs; import ./progs.nix { 
-    inherit lib stdenv buildPackages fetchurl autoconf automake gettext
-      libtool pkg-config icu libuuid readline inih liburcu  nixosTests;
-  };
+	# Custom remote xfstests
+	xfstests-overlay-remote = (self: super: {
+		xfstests = super.xfstests.overrideAttrs (prev: {
+			version = "git";
+			src = pkgs.fetchFromGitHub {
+				owner = "alberand";
+				repo = "xfstests";
+				rev = "6e6fb1c6cc619afb790678f9530ff5c06bb8f24c";
+				sha256 = "OjkO7wTqToY1/U8GX92szSe7mAIL+61NoZoBiU/pjPE=";
+			};
+		});
+	});
 
+	xfsprogs-overlay = (self: super: {
+		xfsprogs = super.xfsprogs.overrideAttrs (prev: {
+			version = "6.6.2";
+			src = pkgs.fetchgit {
+				url = /home/alberand/Projects/xfsprogs-dev;
+				rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
+				hash = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
+			};
+			buildInputs = with pkgs; [ gnum4 readline icu inih liburcu ];
+		});
+	});
 
-  xfsprogs-overlay = (self: super: {
-    xfsprogs = super.xfsprogs.overrideAttrs (prev: {
-      version = "6.6.2";
-      #src = /home/alberand/Projects/xfsprogs-dev;
-      src = pkgs.fetchFromGitHub {
-        owner = "alberand";
-        repo = "xfsprogs";
-        rev = "eb4d8447361bcf31ef1caad0cd9548b2c5536305";
-        sha256 = "1qb65XmkLw7YNVLhSLsafZUhjTdJPpnFNVbg2uibqYQ=";
-      };
-      buildInputs = with pkgs; [ gnum4 readline icu inih liburcu ];
-    });
-  });
+	xfsprogs-overlay-remote = (self: super: {
+		xfsprogs = super.xfsprogs.overrideAttrs (prev: {
+			version = "6.6.2";
+			src = pkgs.fetchFromGitHub {
+				owner = "alberand";
+				repo = "xfsprogs";
+				rev = "fdec21e";
+				sha256 = "OjkO7wTqToY1/U8GX92szSe7mAIL+61NoZoBiU/pjPE=";
+			};
+		});
+	});
 
-  # Custom remote xfstests
-  xfstests-overlay-remote = (self: super: {
-    xfstests = super.xfstests.overrideAttrs (prev: {
-      version = "git";
-      src = pkgs.fetchFromGitHub {
-        owner = "alberand";
-        repo = "xfstests";
-        rev = "6e6fb1c6cc619afb790678f9530ff5c06bb8f24c";
-        sha256 = "OjkO7wTqToY1/U8GX92szSe7mAIL+61NoZoBiU/pjPE=";
-      };
-    });
-  });
+	kernel-custom = pkgs.linuxKernel.customPackage {
+		# Note that nix uses this version to install relevant tools (e.g. flex).
+		# You can specify 'git' not to change it every time you change the verions
+		# but I haven't got it working properly. Nix will tell you which version
+		# you should specify if you don't know.
+		version = "6.2.0-rc2";
+		configfile = /home/alberand/Projects/xfs-verity-v2/.config;
+		src = fetchGit /home/alberand/Projects/xfs-verity-v2;
+	};
 
-  kernel-custom = pkgs.linuxKernel.customPackage { 
-    # Note that nix uses this version to install relevant tools (e.g. flex).
-    # You can specify 'git' not to change it every time you change the verions
-    # but I haven't got it working properly. Nix will tell you which version
-    # you should specify if you don't know.
-    version = "6.2.0-rc2";
-    configfile = /home/alberand/Projects/vm/.config;
-    src = /home/alberand/Projects/xfs-verity-v2-empty;
-  };
-
-  kernel-custom-config = let
-      linux-custom-pkg = { fetchFromGitHub, buildLinux, ... } @ args:
-        buildLinux (args // rec {
-          version = "6.1.0-rc4";
-          configfile = "/home/alberand/Projects/vm/.config";
-
-          #src = fetchurl {
-          #  url = "https://github.com/alberand/linux/tarball/pp-test";
-          #  sha256 = "BzfNAS3qzgPdk31oOkek038Co70BkdAlXJBhp6fL/g0=";
-          #};
-
-          #src = fetchFromGitHub {
-          #  owner = "alberand";
-          #  repo = "linux";
-          #  rev = "3249a04140b3b1e4f4d342ca5f8f561724b7fa1e";
-          #  sha256 = "lI52Z9BL1A+UDmaPmWuXA+iqQEz0mPPjQhBfGsDbHoY=";
-          #};
-          src = /home/alberand/Projects/xfs-verity-v2-empty;
-
-          extraConfig = ''
-            FS_VERITY y
-            X86_AMD_PSTATE n
-
-            DEBUG_KERNEL y
-            KGDB y
-            KGDB_SERIAL_CONSOLE y
-            DEBUG_INFO y
-          '';
-
-          extraMeta.branch = "xfs-verity-v2-empty";
-        });
-      linux-custom-fn = pkgs.callPackage linux-custom-pkg { };
-     in 
-      pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux-custom-fn);
+	kernel-headers-overlay = (self: super: {
+		linuxHeaders = super.linuxHeaders.overrideAttrs (prev: {
+			version = "6.2.0-rc2";
+			src = fetchGit /home/alberand/Projects/xfs-verity-v2;
+		});
+	});
 
 in
 {
-  imports = [ 
-    (modulesPath + "/profiles/qemu-guest.nix") 
-    (modulesPath + "/virtualisation/qemu-vm.nix")
-  ];
-
-  boot.kernelParams = ["console=ttyS0,115200n8" "console=ttyS0"];
-  boot.consoleLogLevel = lib.mkDefault 7;
-  boot.initrd.kernelModules = [ "" ];
-  boot.growPartition = false;
-  # This is happens before systemd
-  boot.postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
-
-  # Set my custom kernel
-  # boot.kernelPackages = kernel-cache;
-  boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linuxKernel.kernels.kernel-cache;
-
-  nixpkgs.localSystem.system = "x86_64-linux";
-
-  console.enable = true;
-  systemd.services."serial-getty@ttyS0".enable = true;
-
-  networking.firewall.enable = false;
-  networking.hostName = "fstests-vm";
-  networking.useDHCP = false;
-  services.getty.helpLine = ''
-    Log in as "root" with an empty password.
-    If you are connect via serial console:
-    Type Ctrl-a c to switch to the qemu console
-    and `quit` to stop the VM.
-  '';
-
-  # Auto-login with empty password
-  users.extraUsers.root.initialHashedPassword = "";
-  services.getty.autologinUser = lib.mkDefault "root";
-
-  # Not needed in VM
-  documentation.doc.enable = false;
-  documentation.man.enable = false;
-  documentation.nixos.enable = false;
-  documentation.info.enable = false;
-  programs.bash.enableCompletion = false;
-  programs.command-not-found.enable = false;
-
-  # Do something after systemd started
-  systemd.services.foo = {
-    serviceConfig.Type = "oneshot";
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      echo 'This service runs right near login' > /dev/kmsg
-    '';
-  };
-
-  # Setup envirionment
-  environment.variables.TEST_DEV = "/dev/sdb";
-  environment.variables.TEST_DIR = "/mnt/test";
-  environment.variables.SCRATCH_DEV = "/dev/sdc";
-  environment.variables.SCRATCH_MNT = "/mnt/scratch";
-
-  virtualisation = {
-      diskSize = 20000; # MB
-      memorySize = 4096; # MB
-      cores = 4;
-      writableStoreUseTmpfs = false;
-      useDefaultFilesystems = true;
-      # Run qemu in the terminal not in Qemu GUI
-      graphics = false;
-      #emptyDiskImages = [ 8192 4096 ]; # Create 2 virtual disk with 8G and 4G
-
-      qemu = {
-        options = [
-          # I want to try a kernel which I compiled somewhere
-          #"-kernel /home/user/my-linux/arch/x86/boot/bzImage"
-	  #"-kernel /home/alberand/my-linux/arch/x86/boot/bzImage"
-	  # OR
-	  # You can set env. variable not to change configuration everytime:
-	  #   export NIXPKGS_QEMU_KERNEL_fstests_vm=/path/to/arch/x86/boot/bzImage
-	  # The name is NIXPKGS_QEMU_KERNEL_<networking.hostName>
-
-          # Append real partitions to VM
-          "-hdc /dev/sda4"
-          "-hdd /dev/sda5"
+        imports = [
+		(modulesPath + "/profiles/qemu-guest.nix")
+		(modulesPath + "/virtualisation/qemu-vm.nix")
         ];
-        # Append images as partition to VM
-        drives = [
-          #{ name = "vdc"; file = "${toString ./test.img}"; }
-          #{ name = "vdb"; file = "${toString ./scratch.img}"; }
-        ];
-      };
 
-      sharedDirectories = {
-        fstests = { 
-          source = "/home/alberand/Projects/xfstests-dev";
-          target = "/root/xfstests"; 
-        };
-        modules = { 
-          source = "/home/alberand/Projects/vm/modules";
-          target = "/root/modules"; 
-        };
-      };
-  };
+	boot = {
+		kernelParams = ["console=ttyS0,115200n8" "console=ttyS0"];
+		consoleLogLevel = lib.mkDefault 7;
+		# This is happens before systemd
+		postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
+		crashDump.enable = true;
 
-  # Add packages to VM
-  environment.systemPackages = with pkgs; [
-	htop
-        util-linux
-        xfstests
-        vim
-        tmux
-        fsverity-utils
-        trace-cmd
-	perf-tools
-	linuxPackages_latest.perf
-	openssl
-        progs
-  ];
+		# Set my custom kernel
+		# kernelPackages = kernel-custom;
+		kernelPackages = pkgs.linuxPackages_latest;
+	};
 
+	# Auto-login with empty password
+	users.extraUsers.root.initialHashedPassword = "";
+	services.getty.autologinUser = lib.mkDefault "root";
 
-  # Apply overlay on the package (use different src as we replaced 'src = ')
-  nixpkgs.overlays = [ 
-	xfstests-overlay
-	(self: super: let
-		pkgs = self;
-	in {
-		linuxKernel = super.linuxKernel // {
-			kernels = super.linuxKernel.kernels.extend (kself: ksuper: {
-				kernel-cache = self.linuxPackages_latest.kernel.override ({
-					argsOverride = {
-						version = "6.2.0-rc2";
-						modDirVersion = "6.2.0-rc2";
-						src = /home/alberand/Projects/xfs-verity-v2-empty;
-						# configfile = pkgs.linuxConfig { 
-							#src = /home/alberand/Projects/vm/.config; 
-						#};
-						separateDebugInfo = true;
-						preConfigure = lib.optionalString config.programs.ccache.enable ''
-						export CCACHE_DIR=${config.programs.ccache.dir}
-						export CCACHE_UMASK=007
-						export NIX_CFLAGS_COMPILE="$(echo "$NIX_CFLAGS_COMPILE" | sed -e "s/-frandom-seed=[^-]*//")"
-						'';
-          extraConfig = ''
-            FS_VERITY y
-            X86_AMD_PSTATE n
+	networking.firewall.enable = false;
+	networking.hostName = "vm";
+	networking.useDHCP = false;
+	services.getty.helpLine = ''
+		Log in as "root" with an empty password.
+		If you are connect via serial console:
+		Type CTRL-A X to exit QEMU
+	'';
 
-            DEBUG_KERNEL y
-            KGDB y
-            KGDB_SERIAL_CONSOLE y
-            DEBUG_INFO y
-          '';
-	  ignoreConfigErrors = true;
-					};
-					stdenv = pkgs.ccacheStdenv;
-					buildPackages = pkgs.buildPackages // {
-						stdenv = pkgs.ccacheStdenv;
-					};
-				});
-			});
+	# Not needed in VM
+	documentation.doc.enable = false;
+	documentation.man.enable = false;
+	documentation.nixos.enable = false;
+	documentation.info.enable = false;
+	programs.bash.enableCompletion = false;
+	programs.command-not-found.enable = false;
+
+	systemd.tmpfiles.rules = [
+		"d /mnt 1777 root root"
+		"d /mnt/test 1777 root root"
+		"d /mnt/scratch 1777 root root"
+	];
+	# Do something after systemd started
+	systemd.services."serial-getty@ttyS0".enable = true;
+	systemd.services.xfstests = {
+		enable = true;
+		serviceConfig = {
+			Type = "oneshot";
+			StandardOutput = "tty";
+			StandardError = "tty";
+			User = "root";
+			Group = "root";
+                        WorkingDirectory = "/root";
 		};
-	})
+		after = [ "network.target" "network-online.target" "local-fs.target" ];
+		wants = [ "network.target" "network-online.target" "local-fs.target" ];
+		wantedBy = [ "multi-user.target" ];
+                # postStop = "${pkgs.systemd}/bin/systemctl poweroff";
+                postStop = "${pkgs.kmod}/bin/rmmod xfs";
+		script = ''
+			${pkgs.kmod}/bin/insmod /root/modules/xfs.ko
+			source ${pkgs.xfstests}/xfstests-config
+			${pkgs.bash}/bin/bash -lc "${pkgs.xfstests}/bin/xfstests-check -d ${totest}"
+		'';
+	};
 
-	(self: super: {
-		ccacheWrapper = super.ccacheWrapper.override {
-			extraConfig = ''
-			export CCACHE_COMPRESS=1
-			export CCACHE_DIR=/var/cache/ccache
-			export CCACHE_UMASK=007
-			'';
+	# Setup envirionment
+        #environment.variables.TERM = "xterm";
+        #environment.variables.TEST_DEV = "/dev/sdb";
+        #environment.variables.TEST_DIR = "/mnt/test";
+        #environment.variables.SCRATCH_DEV = "/dev/sdc";
+        ##environment.variables.SCRATCH_MNT = "/mnt/scratch";
+
+	networking.interfaces.eth1 = {
+		ipv4.addresses = [{
+			address = "11.11.11.12";
+			prefixLength = 32;
+		}];
+	};
+
+	virtualisation = {
+		diskSize = 20000; # MB
+		memorySize = 4096; # MB
+		cores = 4;
+		writableStoreUseTmpfs = false;
+		useDefaultFilesystems = true;
+		# Run qemu in the terminal not in Qemu GUI
+		graphics = false;
+		#emptyDiskImages = [ 8192 4096 ]; # Create 2 virtual disk with 8G and 4G
+
+		qemu = {
+			networkingOptions = [
+				"-device e1000,netdev=network0,mac=00:00:00:00:00:00"
+				"-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
+			];
+			options = [
+				# I want to try a kernel which I compiled somewhere
+				#"-kernel /home/user/my-linux/arch/x86/boot/bzImage"
+				#"-kernel /home/alberand/my-linux/arch/x86/boot/bzImage"
+				# OR
+				# You can set env. variable not to change configuration everytime:
+				#   export NIXPKGS_QEMU_KERNEL_fstests_vm=/path/to/arch/x86/boot/bzImage
+				# The name is NIXPKGS_QEMU_KERNEL_<networking.hostName>
+
+				# Append real partitions to VM
+				"-hdc ${testdisk}4"
+				"-hdd ${testdisk}5"
+				"-usb -device usb-host,hostbus=2,hostport=4"
+				#"-usb -device usb-host,vendorid=0x8564,productid=0x1000"
+				"-serial mon:stdio"
+			];
+			# Append images as partition to VM
+			drives = [
+				#{ name = "vdc"; file = "${toString ./test.img}"; }
+				#{ name = "vdb"; file = "${toString ./scratch.img}"; }
+			];
 		};
-	})
-  ];
 
-  # xfstests related
-  users.users.fsgqa = {
-	isNormalUser  = true;
-	description  = "Test user";
-  };
+		sharedDirectories = {
+			fstests = {
+				source = "/home/alberand/Projects/xfstests-dev";
+				target = "/root/xfstests";
+			};
+			modules = {
+				source = "/home/alberand/Projects/vm/modules";
+				target = "/root/modules";
+			};
+			results = {
+				source = "/home/alberand/Projects/vm/results";
+				target = "/root/results";
+			};
+		};
+	};
 
-  users.users.fsgqa2 = {
-	isNormalUser  = true;
-	description  = "Test user";
-  };
+	# Add packages to VM
+	environment.systemPackages = with pkgs; [
+		htop
+		util-linux
+		xfstests
+		tmux
+		fsverity-utils
+		trace-cmd
+		perf-tools
+		linuxPackages_latest.perf
+		openssl
+		xfsprogs
+		usbutils
+		bpftrace
+                xxd
+                xterm
+                zsh
+	];
 
-  users.users.fsgqa-123456 = {
-	isNormalUser  = true;
-	description  = "Test user";
-  };
+	programs.zsh = {
+		enable = true;
+		ohMyZsh = {
+			enable = true;
+                        # plugins = [ "git" ];
+			theme = "robbyrussell";
+		};
+		interactiveShellInit = ''
+			function precmd {
+				eval `resize`
+			}
+		'';
+	};
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "22.11"; # Did you read the comment?
+	# Apply overlay on the package (use different src as we replaced 'src = ')
+	nixpkgs.overlays = [ 
+		xfstests-overlay
+		xfsprogs-overlay
+	];
+
+	users.users.root = {
+		shell = pkgs.zsh;
+        };
+	# xfstests related
+	users.users.fsgqa = {
+		isNormalUser  = true;
+		description  = "Test user";
+	};
+
+	users.users.fsgqa2 = {
+		isNormalUser  = true;
+		description  = "Test user";
+	};
+
+	users.users.fsgqa-123456 = {
+		isNormalUser  = true;
+		description  = "Test user";
+	};
+
+	# This value determines the NixOS release from which the default
+	# settings for stateful data, like file locations and database versions
+	# on your system were taken. It‘s perfectly fine and recommended to leave
+	# this value at the release version of the first install of this system.
+	# Before changing this value read the documentation for this option
+	# (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+	system.stateVersion = "22.11"; # Did you read the comment?
 }
