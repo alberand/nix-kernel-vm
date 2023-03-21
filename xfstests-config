@@ -1,0 +1,15 @@
+# Ideally define at least these 4 to match your environment
+# The first 2 are required.
+# See README for other variables which can be set.
+#
+# Note: SCRATCH_DEV >will< get overwritten!
+
+export FSTYP="xfs"
+export KEEP_DMESG="yes"
+export MKFS_OPTIONS="-b size=1024"
+#export MKFS_OPTIONS="-b 2048"
+export RESULT_BASE=/root/pampam
+export TEST_DEV=/dev/sdb
+export TEST_DIR=/mnt/test
+export SCRATCH_DEV=/dev/sdc
+export SCRATCH_MNT=/mnt/scratch
