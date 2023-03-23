@@ -20,7 +20,7 @@
 	# fstests confgiuration
 	fstyp = "xfs";
 	testdisk = "/dev/sda";
-	totest = "-g verity";
+	totest = "generic/572 generic/574 generic/575";
 
 	# Custom local xfstests
 	xfstests-overlay = (self: super: {

@@ -1,32 +1,57 @@
 {
-  description = "A very basic flake";
+	description = "A very basic flake";
 
-  outputs = { self, nixpkgs }: {
-
-    nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [ 
-        ./vm.nix {
-	  environment.variables.EDITOR = "neovim";
-          environment.systemPackages = [
-            nixpkgs.legacyPackages.x86_64-linux.vim
-          ];
-	users.users.hahahahaha = {
-		isNormalUser  = true;
-		description  = "Test user";
+	inputs = {
+		flake-utils.url = "github:numtide/flake-utils";
+		nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 	};
 
-        }
-		"${nixpkgs}/nixos/modules/profiles/qemu-guest.nix"
-		"${nixpkgs}/nixos/modules/virtualisation/qemu-vm.nix"
+	outputs = { self, nixpkgs, flake-utils }:
+	flake-utils.lib.eachDefaultSystem (system: let
+		pkgs = nixpkgs.legacyPackages.${system};
+	in {
 
-      ];
-    };
+		nixosConfigurations = {
+			generic = nixpkgs.lib.nixosSystem {
+				inherit system;
+				modules = [
+					./vm.nix {
+						environment.variables.EDITOR = "neovim";
+						environment.systemPackages = [
+							pkgs.vim
+						];
+						users.users.hahahahaha = {
+							isNormalUser  = true;
+							description  = "Test user";
+						};
 
-    #overlays.default = (final: prev: {
-    #});
+					}
+					"${nixpkgs}/nixos/modules/profiles/qemu-guest.nix"
+					"${nixpkgs}/nixos/modules/virtualisation/qemu-vm.nix"
 
-    packages.x86_64-linux.default = 
-      self.nixosConfigurations.vm.config.system.build.vm;
-  };
+			];
+			};
+		};
+
+		packages.vmtest = pkgs.symlinkJoin {
+			name = "vmtest";
+			paths = with self.nixosConfigurations.generic.config.system.build; [
+				vm
+				kernel
+			];
+			preferLocalBuild = true;
+		};
+
+		apps = {
+			default = flake-utils.lib.mkApp {
+				drv = self.packages.${system}.vmtest.config.system.build.vm;
+			};
+		};
+
+		#packages.vmtest =
+			#self.nixosConfigurations.vm.config.system.build.vm;
+		packages = rec {
+			default = self.packages."${system}".vmtest;
+		};
+	});
 }
