@@ -62,6 +62,8 @@ function init_share() {
 		echo "$SHARE_DIR is not writable"
 		return
 	fi
+	mkdir -p $SHARE_DIR/modules
+	mkdir -p $SHARE_DIR/results
 }
 
 function set_kernel() {
@@ -91,7 +93,6 @@ function add_module() {
 	fi
 
 	echo "Module is set to $1"
-	mkdir -p "$SHARE_DIR/modules"
 	cp $1 "$SHARE_DIR/modules"
 }
 

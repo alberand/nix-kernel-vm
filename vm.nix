@@ -204,16 +204,8 @@ in
 		};
 
 		sharedDirectories = {
-			fstests = {
-				source = "/home/alberand/Projects/xfstests-dev";
-				target = "/root/xfstests";
-			};
-			modules = {
-				source = "/home/alberand/Projects/vm/modules";
-				target = "/root/modules";
-			};
 			results = {
-				source = "/home/alberand/Projects/vm/results";
+				source = "/tmp/vmtest/results";
 				target = "/root/results";
 			};
 			vmtest = {
