@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VALID_ARGS=$(getopt -o k:m:t: --long kernel:,module:,totest: -- "$@")
+VALID_ARGS=$(getopt -o k:m:t:c: --long kernel:,module:,totest:,config: -- "$@")
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi
@@ -10,6 +10,7 @@ SHARE_DIR="/tmp/vmtest"
 KERNEL=""
 MODULE=""
 TOTEST=""
+TEST_CONFIG=""
 
 function load_config() {
 	shopt -s extglob
@@ -45,6 +46,12 @@ function parse_args() {
 			-t | --totest)
 				echo "Processing 'totest' option: $2"
 				TOTEST="$2"
+				shift
+				shift
+				;;
+			-c | --test-config)
+				echo "Processing 'test-config' option: $2"
+				TEST_CONFIG="$2"
 				shift
 				shift
 				;;
@@ -98,7 +105,19 @@ function add_module() {
 
 function set_totest() {
 	echo "${1:--g verity}" > $SHARE_DIR/totest
-	cp ./xfstests-config $SHARE_DIR
+	if [[ ! -f "$2" ]]; then
+		cat << EOF > $SHARE_DIR/xfstests-config
+export FSTYP="xfs"
+export RESULT_BASE=/root/results
+
+export TEST_DEV=/dev/sdb
+export TEST_DIR=/mnt/test
+export SCRATCH_DEV=/dev/sdc
+export SCRATCH_MNT=/mnt/scratch
+EOF
+	else
+		cp "$2" $SHARE_DIR/xfstests-config
+	fi
 }
 
 if [[ -f "$LOCAL_CONFIG" ]]; then
@@ -110,4 +129,4 @@ init_share
 parse_args
 set_kernel $KERNEL
 add_module $MODULE
-set_totest "$TOTEST"
+set_totest "$TOTEST" "$TEST_CONFIG"
