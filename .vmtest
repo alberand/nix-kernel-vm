@@ -1,5 +1,0 @@
-# VMTEST configuration file
-
-KERNEL = "~/Projects/xfs-verity-v4/arch/x86_64/boot/bzImage"
-MODULE = "~/Projects/xfs-verity-v4/fs/xfs/xfs.ko"
-TOTEST = "generic/572"
