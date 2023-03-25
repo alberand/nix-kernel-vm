@@ -1,20 +1,5 @@
 {
   "nodes": {
-    "flake-utils": {
-      "locked": {
-        "lastModified": 1678901627,
-        "narHash": "sha256-U02riOqrKKzwjsxc/400XnElV+UtPUQWpANPlyazjH0=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "93a2b84fc4b70d9e089d029deacc3583435c2ed6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1679437018,
@@ -33,8 +18,24 @@
     },
     "root": {
       "inputs": {
-        "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "xfsprogs": "xfsprogs"
+      }
+    },
+    "xfsprogs": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1674226762,
+        "narHash": "sha256-+LeAXR1aSQhYEcV0TGNXrT6GRN/A1U6faQf7yCvG2D0=",
+        "owner": "alberand",
+        "repo": "xfsprogs",
+        "rev": "d8eab7600f470fbd09013eb90cbc7c5e271da4e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "alberand",
+        "repo": "xfsprogs",
+        "type": "github"
       }
     }
   },

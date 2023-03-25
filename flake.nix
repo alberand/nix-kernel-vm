@@ -2,17 +2,24 @@
 	description = "A very basic flake";
 
 	inputs = {
-		flake-utils.url = "github:numtide/flake-utils";
+		#flake-utils.url = "github:numtide/flake-utils";
 		nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+		xfsprogs = {
+			type = "github";
+			owner = "alberand";
+			repo = "xfsprogs";
+			flake = false;
+		};
 	};
 
-	outputs = { self, nixpkgs, flake-utils }:
-	flake-utils.lib.eachDefaultSystem (system: let
+	outputs = { self, nixpkgs, xfsprogs, ... }:
+	let
+		system = "x86_64-linux";
 		pkgs = nixpkgs.legacyPackages.${system};
 	in {
 
 		nixosConfigurations = {
-			generic = nixpkgs.lib.nixosSystem {
+			"generic" = nixpkgs.lib.nixosSystem {
 				inherit system;
 				modules = [
 					./vm.nix {
@@ -33,25 +40,27 @@
 			};
 		};
 
-		packages.vmtest = pkgs.symlinkJoin {
-			name = "vmtest";
-			paths = with self.nixosConfigurations.generic.config.system.build; [
-				vm
-				kernel
-			];
-			preferLocalBuild = true;
-		};
+		packages."${system}" ={
+			default = self.packages."${system}".vmtest;
 
-		apps = {
-			default = flake-utils.lib.mkApp {
-				drv = self.packages.${system}.vmtest.config.system.build.vm;
+			vmtest = pkgs.writeScriptBin "vmtest"
+				((builtins.readFile ./run.sh) + ''
+					${self.packages."${system}".vm}/bin/run-vm-vm
+				'');
+
+			vm = pkgs.symlinkJoin {
+				name = "vm";
+				paths = with self.nixosConfigurations.generic.config.system.build; [
+					vm
+					kernel
+				];
+				preferLocalBuild = true;
 			};
 		};
 
-		#packages.vmtest =
-			#self.nixosConfigurations.vm.config.system.build.vm;
-		packages = rec {
-			default = self.packages."${system}".vmtest;
+		apps."${system}".default = {
+				type = "app";
+				program = "${self.packages.${system}.vmtest}/bin/vmtest";
 		};
-	});
+	};
 }

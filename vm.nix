@@ -19,8 +19,8 @@
 }: let
 	# fstests confgiuration
 	fstyp = "xfs";
-	testdisk = "/dev/sda";
-	totest = "generic/572 generic/574 generic/575";
+	testdisk = "/dev/sdc";
+	totest = "/root/vmtest/totest";
 
 	# Custom local xfstests
 	xfstests-overlay = (self: super: {
@@ -40,20 +40,16 @@
 			src = pkgs.fetchFromGitHub {
 				owner = "alberand";
 				repo = "xfstests";
-				rev = "6e6fb1c6cc619afb790678f9530ff5c06bb8f24c";
-				sha256 = "OjkO7wTqToY1/U8GX92szSe7mAIL+61NoZoBiU/pjPE=";
+				rev = "cbb3b25d72361c4c6c141b03312e7ac2f5d1e303";
+				sha256 = "sha256-iVuQWaFOHalHfkeUUXtlFkysB5whpeLFNK823wbaPj4=";
 			};
 		});
 	});
 
 	xfsprogs-overlay = (self: super: {
 		xfsprogs = super.xfsprogs.overrideAttrs (prev: {
-			version = "6.6.2";
-			src = pkgs.fetchgit {
-				url = /home/alberand/Projects/xfsprogs-dev;
-				rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
-				hash = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
-			};
+			version = "git";
+			src = /home/alberand/Projects/xfsprogs-dev;
 			buildInputs = with pkgs; [ gnum4 readline icu inih liburcu ];
 		});
 	});
@@ -64,8 +60,8 @@
 			src = pkgs.fetchFromGitHub {
 				owner = "alberand";
 				repo = "xfsprogs";
-				rev = "fdec21e";
-				sha256 = "OjkO7wTqToY1/U8GX92szSe7mAIL+61NoZoBiU/pjPE=";
+				rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
+				sha256 = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
 			};
 		});
 	});
@@ -150,18 +146,17 @@ in
                 # postStop = "${pkgs.systemd}/bin/systemctl poweroff";
                 postStop = "${pkgs.kmod}/bin/rmmod xfs";
 		script = ''
-			${pkgs.kmod}/bin/insmod /root/modules/xfs.ko
-			source ${pkgs.xfstests}/xfstests-config
-			${pkgs.bash}/bin/bash -lc "${pkgs.xfstests}/bin/xfstests-check -d ${totest}"
+			for module in /root/vmtest/modules/*.ko; do
+				${pkgs.kmod}/bin/insmod $module;
+			done;
+
+			${pkgs.bash}/bin/bash -lc \
+				"${pkgs.xfstests}/bin/xfstests-check -d $(cat ${totest})"
 		'';
 	};
 
 	# Setup envirionment
-        #environment.variables.TERM = "xterm";
-        #environment.variables.TEST_DEV = "/dev/sdb";
-        #environment.variables.TEST_DIR = "/mnt/test";
-        #environment.variables.SCRATCH_DEV = "/dev/sdc";
-        ##environment.variables.SCRATCH_MNT = "/mnt/scratch";
+        environment.variables.HOST_OPTIONS = "/root/vmtest/xfstests-config";
 
 	networking.interfaces.eth1 = {
 		ipv4.addresses = [{
@@ -221,6 +216,10 @@ in
 				source = "/home/alberand/Projects/vm/results";
 				target = "/root/results";
 			};
+			vmtest = {
+				source = "/tmp/vmtest";
+				target = "/root/vmtest";
+			};
 		};
 	};
 
@@ -258,9 +257,9 @@ in
 	};
 
 	# Apply overlay on the package (use different src as we replaced 'src = ')
-	nixpkgs.overlays = [ 
-		xfstests-overlay
-		xfsprogs-overlay
+	nixpkgs.overlays = [
+		xfstests-overlay-remote
+		xfsprogs-overlay-remote
 	];
 
 	users.users.root = {

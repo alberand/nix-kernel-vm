@@ -91,12 +91,13 @@ function add_module() {
 	fi
 
 	echo "Module is set to $1"
-	mkdir "$SHARE_DIR/modules"
+	mkdir -p "$SHARE_DIR/modules"
 	cp $1 "$SHARE_DIR/modules"
 }
 
 function set_totest() {
 	echo "${1:--g verity}" > $SHARE_DIR/totest
+	cp ./xfstests-config $SHARE_DIR
 }
 
 if [[ -f "$LOCAL_CONFIG" ]]; then

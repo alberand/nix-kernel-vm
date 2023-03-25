@@ -6,7 +6,8 @@
 
 export FSTYP="xfs"
 export KEEP_DMESG="yes"
-export MKFS_OPTIONS="-b size=1024"
+export MKFS_OPTIONS="-b size=1024 -m verity"
+export MOUNT_OPTIONS="-o quota"
 #export MKFS_OPTIONS="-b 2048"
 export RESULT_BASE=/root/pampam
 export TEST_DEV=/dev/sdb
