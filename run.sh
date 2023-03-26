@@ -93,6 +93,7 @@ function set_kernel() {
 
 	export NIXPKGS_QEMU_KERNEL_vm="$(realpath $1)"
 	export QEMU_OPTS="$QEMU_OPTS"
+	export NIX_DISK_IMAGE="$SHARE_DIR/vm.qcow2"
 	echo "Kernel is set to $NIXPKGS_QEMU_KERNEL_vm"
 }
 
