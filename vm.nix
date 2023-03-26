@@ -18,20 +18,7 @@
 	...
 }: let
 	# fstests confgiuration
-	fstyp = "xfs";
-	testdisk = "/dev/sdc";
 	totest = "/root/vmtest/totest";
-
-	# Custom local xfstests
-	xfstests-overlay = (self: super: {
-		xfstests = super.xfstests.overrideAttrs (super: {
-			version = "git";
-			src = /home/alberand/Projects/xfstests-dev;
-			postInstall = super.postInstall + ''
-			  cp ${./xfstests-config} $out/xfstests-config
-			'';
-		});
-	});
 
 	# Custom remote xfstests
 	xfstests-overlay-remote = (self: super: {
@@ -46,14 +33,6 @@
 		});
 	});
 
-	xfsprogs-overlay = (self: super: {
-		xfsprogs = super.xfsprogs.overrideAttrs (prev: {
-			version = "git";
-			src = /home/alberand/Projects/xfsprogs-dev;
-			buildInputs = with pkgs; [ gnum4 readline icu inih liburcu ];
-		});
-	});
-
 	xfsprogs-overlay-remote = (self: super: {
 		xfsprogs = super.xfsprogs.overrideAttrs (prev: {
 			version = "6.6.2";
@@ -65,24 +44,6 @@
 			};
 		});
 	});
-
-	kernel-custom = pkgs.linuxKernel.customPackage {
-		# Note that nix uses this version to install relevant tools (e.g. flex).
-		# You can specify 'git' not to change it every time you change the verions
-		# but I haven't got it working properly. Nix will tell you which version
-		# you should specify if you don't know.
-		version = "6.2.0-rc2";
-		configfile = /home/alberand/Projects/xfs-verity-v2/.config;
-		src = fetchGit /home/alberand/Projects/xfs-verity-v2;
-	};
-
-	kernel-headers-overlay = (self: super: {
-		linuxHeaders = super.linuxHeaders.overrideAttrs (prev: {
-			version = "6.2.0-rc2";
-			src = fetchGit /home/alberand/Projects/xfs-verity-v2;
-		});
-	});
-
 in
 {
         imports = [
@@ -173,33 +134,11 @@ in
 		useDefaultFilesystems = true;
 		# Run qemu in the terminal not in Qemu GUI
 		graphics = false;
-		#emptyDiskImages = [ 8192 4096 ]; # Create 2 virtual disk with 8G and 4G
 
 		qemu = {
 			networkingOptions = [
 				"-device e1000,netdev=network0,mac=00:00:00:00:00:00"
 				"-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
-			];
-			options = [
-				# I want to try a kernel which I compiled somewhere
-				#"-kernel /home/user/my-linux/arch/x86/boot/bzImage"
-				#"-kernel /home/alberand/my-linux/arch/x86/boot/bzImage"
-				# OR
-				# You can set env. variable not to change configuration everytime:
-				#   export NIXPKGS_QEMU_KERNEL_fstests_vm=/path/to/arch/x86/boot/bzImage
-				# The name is NIXPKGS_QEMU_KERNEL_<networking.hostName>
-
-				# Append real partitions to VM
-				# "-hdc ${testdisk}4"
-				# "-hdd ${testdisk}5"
-				# "-usb -device usb-host,hostbus=2,hostport=4"
-				#"-usb -device usb-host,vendorid=0x8564,productid=0x1000"
-				# "-serial mon:stdio"
-			];
-			# Append images as partition to VM
-			drives = [
-				#{ name = "vdc"; file = "${toString ./test.img}"; }
-				#{ name = "vdb"; file = "${toString ./scratch.img}"; }
 			];
 		};
 
