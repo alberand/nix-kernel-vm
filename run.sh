@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VALID_ARGS=$(getopt -o k:m:t:c: --long kernel:,module:,totest:,config: -- "$@")
+VALID_ARGS=$(getopt -o k:m:t:c:q: --long kernel:,module:,totest:,config:,qemu-opts: -- "$@")
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi
@@ -11,6 +11,7 @@ KERNEL=""
 MODULE=""
 TOTEST=""
 TEST_CONFIG=""
+QEMU_OPTS=""
 
 function load_config() {
 	shopt -s extglob
@@ -55,6 +56,12 @@ function parse_args() {
 				shift
 				shift
 				;;
+			-q | --qemu-opts)
+				echo "Processing 'qemu-opts' option: $2"
+				QEMU_OPTS="$2"
+				shift
+				shift
+				;;
 			--) shift;
 				break
 				;;
@@ -85,6 +92,7 @@ function set_kernel() {
 	fi
 
 	export NIXPKGS_QEMU_KERNEL_vm="$(realpath $1)"
+	export QEMU_OPTS="$QEMU_OPTS"
 	echo "Kernel is set to $NIXPKGS_QEMU_KERNEL_vm"
 }
 

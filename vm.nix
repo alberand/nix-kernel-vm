@@ -190,11 +190,11 @@ in
 				# The name is NIXPKGS_QEMU_KERNEL_<networking.hostName>
 
 				# Append real partitions to VM
-				"-hdc ${testdisk}4"
-				"-hdd ${testdisk}5"
-				"-usb -device usb-host,hostbus=2,hostport=4"
+				# "-hdc ${testdisk}4"
+				# "-hdd ${testdisk}5"
+				# "-usb -device usb-host,hostbus=2,hostport=4"
 				#"-usb -device usb-host,vendorid=0x8564,productid=0x1000"
-				"-serial mon:stdio"
+				# "-serial mon:stdio"
 			];
 			# Append images as partition to VM
 			drives = [
