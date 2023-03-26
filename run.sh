@@ -22,7 +22,7 @@ function load_config() {
 			rhs="${rhs%%*( )}"   # Del trailing spaces
 			rhs="${rhs%\"*}"     # Del opening string quotes
 			rhs="${rhs#\"*}"     # Del closing string quotes
-			eval $lhs="$rhs"
+			export $lhs="$rhs"
 			echo "Option $lhs = '$rhs'"
 		fi
 	done < $1
