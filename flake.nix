@@ -62,5 +62,56 @@
 				type = "app";
 				program = "${self.packages.${system}.vmtest}/bin/vmtest";
 		};
+
+		devShells."${system}".default = with pkgs;
+			mkShell {
+				nativeBuildInputs = [
+					ctags
+					getopt
+					flex
+					bison
+					perl
+					gnumake
+					bc
+					pkg-config
+					clang
+					clang-tools
+					# gcc
+					# binutils
+					file
+					gettext
+					libtool
+					qemu_full
+					qemu-utils
+					automake
+					autoconf
+
+					# xfstests
+					e2fsprogs
+					attr
+					acl
+					libaio
+					keyutils
+					fsverity-utils
+					ima-evm-utils
+					util-linux
+					stress-ng
+					dbench
+					xfsprogs
+					fio
+					linuxquota
+					nvme-cli
+				];
+
+				buildInputs = [
+					elfutils
+					ncurses
+					openssl
+					zlib
+				];
+				# This is needed to disable unwanted gcc flags (such as
+				# -Werror=format-security, this breaks buildroot builds)
+				hardeningDisable = [ "all" ];
+			};
 	};
 }
