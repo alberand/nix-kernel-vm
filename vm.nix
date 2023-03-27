@@ -113,6 +113,8 @@ in
 
 			${pkgs.bash}/bin/bash -lc \
 				"${pkgs.xfstests}/bin/xfstests-check -d $(cat ${totest})"
+			# Beep beep... Human... back to work
+			echo -ne '\007'
 		'';
 	};
 
