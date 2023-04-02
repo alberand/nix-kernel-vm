@@ -46,6 +46,7 @@
 			vmtest = pkgs.writeScriptBin "vmtest"
 				((builtins.readFile ./run.sh) + ''
 					${self.packages."${system}".vm}/bin/run-vm-vm
+					echo "View results at $SHARE_DIR/results"
 				'');
 
 			vm = pkgs.symlinkJoin {
