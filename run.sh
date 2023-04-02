@@ -81,6 +81,10 @@ function init_share() {
 }
 
 function set_kernel() {
+	if [[ -z "$1" ]]; then
+		return;
+	fi
+
 	if [[ ! -f "$1" ]]; then
 		echo "File $1 doesn't exist"
 		return
@@ -98,6 +102,10 @@ function set_kernel() {
 }
 
 function add_module() {
+	if [[ -z "$1" ]]; then
+		return;
+	fi
+
 	if [[ ! -f "$1" ]]; then
 		echo "File $1 doesn't exist"
 		return
