@@ -20,6 +20,13 @@
 	# fstests confgiuration
 	totest = "/root/vmtest/totest";
 
+	xfstests-overlay = (self: super: {
+		xfstests = super.xfstests.overrideAttrs (super: {
+			version = "git";
+			src = /home/alberand/Projects/xfstests-dev;
+		});
+	});
+
 	# Custom remote xfstests
 	xfstests-overlay-remote = (self: super: {
 		xfstests = super.xfstests.overrideAttrs (prev: {
@@ -30,6 +37,14 @@
 				rev = "cbb3b25d72361c4c6c141b03312e7ac2f5d1e303";
 				sha256 = "sha256-iVuQWaFOHalHfkeUUXtlFkysB5whpeLFNK823wbaPj4=";
 			};
+		});
+	});
+
+	xfsprogs-overlay = (self: super: {
+		xfsprogs = super.xfsprogs.overrideAttrs (prev: {
+			version = "git";
+			src = fetchGit /home/alberand/Projects/xfsprogs-dev;
+			buildInputs = with pkgs; [ gnum4 readline icu inih liburcu ];
 		});
 	});
 
@@ -191,8 +206,8 @@ in
 
 	# Apply overlay on the package (use different src as we replaced 'src = ')
 	nixpkgs.overlays = [
-		xfstests-overlay-remote
-		xfsprogs-overlay-remote
+		xfstests-overlay
+		xfsprogs-overlay
 	];
 
 	users.users.root = {
