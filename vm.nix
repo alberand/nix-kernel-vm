@@ -119,8 +119,13 @@ in
 		after = [ "network.target" "network-online.target" "local-fs.target" ];
 		wants = [ "network.target" "network-online.target" "local-fs.target" ];
 		wantedBy = [ "multi-user.target" ];
-                # postStop = "${pkgs.systemd}/bin/systemctl poweroff";
-                postStop = "${pkgs.kmod}/bin/rmmod xfs";
+                postStop = ''
+			for module in /root/vmtest/modules/*.ko; do
+				${pkgs.kmod}/bin/rmmod $module;
+			done;
+			# Auto poweroff
+			# ${pkgs.systemd}/bin/systemctl poweroff;
+		'';
 		script = ''
 			for module in /root/vmtest/modules/*.ko; do
 				${pkgs.kmod}/bin/insmod $module;
