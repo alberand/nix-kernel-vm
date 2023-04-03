@@ -143,8 +143,8 @@ in
 
 	networking.interfaces.eth1 = {
 		ipv4.addresses = [{
-			address = "11.11.11.12";
-			prefixLength = 32;
+			address = "192.168.10.2";
+			prefixLength = 24;
 		}];
 	};
 
@@ -194,6 +194,8 @@ in
                 xterm
                 zsh
 	];
+
+	services.openssh.enable = true;
 
 	programs.zsh = {
 		enable = true;
