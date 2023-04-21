@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VALID_ARGS=$(getopt -o k:m:t:c:q: --long kernel:,module:,totest:,config:,qemu-opts: -- "$@")
+VALID_ARGS=$(getopt -o hk:m:t:c:q: --long help,kernel:,module:,totest:,config:,qemu-opts: -- "$@")
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi
@@ -12,6 +12,43 @@ MODULE=""
 TOTEST=""
 TEST_CONFIG=""
 QEMU_OPTS=""
+
+function help() {
+	cat <<EOF
+Usage: $(basename "${BASH_SOURCE[0]}") [OPTION...]
+
+DESCRIPTION
+    Run Virtual Machine to test linux kernel with fstests.
+
+OPTIONS
+    -k IMAGE, --kernel IMAGE
+        Specify path to bzImage <IMAGE> to use instead of pre-build kernel. Note
+        that this kernel should have features necessary to run in QEMU
+    -m MODULE, --module MODULE
+        Compiled module to load before systemd task is being run.
+    -t OPTIONS, --totest OPTIONS
+        fstests's command line options
+    -c CONFIG, --test-config CONFIG
+        fstests's configuration file
+    -q OPTIONS, --qemu-opts OPTIONS
+        Options to add to QEMU
+    -h, --help
+        Print this help and exit
+CONFIG
+    Instead of using all the command line OPTIONS above the config file can be
+    created. The file should be located in current working directory and named
+    '.vmtest'. For example:
+
+    ➜  cat .vmtest
+    KERNEL = "./arch/x86_64/boot/bzImage"
+    MODULE = "./fs/xfs/xfs.ko"
+    TOTEST = "-d -s xfs_1k_quota -s xfs_4k_quota -g verity"
+    TEST_CONFIG = "./xfstests-config"
+    QEMU_OPTS = "-hdc /dev/sdc4 -hdd /dev/sdc5 -serial mon:stdio"
+
+    The variables are capitalized options.
+EOF
+}
 
 function load_config() {
 	shopt -s extglob
@@ -60,6 +97,11 @@ function parse_args() {
 				echo "Processing 'qemu-opts' option: $2"
 				QEMU_OPTS="$2"
 				shift
+				shift
+				;;
+			-h | --help)
+				help
+				exit 0
 				shift
 				;;
 			--) shift;
