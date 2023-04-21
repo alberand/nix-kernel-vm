@@ -94,6 +94,8 @@ in {
     wants = [ "network.target" "network-online.target" "local-fs.target" ];
     wantedBy = [ "multi-user.target" ];
     postStop = ''
+                  # Handle case when there's no modules glob -> empty
+                  shopt -s nullglob
                   for module in /root/vmtest/modules/*.ko; do
                           ${pkgs.kmod}/bin/rmmod $module;
                   done;
@@ -101,6 +103,8 @@ in {
                   # ${pkgs.systemd}/bin/systemctl poweroff;
     '';
     script = ''
+                  # Handle case when there's no modules glob -> empty
+                  shopt -s nullglob
                   for module in /root/vmtest/modules/*.ko; do
                           ${pkgs.kmod}/bin/insmod $module;
                   done;
@@ -166,7 +170,6 @@ in {
     bpftrace
     xxd
     xterm
-    zsh
   ];
 
   services.openssh.enable = true;
@@ -176,10 +179,6 @@ in {
     xfstests-overlay-remote
     xfsprogs-overlay-remote
   ];
-
-  users.users.root = {
-    shell = pkgs.zsh;
-  };
 
   users.users.fsgqa = {
     isNormalUser  = true;

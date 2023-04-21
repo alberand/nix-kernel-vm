@@ -3,55 +3,51 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, flake-utils }:
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs {
         inherit system;
-        overlays = [
-          self.overlays.default
-        ];
+        overlays = [ self.overlays.default ];
     };
-  in {
+  in rec {
       nixosConfigurations = {
         "generic" = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            "${nixpkgs}/nixos/modules/profiles/qemu-guest.nix"
-            "${nixpkgs}/nixos/modules/virtualisation/qemu-vm.nix"
-            ./vm.nix {
-              environment.variables.EDITOR = "neovim";
-              environment.systemPackages = [
-                pkgs.vim
-              ];
-              users.users.hahahahaha = {
-                isNormalUser  = true;
-                description  = "Test user";
-              };
-            }
+            ({ config, pkgs, ... }: { nixpkgs.overlays = [ self.overlays.default ]; })
+            ./vm.nix
           ];
         };
       };
 
-      overlays.default =
-        (final: prev: {
-          vmtest = pkgs.writeScriptBin "vmtest" "echo 'HAHA'";
-        }) ;
+      overlays.default = (self: super: {
+        xfstests = super.xfstests.overrideAttrs (prev: {
+          version = "git";
+          src = pkgs.fetchFromGitHub {
+            owner = "alberand";
+            repo = "xfstests";
+            rev = "00b52cf1a66eb5d84567ab3afe8365e1b3664289";
+            sha256 = "sha256-e0w+Qqt7Dro+FVf3Ut/GN7HMjq4oU/rvmDbqCq9WiA4=";
+          };
+        });
+      });
 
-      pkgs = {
-        default = self.pkgs.vmtest;
+      packages.${system} = rec {
+        default = packages.${system}.vmtest;
 
         vmtest = pkgs.writeScriptBin "vmtest"
         ((builtins.readFile ./run.sh) + ''
-          ${self.packages."${system}".vm}/bin/run-vm-vm
+          ${packages.${system}.vm-system}/bin/run-vm-vm
           echo "View results at $SHARE_DIR/results"
         '');
 
-        vm = pkgs.symlinkJoin {
-          name = "vm";
-          paths = with self.nixosConfigurations.generic.config.system.build; [
+        vm-system = pkgs.symlinkJoin {
+          name = "vm-system";
+          paths = with nixosConfigurations.generic.config.system.build; [
             vm
             kernel
           ];
@@ -59,12 +55,8 @@
         };
       };
 
-      packages."${system}" = self.pkgs;
-
-      apps."${system}".default = {
-        type = "app";
-        program = "${self.packages.${system}.vmtest}/bin/vmtest";
+      apps.${system}.default = flake-utils.lib.mkApp {
+        drv = packages.${system}.vmtest;
       };
-
     };
 }
