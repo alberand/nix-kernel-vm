@@ -10,237 +10,191 @@
 # Kernel Config:
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
-{
-	config,
-	modulesPath,
-	pkgs,
-	lib,
-	...
-}: let
-	# fstests confgiuration
-	totest = "/root/vmtest/totest";
+{ config, modulesPath, pkgs, lib, ... }: let
+  xfstests-overlay-remote = (self: super: {
+    xfstests = super.xfstests.overrideAttrs (prev: {
+      version = "git";
+      src = pkgs.fetchFromGitHub {
+        owner = "alberand";
+        repo = "xfstests";
+        rev = "cbb3b25d72361c4c6c141b03312e7ac2f5d1e303";
+        sha256 = "sha256-iVuQWaFOHalHfkeUUXtlFkysB5whpeLFNK823wbaPj4=";
+      };
+    });
+  });
 
-        #xfstests-overlay = (self: super: {
-	#	xfstests = super.xfstests.overrideAttrs (super: {
-	#		version = "git";
-	#		src = /home/alberand/Projects/xfstests-dev;
-	#	});
-	#});
+  xfsprogs-overlay-remote = (self: super: {
+    xfsprogs = super.xfsprogs.overrideAttrs (prev: {
+      version = "6.6.2";
+      src = pkgs.fetchFromGitHub {
+        owner = "alberand";
+        repo = "xfsprogs";
+        rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
+        sha256 = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
+      };
+    });
+  });
+in {
+  imports = [
+    (modulesPath + "/profiles/qemu-guest.nix")
+    (modulesPath + "/virtualisation/qemu-vm.nix")
+  ];
 
-	# Custom remote xfstests
-	xfstests-overlay-remote = (self: super: {
-		xfstests = super.xfstests.overrideAttrs (prev: {
-			version = "git";
-			src = pkgs.fetchFromGitHub {
-				owner = "alberand";
-				repo = "xfstests";
-				rev = "cbb3b25d72361c4c6c141b03312e7ac2f5d1e303";
-				sha256 = "sha256-iVuQWaFOHalHfkeUUXtlFkysB5whpeLFNK823wbaPj4=";
-			};
-		});
-	});
+  boot = {
+    kernelParams = ["console=ttyS0,115200n8" "console=ttyS0"];
+    consoleLogLevel = lib.mkDefault 7;
+    # This is happens before systemd
+    postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
+    crashDump.enable = true;
 
-        #xfsprogs-overlay = (self: super: {
-	#	xfsprogs = super.xfsprogs.overrideAttrs (prev: {
-	#		version = "git";
-	#		src = fetchGit /home/alberand/Projects/xfsprogs-dev;
-	#		buildInputs = with pkgs; [ gnum4 readline icu inih liburcu ];
-	#	});
-        #});
+    # Set my custom kernel
+    # kernelPackages = kernel-custom;
+    kernelPackages = pkgs.linuxPackages_latest;
+  };
 
-	xfsprogs-overlay-remote = (self: super: {
-		xfsprogs = super.xfsprogs.overrideAttrs (prev: {
-			version = "6.6.2";
-			src = pkgs.fetchFromGitHub {
-				owner = "alberand";
-				repo = "xfsprogs";
-				rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
-				sha256 = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
-			};
-		});
-	});
-in
-{
-        imports = [
-		(modulesPath + "/profiles/qemu-guest.nix")
-		(modulesPath + "/virtualisation/qemu-vm.nix")
-        ];
+  # Auto-login with empty password
+  users.extraUsers.root.initialHashedPassword = "";
+  services.getty.autologinUser = lib.mkDefault "root";
 
-	boot = {
-		kernelParams = ["console=ttyS0,115200n8" "console=ttyS0"];
-		consoleLogLevel = lib.mkDefault 7;
-		# This is happens before systemd
-		postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
-		crashDump.enable = true;
+  networking.firewall.enable = false;
+  networking.hostName = "vm";
+  networking.useDHCP = false;
+  services.getty.helpLine = ''
+          Log in as "root" with an empty password.
+          If you are connect via serial console:
+          Type CTRL-A X to exit QEMU
+  '';
 
-		# Set my custom kernel
-		# kernelPackages = kernel-custom;
-		kernelPackages = pkgs.linuxPackages_latest;
-	};
+  # Not needed in VM
+  documentation.doc.enable = false;
+  documentation.man.enable = false;
+  documentation.nixos.enable = false;
+  documentation.info.enable = false;
+  programs.bash.enableCompletion = false;
+  programs.command-not-found.enable = false;
 
-	# Auto-login with empty password
-	users.extraUsers.root.initialHashedPassword = "";
-	services.getty.autologinUser = lib.mkDefault "root";
+  systemd.tmpfiles.rules = [
+    "d /mnt 1777 root root"
+    "d /mnt/test 1777 root root"
+    "d /mnt/scratch 1777 root root"
+  ];
+  # Do something after systemd started
+  systemd.services."serial-getty@ttyS0".enable = true;
+  systemd.services.xfstests = {
+    enable = true;
+    serviceConfig = {
+      Type = "oneshot";
+      StandardOutput = "tty";
+      StandardError = "tty";
+      User = "root";
+      Group = "root";
+      WorkingDirectory = "/root";
+    };
+    after = [ "network.target" "network-online.target" "local-fs.target" ];
+    wants = [ "network.target" "network-online.target" "local-fs.target" ];
+    wantedBy = [ "multi-user.target" ];
+    postStop = ''
+                  for module in /root/vmtest/modules/*.ko; do
+                          ${pkgs.kmod}/bin/rmmod $module;
+                  done;
+                  # Auto poweroff
+                  # ${pkgs.systemd}/bin/systemctl poweroff;
+    '';
+    script = ''
+                  for module in /root/vmtest/modules/*.ko; do
+                          ${pkgs.kmod}/bin/insmod $module;
+                  done;
 
-	networking.firewall.enable = false;
-	networking.hostName = "vm";
-	networking.useDHCP = false;
-	services.getty.helpLine = ''
-		Log in as "root" with an empty password.
-		If you are connect via serial console:
-		Type CTRL-A X to exit QEMU
-	'';
+                  ${pkgs.bash}/bin/bash -lc \
+                          "${pkgs.xfstests}/bin/xfstests-check -d $(cat /root/vmtest/totest)"
+                  # Beep beep... Human... back to work
+                  echo -ne '\007'
+    '';
+  };
 
-	# Not needed in VM
-	documentation.doc.enable = false;
-	documentation.man.enable = false;
-	documentation.nixos.enable = false;
-	documentation.info.enable = false;
-	programs.bash.enableCompletion = false;
-	programs.command-not-found.enable = false;
+  # Setup envirionment
+  environment.variables.HOST_OPTIONS = "/root/vmtest/xfstests-config";
 
-	systemd.tmpfiles.rules = [
-		"d /mnt 1777 root root"
-		"d /mnt/test 1777 root root"
-		"d /mnt/scratch 1777 root root"
-	];
-	# Do something after systemd started
-	systemd.services."serial-getty@ttyS0".enable = true;
-	systemd.services.xfstests = {
-		enable = true;
-		serviceConfig = {
-			Type = "oneshot";
-			StandardOutput = "tty";
-			StandardError = "tty";
-			User = "root";
-			Group = "root";
-                        WorkingDirectory = "/root";
-		};
-		after = [ "network.target" "network-online.target" "local-fs.target" ];
-		wants = [ "network.target" "network-online.target" "local-fs.target" ];
-		wantedBy = [ "multi-user.target" ];
-                postStop = ''
-			for module in /root/vmtest/modules/*.ko; do
-				${pkgs.kmod}/bin/rmmod $module;
-			done;
-			# Auto poweroff
-			# ${pkgs.systemd}/bin/systemctl poweroff;
-		'';
-		script = ''
-			for module in /root/vmtest/modules/*.ko; do
-				${pkgs.kmod}/bin/insmod $module;
-			done;
+  networking.interfaces.eth1 = {
+    ipv4.addresses = [{
+      address = "192.168.10.2";
+      prefixLength = 24;
+    }];
+  };
 
-			${pkgs.bash}/bin/bash -lc \
-				"${pkgs.xfstests}/bin/xfstests-check -d $(cat ${totest})"
-			# Beep beep... Human... back to work
-			echo -ne '\007'
-		'';
-	};
+  virtualisation = {
+    diskSize = 20000; # MB
+    memorySize = 4096; # MB
+    cores = 4;
+    writableStoreUseTmpfs = false;
+    useDefaultFilesystems = true;
+    # Run qemu in the terminal not in Qemu GUI
+    graphics = false;
 
-	# Setup envirionment
-        environment.variables.HOST_OPTIONS = "/root/vmtest/xfstests-config";
+    qemu = {
+      networkingOptions = [
+        "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
+        "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
+      ];
+    };
 
-	networking.interfaces.eth1 = {
-		ipv4.addresses = [{
-			address = "192.168.10.2";
-			prefixLength = 24;
-		}];
-	};
+    sharedDirectories = {
+      results = {
+        source = "/tmp/vmtest/results";
+        target = "/root/results";
+      };
+      vmtest = {
+        source = "/tmp/vmtest";
+        target = "/root/vmtest";
+      };
+    };
+  };
 
-	virtualisation = {
-		diskSize = 20000; # MB
-		memorySize = 4096; # MB
-		cores = 4;
-		writableStoreUseTmpfs = false;
-		useDefaultFilesystems = true;
-		# Run qemu in the terminal not in Qemu GUI
-		graphics = false;
+  # Add packages to VM
+  environment.systemPackages = with pkgs; [
+    htop
+    util-linux
+    xfstests
+    tmux
+    fsverity-utils
+    trace-cmd
+    perf-tools
+    linuxPackages_latest.perf
+    openssl
+    xfsprogs
+    usbutils
+    bpftrace
+    xxd
+    xterm
+    zsh
+  ];
 
-		qemu = {
-			networkingOptions = [
-				"-device e1000,netdev=network0,mac=00:00:00:00:00:00"
-				"-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
-			];
-		};
+  services.openssh.enable = true;
 
-		sharedDirectories = {
-			results = {
-				source = "/tmp/vmtest/results";
-				target = "/root/results";
-			};
-			vmtest = {
-				source = "/tmp/vmtest";
-				target = "/root/vmtest";
-			};
-		};
-	};
+  # Apply overlay on the package (use different src as we replaced 'src = ')
+  nixpkgs.overlays = [
+    xfstests-overlay-remote
+    xfsprogs-overlay-remote
+  ];
 
-	# Add packages to VM
-	environment.systemPackages = with pkgs; [
-		htop
-		util-linux
-		xfstests
-		tmux
-		fsverity-utils
-		trace-cmd
-		perf-tools
-		linuxPackages_latest.perf
-		openssl
-		xfsprogs
-		usbutils
-		bpftrace
-                xxd
-                xterm
-                zsh
-	];
+  users.users.root = {
+    shell = pkgs.zsh;
+  };
 
-	services.openssh.enable = true;
+  users.users.fsgqa = {
+    isNormalUser  = true;
+    description  = "Test user";
+  };
 
-	programs.zsh = {
-		enable = true;
-		ohMyZsh = {
-			enable = true;
-                        # plugins = [ "git" ];
-			theme = "robbyrussell";
-		};
-		interactiveShellInit = ''
-			function precmd {
-				eval `resize`
-			}
-		'';
-	};
+  users.users.fsgqa2 = {
+    isNormalUser  = true;
+    description  = "Test user";
+  };
 
-	# Apply overlay on the package (use different src as we replaced 'src = ')
-	nixpkgs.overlays = [
-		xfstests-overlay-remote
-		xfsprogs-overlay-remote
-	];
+  users.users.fsgqa-123456 = {
+    isNormalUser  = true;
+    description  = "Test user";
+  };
 
-	users.users.root = {
-		shell = pkgs.zsh;
-        };
-	# xfstests related
-	users.users.fsgqa = {
-		isNormalUser  = true;
-		description  = "Test user";
-	};
-
-	users.users.fsgqa2 = {
-		isNormalUser  = true;
-		description  = "Test user";
-	};
-
-	users.users.fsgqa-123456 = {
-		isNormalUser  = true;
-		description  = "Test user";
-	};
-
-	# This value determines the NixOS release from which the default
-	# settings for stateful data, like file locations and database versions
-	# on your system were taken. It‘s perfectly fine and recommended to leave
-	# this value at the release version of the first install of this system.
-	# Before changing this value read the documentation for this option
-	# (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-	system.stateVersion = "22.11"; # Did you read the comment?
+  system.stateVersion = "22.11";
 }
