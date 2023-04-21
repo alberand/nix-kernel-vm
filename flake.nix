@@ -3,18 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    xfsprogs = {
-      type = "github";
-      owner = "alberand";
-      repo = "xfsprogs";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, xfsprogs }:
+  outputs = { self, nixpkgs }:
   let
     system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = import nixpkgs {
+        inherit system;
+        overlays = [
+          self.overlays.default
+        ];
+    };
   in {
       nixosConfigurations = {
         "generic" = nixpkgs.lib.nixosSystem {
@@ -31,14 +30,18 @@
                 isNormalUser  = true;
                 description  = "Test user";
               };
-
             }
           ];
         };
       };
 
-      packages."${system}" ={
-        default = self.packages."${system}".vmtest;
+      overlays.default =
+        (final: prev: {
+          vmtest = pkgs.writeScriptBin "vmtest" "echo 'HAHA'";
+        }) ;
+
+      pkgs = {
+        default = self.pkgs.vmtest;
 
         vmtest = pkgs.writeScriptBin "vmtest"
         ((builtins.readFile ./run.sh) + ''
@@ -55,6 +58,8 @@
           preferLocalBuild = true;
         };
       };
+
+      packages."${system}" = self.pkgs;
 
       apps."${system}".default = {
         type = "app";
