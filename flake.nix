@@ -18,7 +18,11 @@
         "generic" = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ({ config, pkgs, ... }: { nixpkgs.overlays = [ self.overlays.default ]; })
+            ({ config, pkgs, ... }: {
+              nixpkgs.overlays = [
+                #self.overlays.default
+              ];
+            })
             ./vm.nix
           ];
         };
