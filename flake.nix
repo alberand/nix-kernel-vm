@@ -34,14 +34,10 @@
             sha256 = "sha256-e0w+Qqt7Dro+FVf3Ut/GN7HMjq4oU/rvmDbqCq9WiA4=";
           };
         });
-      });
-
-      packages.${system} = rec {
-        default = packages.${system}.vmtest;
 
         vmtest = pkgs.writeScriptBin "vmtest"
         ((builtins.readFile ./run.sh) + ''
-          ${packages.${system}.vm-system}/bin/run-vm-vm
+          ${pkgs.vm-system}/bin/run-vm-vm
           echo "View results at $SHARE_DIR/results"
         '');
 
@@ -53,10 +49,15 @@
           ];
           preferLocalBuild = true;
         };
+      });
+
+      packages.${system} = rec {
+        default = pkgs.vmtest;
+        vmtest = pkgs.vmtest;
       };
 
       apps.${system}.default = flake-utils.lib.mkApp {
-        drv = packages.${system}.vmtest;
+        drv = pkgs.vmtest;
       };
     };
 }
