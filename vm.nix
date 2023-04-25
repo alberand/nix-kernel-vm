@@ -170,6 +170,7 @@ in {
     bpftrace
     xxd
     xterm
+    vim
   ];
 
   services.openssh.enable = true;
