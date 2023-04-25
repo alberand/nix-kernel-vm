@@ -49,7 +49,7 @@ in {
 
     # Set my custom kernel
     # kernelPackages = kernel-custom;
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxKernel.packagesFor pkgs.linuxKernel.kernels.linux_6_2;
   };
 
   # Auto-login with empty password
