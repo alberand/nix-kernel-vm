@@ -18,27 +18,12 @@
         "generic" = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            ({ config, pkgs, ... }: {
-              nixpkgs.overlays = [
-                #self.overlays.default
-              ];
-            })
             ./vm.nix
           ];
         };
       };
 
       overlays.default = (self: super: {
-        xfstests = super.xfstests.overrideAttrs (prev: {
-          version = "git";
-          src = pkgs.fetchFromGitHub {
-            owner = "alberand";
-            repo = "xfstests";
-            rev = "00b52cf1a66eb5d84567ab3afe8365e1b3664289";
-            sha256 = "sha256-e0w+Qqt7Dro+FVf3Ut/GN7HMjq4oU/rvmDbqCq9WiA4=";
-          };
-        });
-
         vmtest = pkgs.writeScriptBin "vmtest"
         ((builtins.readFile ./run.sh) + ''
           ${pkgs.vm-system}/bin/run-vm-vm
