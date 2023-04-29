@@ -10,29 +10,13 @@
 # Kernel Config:
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
-{ config, modulesPath, pkgs, lib, ... }: let
-  xfsprogs-overlay-remote = (self: super: {
-    xfsprogs = super.xfsprogs.overrideAttrs (prev: {
-      version = "6.6.2";
-      src = pkgs.fetchFromGitHub {
-        owner = "alberand";
-        repo = "xfsprogs";
-        rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
-        sha256 = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
-      };
-    });
-  });
-in {
+{ config, modulesPath, pkgs, lib, ... }:
+{
   imports = [
     (modulesPath + "/profiles/qemu-guest.nix")
     (modulesPath + "/virtualisation/qemu-vm.nix")
     ./xfstests.nix
   ];
-
-  programs.xfstests = {
-    enable = true;
-    srcrev =  "3e7834b439a0ef8d9dffd6db592c77311be40d1b";
-  };
 
   boot = {
     kernelParams = ["console=ttyS0,115200n8" "console=ttyS0"];
@@ -115,7 +99,6 @@ in {
     perf-tools
     linuxPackages_latest.perf
     openssl
-    xfsprogs
     usbutils
     bpftrace
     xxd

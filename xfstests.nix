@@ -7,21 +7,19 @@ let
   xfstests-overlay-remote = (self: super: {
     xfstests = super.xfstests.overrideAttrs (prev: {
       version = "git";
-      src = pkgs.fetchFromGitHub {
-        owner = "alberand";
-        repo = "xfstests";
-        rev = cfg.srcrev;
-        sha256 = "sha256-iVuQWaFOHalHfkeUUXtlFkysB5whpeLFNK823wbaPj4=";
-      };
+      src = cfg.src;
     });
   });
 in {
   options.programs.xfstests = {
 
-    enable = mkEnableOption "hello service";
-    srcrev = mkOption {
-      type = types.str;
-      default = "";
+    enable = mkEnableOption {
+      name = "xfstests service";
+      default = true;
+    };
+
+    src = mkOption {
+      type = types.package;
     };
 
   };
@@ -34,10 +32,6 @@ in {
 
     # Setup envirionment
     environment.variables.HOST_OPTIONS = "/root/vmtest/xfstests-config";
-
-    environment.systemPackages = with pkgs; [
-      xfstests
-    ];
 
     users.users.fsgqa = {
       isNormalUser  = true;
