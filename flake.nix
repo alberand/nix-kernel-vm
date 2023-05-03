@@ -54,6 +54,86 @@
             echo "View results at $SHARE_DIR/results"
         '');
       };
+
+      mkLinuxShell = { pkgs, root, xfstests-src, xfsprogs-src }:
+      builtins.getAttr "shell" rec {
+        nixos = lib.mkSys {
+          inherit xfstests-src xfsprogs-src;
+        };
+
+        vm-system = pkgs.symlinkJoin {
+          name = "vm-system";
+          paths = with nixos.config.system.build; [
+            vm
+            kernel
+          ];
+          preferLocalBuild = true;
+        };
+
+        vmtest = pkgs.writeScriptBin "vmtest"
+        ((builtins.readFile ./run.sh) + ''
+            ${vm-system}/bin/run-vm-vm
+            echo "View results at $SHARE_DIR/results"
+        '');
+
+        shell = pkgs.mkShell {
+          packages = with pkgs; [
+            (lib.mkVmTest {
+              inherit pkgs;
+              xfstests-src = xfstests-src;
+              xfsprogs-src = xfsprogs-src;
+            })
+          ];
+
+          nativeBuildInputs = with pkgs; [
+            ctags
+            getopt
+            flex
+            bison
+            perl
+            gnumake
+            bc
+            pkg-config
+            clang
+            clang-tools
+            file
+            gettext
+            libtool
+            qemu_full
+            qemu-utils
+            automake
+            autoconf
+            e2fsprogs
+            attr
+            acl
+            libaio
+            keyutils
+            fsverity-utils
+            ima-evm-utils
+            util-linux
+            stress-ng
+            dbench
+            xfsprogs
+            fio
+            linuxquota
+            nvme-cli
+          ];
+
+          buildInputs = with pkgs; [
+            elfutils
+            ncurses
+            openssl
+            zlib
+          ];
+
+          shellHook = ''
+            if [ ! -f ${root}/compile_commands.json ]; then
+              ${root}/scripts/clang-tools/gen_compile_commands.py
+            fi
+          '';
+
+        };
+      };
     };
 
     pkgs.vmtest = (lib.mkVmTest {
