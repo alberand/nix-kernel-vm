@@ -63,6 +63,7 @@
 
   virtualisation = {
     diskSize = 20000; # MB
+    diskImage = "/tmp/vmtest/vm.qcow2";
     memorySize = 4096; # MB
     cores = 4;
     writableStoreUseTmpfs = false;
