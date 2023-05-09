@@ -30,6 +30,10 @@ in {
       xfstests-overlay-remote
     ];
 
+    environment.systemPackages = with pkgs; [
+      xfsprogs
+    ];
+
     # Setup envirionment
     environment.variables.HOST_OPTIONS = "/root/vmtest/xfstests-config";
 
