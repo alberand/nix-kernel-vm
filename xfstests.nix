@@ -52,6 +52,10 @@ in {
       description  = "Test user";
     };
 
+    users.groups.fsgqa.members = [ "fsgqa" ];
+    users.groups.fsgqa2.members = [ "fsgqa2" ];
+    users.groups.fsgqa-123456.members = [ "fsgqa-123456" ];
+
     systemd.tmpfiles.rules = [
       "d /mnt 1777 root root"
       "d /mnt/test 1777 root root"
