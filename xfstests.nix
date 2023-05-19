@@ -81,7 +81,9 @@ in {
                   # Handle case when there's no modules glob -> empty
                   shopt -s nullglob
                   for module in /root/vmtest/modules/*.ko; do
-                          ${pkgs.kmod}/bin/rmmod $module;
+                          if cat /proc/modules | grep -c "$module"; then
+                            ${pkgs.kmod}/bin/rmmod $module;
+                          fi
                   done;
                   # Auto poweroff
                   # ${pkgs.systemd}/bin/systemctl poweroff;
