@@ -27,7 +27,7 @@ OPTIONS
     -m MODULE, --module MODULE
         Compiled module to load before systemd task is being run.
     -t OPTIONS, --totest OPTIONS
-        fstests's command line options
+        fstests's command line options or shell script to run instead of fstests
     -c CONFIG, --test-config CONFIG
         fstests's configuration file
     -q OPTIONS, --qemu-opts OPTIONS
@@ -163,6 +163,11 @@ function add_module() {
 }
 
 function set_totest() {
+	if [[ -f "$1" ]]; then
+		cp "$1" $SHARE_DIR/test.sh
+		return
+	fi
+
 	echo "${1:--g verity}" > $SHARE_DIR/totest
 	if [[ ! -f "$2" ]]; then
 		cat << EOF > $SHARE_DIR/xfstests-config

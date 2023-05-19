@@ -76,6 +76,8 @@ in {
       wants = [ "network.target" "network-online.target" "local-fs.target" ];
       wantedBy = [ "multi-user.target" ];
       postStop = ''
+                  # Beep beep... Human... back to work
+                  echo -ne '\007'
                   # Handle case when there's no modules glob -> empty
                   shopt -s nullglob
                   for module in /root/vmtest/modules/*.ko; do
@@ -85,6 +87,13 @@ in {
                   # ${pkgs.systemd}/bin/systemctl poweroff;
       '';
       script = ''
+                  # User wants to run shell script instead of fstests
+                  if [[ -f /root/vmtest/test.sh ]]; then
+                    chmod u+x /root/vmtest/test.sh
+                    ${pkgs.bash}/bin/bash /root/vmtest/test.sh
+                    exit $?
+                  fi
+
                   # Handle case when there's no modules glob -> empty
                   shopt -s nullglob
                   for module in /root/vmtest/modules/*.ko; do
@@ -93,8 +102,6 @@ in {
 
                   ${pkgs.bash}/bin/bash -lc \
                           "${pkgs.xfstests}/bin/xfstests-check -d $(cat /root/vmtest/totest)"
-                  # Beep beep... Human... back to work
-                  echo -ne '\007'
       '';
     };
   };
