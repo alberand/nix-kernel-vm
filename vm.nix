@@ -27,7 +27,27 @@
 
     # Set my custom kernel
     # kernelPackages = kernel-custom;
-    kernelPackages = pkgs.linuxKernel.packagesFor pkgs.linuxKernel.kernels.linux_6_2;
+    # kernelPackages = pkgs.linuxKernel.packagesFor pkgs.linuxKernel.kernels.linux_6_2;
+    #kernelPackages = let
+    #  linux-custom = { fetchurl, buildLinux, ... } @ args:
+    #    buildLinux (args // rec {
+    #      version = "6.4.0-rc3";
+    #      modDirVersion = version;
+
+    #      src = fetchurl {
+    #        url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
+    #        sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
+    #      };
+    #      kernelPatches = [];
+
+    #      extraConfig = ''
+    #      '';
+
+    #      #extraMeta.branch = "5.4";
+    #    } // (args.argsOverride or {}));
+    #  kernel = pkgs.callPackage linux-custom {};
+    #in
+    #  pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
   };
 
   # Auto-login with empty password

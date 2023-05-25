@@ -7,20 +7,28 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, pkgs }:
+  flake-utils.lib.eachDefaultSystem (system:
   let
-    system = "x86_64-linux";
     pkgs = import nixpkgs { inherit system; };
   in rec {
     lib = {
-      mkSys = {xfstests-src, xfsprogs-src}: nixpkgs.lib.nixosSystem {
+      mkSys = {
+        pkgs,
+        kernel-custom,
+        xfstests-src,
+        xfsprogs-src
+      }: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           ./vm.nix
+
           ({ config, pkgs, ... }: {
             programs.xfstests = {
               enable = true;
               src = xfstests-src;
             };
+
+            boot.kernelPackages = kernel-custom;
 
             nixpkgs.overlays = [
               (self: super: {
@@ -34,9 +42,17 @@
 
         ];
       };
-      mkVmTest = { pkgs, xfstests-src, xfsprogs-src }: builtins.getAttr "vmtest" rec {
+
+      mkVmTest = {
+        pkgs,
+        kernel-custom,
+        xfstests-src,
+        xfsprogs-src
+      }:
+      builtins.getAttr "vmtest" rec {
+        #pkgs = import nixpkgs { inherit system; };
         nixos = lib.mkSys {
-          inherit xfstests-src xfsprogs-src;
+          inherit pkgs xfstests-src xfsprogs-src kernel-custom;
         };
 
         vm-system = pkgs.symlinkJoin {
@@ -55,7 +71,13 @@
         '');
       };
 
-      mkLinuxShell = { pkgs, root, xfstests-src, xfsprogs-src }:
+      mkLinuxShell = {
+        pkgs,
+        root,
+        kernel-custom,
+        xfstests-src,
+        xfsprogs-src
+      }:
       builtins.getAttr "shell" rec {
         nixos = lib.mkSys {
           inherit xfstests-src xfsprogs-src;
@@ -79,9 +101,7 @@
         shell = pkgs.mkShell {
           packages = with pkgs; [
             (lib.mkVmTest {
-              inherit pkgs;
-              xfstests-src = xfstests-src;
-              xfsprogs-src = xfsprogs-src;
+              inherit pkgs xfstests-src xfsprogs-src kernel-custom;
             })
           ];
 
@@ -136,7 +156,9 @@
       };
     };
 
-    pkgs.vmtest = (lib.mkVmTest {
+    pkgs.vmtest = let
+      pkgs = import nixpkgs { inherit system; };
+    in lib.mkVmTest {
       inherit pkgs;
       xfstests-src = pkgs.fetchFromGitHub {
         owner = "alberand";
@@ -145,21 +167,47 @@
         sha256 = "sha256-qinniYrWmw1kKuvhrt32Kp1oZCIG/tyyqNKISU5ui90=";
       };
 
+      kernel-custom = let
+        linux-custom = { fetchurl, buildLinux, ... } @ args:
+        buildLinux (args // rec {
+          version = "6.4.0-rc3";
+          modDirVersion = version;
+
+          src = fetchurl {
+            url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
+            sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
+            #url = "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.19.283.tar.xz";
+            #sha256 = "sha256-BHMW0gxsl61BxAR3x+GrC+pDQkPhe/xyFVgBsSPMUfQ=";
+          };
+          kernelPatches = [
+            {
+              name = "revert-ext4-refactor";
+              patch = /home/alberand/Projects/linux/patches/0001-ext4-need-rw-access-to-load-and-init-journal.patch;
+            }
+          ];
+
+          extraConfig = ''
+          '';
+        } // (args.argsOverride or {}));
+        kernel = pkgs.callPackage linux-custom {};
+      in
+        pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
+
       xfsprogs-src = pkgs.fetchFromGitHub {
         owner = "alberand";
         repo = "xfsprogs";
         rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
         sha256 = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
       };
-    });
+    };
 
-    packages.${system} = rec {
+    packages = rec {
       default = pkgs.vmtest;
       vmtest = pkgs.vmtest;
     };
 
-    apps.${system}.default = flake-utils.lib.mkApp {
+    apps.default = flake-utils.lib.mkApp {
       drv = pkgs.vmtest;
     };
-  };
+  });
 }
