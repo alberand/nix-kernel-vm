@@ -28,6 +28,14 @@ in {
 
     nixpkgs.overlays = [
       xfstests-overlay-remote
+      # Apply xfsprogs fix
+      (final: prev: {
+        xfsprogs = prev.xfsprogs.overrideAttrs (o: {
+          patches = (o.patches or [ ]) ++ [
+            ./0001-fix-nix-make-doesn-t-have-enough-permission-to-chang.patch
+          ];
+        });
+      })
     ];
 
     environment.systemPackages = with pkgs; [
