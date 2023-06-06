@@ -15,8 +15,8 @@
       mkSys = {
         pkgs,
         kernel-custom,
-        xfstests-src,
-        xfsprogs-src
+        xfstests,
+        xfsprogs
       }: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
@@ -25,7 +25,7 @@
           ({ config, pkgs, ... }: {
             programs.xfstests = {
               enable = true;
-              src = xfstests-src;
+              src = xfstests;
             };
 
             boot.kernelPackages = kernel-custom;
@@ -34,7 +34,7 @@
               (self: super: {
                 xfsprogs = super.xfsprogs.overrideAttrs (prev: {
                   version = "git";
-                  src = xfsprogs-src;
+                  src = xfsprogs;
                 });
               })
             ];
@@ -46,13 +46,13 @@
       mkVmTest = {
         pkgs,
         kernel-custom,
-        xfstests-src,
-        xfsprogs-src
+        xfstests,
+        xfsprogs
       }:
       builtins.getAttr "vmtest" rec {
         #pkgs = import nixpkgs { inherit system; };
         nixos = lib.mkSys {
-          inherit pkgs xfstests-src xfsprogs-src kernel-custom;
+          inherit pkgs xfstests xfsprogs kernel-custom;
         };
 
         vm-system = pkgs.symlinkJoin {
@@ -75,12 +75,12 @@
         pkgs,
         root,
         kernel-custom,
-        xfstests-src,
-        xfsprogs-src
+        xfstests,
+        xfsprogs
       }:
       builtins.getAttr "shell" rec {
         nixos = lib.mkSys {
-          inherit xfstests-src xfsprogs-src;
+          inherit xfstests xfsprogs;
         };
 
         vm-system = pkgs.symlinkJoin {
@@ -101,7 +101,7 @@
         shell = pkgs.mkShell {
           packages = with pkgs; [
             (lib.mkVmTest {
-              inherit pkgs xfstests-src xfsprogs-src kernel-custom;
+              inherit pkgs xfstests xfsprogs kernel-custom;
             })
           ];
 
@@ -133,7 +133,7 @@
             util-linux
             stress-ng
             dbench
-            xfsprogs
+            pkgs.xfsprogs
             fio
             linuxquota
             nvme-cli
@@ -160,7 +160,7 @@
       pkgs = import nixpkgs { inherit system; };
     in lib.mkVmTest {
       inherit pkgs;
-      xfstests-src = pkgs.fetchFromGitHub {
+      xfstests = pkgs.fetchFromGitHub {
         owner = "alberand";
         repo = "xfstests";
         rev = "f64ffc3dc27e155f80c9d42629d9131106d8e404";
@@ -193,7 +193,7 @@
       in
         pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
 
-      xfsprogs-src = pkgs.fetchFromGitHub {
+      xfsprogs = pkgs.fetchFromGitHub {
         owner = "alberand";
         repo = "xfsprogs";
         rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
