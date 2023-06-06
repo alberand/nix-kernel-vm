@@ -10,11 +10,13 @@
   flake-utils.lib.eachDefaultSystem (system:
   let
     pkgs = import nixpkgs { inherit system; };
+    # default kernel if no custom kernel were specified
+    kernel-default = pkgs.linuxPackages_6_1;
   in rec {
     lib = {
       mkSys = {
         pkgs,
-        kernel-custom,
+        kernel-custom ? kernel-default,
         xfstests,
         xfsprogs
       }: nixpkgs.lib.nixosSystem {
@@ -45,7 +47,7 @@
 
       mkVmTest = {
         pkgs,
-        kernel-custom,
+        kernel-custom ? kernel-default,
         xfstests,
         xfsprogs
       }:
@@ -74,7 +76,7 @@
       mkLinuxShell = {
         pkgs,
         root,
-        kernel-custom,
+        kernel-custom ? kernel-default,
         xfstests,
         xfsprogs
       }:
