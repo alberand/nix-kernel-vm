@@ -198,8 +198,8 @@
       xfsprogs = pkgs.fetchFromGitHub {
         owner = "alberand";
         repo = "xfsprogs";
-        rev = "91bf9d98df8b50c56c9c297c0072a43b0ee02841";
-        sha256 = "sha256-otEJr4PTXjX0AK3c5T6loLeX3X+BRBvCuDKyYcY9MQ4=";
+        rev = "86a672f111328fc16e8ea5524498020b0c1152a8";
+        sha256 = "sha256-XwKSp9ilEehseCoIvLRkjcdfTaIfpAHyHnlayDs5fO8=";
       };
     };
 
