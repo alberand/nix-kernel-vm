@@ -124,8 +124,12 @@
     bpftrace
     xxd
     xterm
-    vim
+    nvim
   ];
+
+  environment.variables = {
+    EDITOR = "nvim";
+  };
 
   services.openssh.enable = true;
 
