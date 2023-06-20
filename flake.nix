@@ -18,7 +18,8 @@
         pkgs,
         kernel-custom ? kernel-default,
         xfstests,
-        xfsprogs
+        xfsprogs,
+        user-modules ? []
       }: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
@@ -41,20 +42,20 @@
               })
             ];
           })
-
-        ];
+        ] ++ user-modules;
       };
 
       mkVmTest = {
         pkgs,
         kernel-custom ? kernel-default,
         xfstests,
-        xfsprogs
+        xfsprogs,
+        user-modules ? []
       }:
       builtins.getAttr "vmtest" rec {
         #pkgs = import nixpkgs { inherit system; };
         nixos = lib.mkSys {
-          inherit pkgs xfstests xfsprogs kernel-custom;
+          inherit pkgs xfstests xfsprogs kernel-custom user-modules;
         };
 
         vm-system = pkgs.symlinkJoin {
@@ -78,11 +79,12 @@
         root,
         kernel-custom ? kernel-default,
         xfstests,
-        xfsprogs
+        xfsprogs,
+        user-modules ? []
       }:
       builtins.getAttr "shell" rec {
         nixos = lib.mkSys {
-          inherit xfstests xfsprogs;
+          inherit xfstests xfsprogs user-modules;
         };
 
         vm-system = pkgs.symlinkJoin {
@@ -103,7 +105,7 @@
         shell = pkgs.mkShell {
           packages = with pkgs; [
             (lib.mkVmTest {
-              inherit pkgs xfstests xfsprogs kernel-custom;
+              inherit pkgs xfstests xfsprogs kernel-custom user-modules;
             })
           ];
 
@@ -169,31 +171,31 @@
         sha256 = "sha256-qinniYrWmw1kKuvhrt32Kp1oZCIG/tyyqNKISU5ui90=";
       };
 
-      kernel-custom = let
-        linux-custom = { fetchurl, buildLinux, ... } @ args:
-        buildLinux (args // rec {
-          version = "6.4.0-rc3";
-          modDirVersion = version;
+      # kernel-custom = let
+      #   linux-custom = { fetchurl, buildLinux, ... } @ args:
+      #   buildLinux (args // rec {
+      #     version = "6.4.0-rc3";
+      #     modDirVersion = version;
 
-          src = fetchurl {
-            url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
-            sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
-            #url = "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.19.283.tar.xz";
-            #sha256 = "sha256-BHMW0gxsl61BxAR3x+GrC+pDQkPhe/xyFVgBsSPMUfQ=";
-          };
-          kernelPatches = [
-            {
-              name = "revert-ext4-refactor";
-              patch = /home/alberand/Projects/linux/patches/0001-ext4-need-rw-access-to-load-and-init-journal.patch;
-            }
-          ];
+      #     src = fetchurl {
+      #       url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
+      #       sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
+      #       #url = "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.19.283.tar.xz";
+      #       #sha256 = "sha256-BHMW0gxsl61BxAR3x+GrC+pDQkPhe/xyFVgBsSPMUfQ=";
+      #     };
+      #     kernelPatches = [
+      #       {
+      #         name = "revert-ext4-refactor";
+      #         patch = /home/alberand/Projects/linux/patches/0001-ext4-need-rw-access-to-load-and-init-journal.patch;
+      #       }
+      #     ];
 
-          extraConfig = ''
-          '';
-        } // (args.argsOverride or {}));
-        kernel = pkgs.callPackage linux-custom {};
-      in
-        pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
+      #     extraConfig = ''
+      #     '';
+      #   } // (args.argsOverride or {}));
+      #   kernel = pkgs.callPackage linux-custom {};
+      # in
+      #   pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
 
       xfsprogs = pkgs.fetchFromGitHub {
         owner = "alberand";
@@ -201,6 +203,15 @@
         rev = "86a672f111328fc16e8ea5524498020b0c1152a8";
         sha256 = "sha256-XwKSp9ilEehseCoIvLRkjcdfTaIfpAHyHnlayDs5fO8=";
       };
+
+      user-modules = [
+        ({ config, pkgs, ... }: {
+          users.users.hahaha-andrey = {
+            isNormalUser  = true;
+            description  = "hahaha-andrey user";
+          };
+        })
+      ];
     };
 
     packages = rec {
