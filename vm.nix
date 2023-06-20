@@ -124,11 +124,11 @@
     bpftrace
     xxd
     xterm
-    nvim
+    neovim
   ];
 
   environment.variables = {
-    EDITOR = "nvim";
+    EDITOR = "neovim";
   };
 
   services.openssh.enable = true;
