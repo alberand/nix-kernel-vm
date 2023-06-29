@@ -128,8 +128,12 @@
   ];
 
   environment.variables = {
-    EDITOR = "neovim";
+    EDITOR = "nvim";
   };
+
+  environment.interactiveShellInit = ''
+    alias vim='nvim'
+  '';
 
   services.openssh.enable = true;
 
