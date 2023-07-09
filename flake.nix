@@ -4,58 +4,38 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    fetch-lore.url = "github:dramforever/fetch-lore";
   };
 
-  outputs = { self, nixpkgs, flake-utils, pkgs }:
+  outputs = { self, nixpkgs, flake-utils, fetch-lore, pkgs }:
   flake-utils.lib.eachDefaultSystem (system:
   let
     pkgs = import nixpkgs { inherit system; };
     # default kernel if no custom kernel were specified
     kernel-default = pkgs.linuxPackages_6_1;
+    root = builtins.toString ./.;
   in rec {
     lib = {
       mkSys = {
         pkgs,
         kernel-custom ? kernel-default,
-        xfstests,
-        xfsprogs,
         user-modules ? []
       }: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           ./vm.nix
-
-          ({ config, pkgs, ... }: {
-            programs.xfstests = {
-              enable = true;
-              src = xfstests;
-            };
-
-            boot.kernelPackages = kernel-custom;
-
-            nixpkgs.overlays = [
-              (self: super: {
-                xfsprogs = super.xfsprogs.overrideAttrs (prev: {
-                  version = "git";
-                  src = xfsprogs;
-                });
-              })
-            ];
-          })
         ] ++ user-modules;
       };
 
       mkVmTest = {
         pkgs,
         kernel-custom ? kernel-default,
-        xfstests,
-        xfsprogs,
         user-modules ? []
       }:
       builtins.getAttr "vmtest" rec {
         #pkgs = import nixpkgs { inherit system; };
         nixos = lib.mkSys {
-          inherit pkgs xfstests xfsprogs kernel-custom user-modules;
+          inherit pkgs kernel-custom user-modules;
         };
 
         vm-system = pkgs.symlinkJoin {
@@ -74,20 +54,37 @@
         '');
       };
 
+      mkVmSystem = {
+        pkgs,
+        user-modules ? [],
+      }: builtins.getAttr "vm-system" rec {
+        nixos = lib.mkSys {
+          inherit user-modules;
+        };
+
+        vm-system = if vm-system then vm-system else pkgs.symlinkJoin {
+          name = "vm-system";
+          paths = with nixos.config.system.build; [
+            vm
+            kernel
+          ];
+          preferLocalBuild = true;
+        };
+      };
+
       mkLinuxShell = {
         pkgs,
         root,
         kernel-custom ? kernel-default,
-        xfstests,
-        xfsprogs,
-        user-modules ? []
+        user-modules ? [],
+        vm-system ? null,
       }:
       builtins.getAttr "shell" rec {
         nixos = lib.mkSys {
-          inherit xfstests xfsprogs user-modules;
+          inherit pkgs user-modules;
         };
 
-        vm-system = pkgs.symlinkJoin {
+        vm-system = if vm-system then vm-system else pkgs.symlinkJoin {
           name = "vm-system";
           paths = with nixos.config.system.build; [
             vm
@@ -105,7 +102,7 @@
         shell = pkgs.mkShell {
           packages = with pkgs; [
             (lib.mkVmTest {
-              inherit pkgs xfstests xfsprogs kernel-custom user-modules;
+              inherit pkgs kernel-custom user-modules;
             })
           ];
 
@@ -156,6 +153,8 @@
             fi
           '';
 
+        } // {
+          vm = nixos;
         };
       };
     };
@@ -164,63 +163,96 @@
       pkgs = import nixpkgs { inherit system; };
     in lib.mkVmTest {
       inherit pkgs;
-      xfstests = pkgs.fetchFromGitHub {
-        owner = "alberand";
-        repo = "xfstests";
-        rev = "f64ffc3dc27e155f80c9d42629d9131106d8e404";
-        sha256 = "sha256-qinniYrWmw1kKuvhrt32Kp1oZCIG/tyyqNKISU5ui90=";
+
       };
 
-      # kernel-custom = let
-      #   linux-custom = { fetchurl, buildLinux, ... } @ args:
-      #   buildLinux (args // rec {
-      #     version = "6.4.0-rc3";
-      #     modDirVersion = version;
+      devShells.default = let
+        pkgs = import nixpkgs { inherit system; };
+      in lib.mkLinuxShell {
+        inherit pkgs root;
+        user-modules = [
+          ({config, pkgs, ...}: {
 
-      #     src = fetchurl {
-      #       url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
-      #       sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
-      #       #url = "https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.19.283.tar.xz";
-      #       #sha256 = "sha256-BHMW0gxsl61BxAR3x+GrC+pDQkPhe/xyFVgBsSPMUfQ=";
-      #     };
-      #     kernelPatches = [
-      #       {
-      #         name = "revert-ext4-refactor";
-      #         patch = /home/alberand/Projects/linux/patches/0001-ext4-need-rw-access-to-load-and-init-journal.patch;
-      #       }
-      #     ];
-
-      #     extraConfig = ''
-      #     '';
-      #   } // (args.argsOverride or {}));
-      #   kernel = pkgs.callPackage linux-custom {};
-      # in
-      #   pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
-
-      xfsprogs = pkgs.fetchFromGitHub {
-        owner = "alberand";
-        repo = "xfsprogs";
-        rev = "86a672f111328fc16e8ea5524498020b0c1152a8";
-        sha256 = "sha256-XwKSp9ilEehseCoIvLRkjcdfTaIfpAHyHnlayDs5fO8=";
-      };
-
-      user-modules = [
-        ({ config, pkgs, ... }: {
+            # Just a test user to check that our modules are enabled
           users.users.hahaha-andrey = {
             isNormalUser  = true;
             description  = "hahaha-andrey user";
           };
-        })
-      ];
-    };
 
-    packages = rec {
-      default = pkgs.vmtest;
-      vmtest = pkgs.vmtest;
-    };
+          # Let's enable xfstests service
+            programs.xfstests = {
+              enable = true;
+              src = pkgs.fetchFromGitHub {
+                owner = "alberand";
+                repo = "xfstests";
+                rev = "2500effc2c77939343161304bf436dfd58c73735";
+                sha256 = "sha256-XxtFm7a+NRvv8xzaVMBWe+B0BtLZLoNGH6IlGbTu4NE=";
+              };
+              autoshutdown = false;
+              testconfig = ./xfstests.config;
+              arguments = "-g xfs_4k generic/001";
+            };
 
-    apps.default = flake-utils.lib.mkApp {
-      drv = pkgs.vmtest;
-    };
-  });
+            # Let's also include specific version of xfsprogs
+            nixpkgs.overlays = [
+              (self: super: {
+                xfsprogs = super.xfsprogs.overrideAttrs (prev: {
+                  version = "git";
+                  src = pkgs.fetchFromGitHub {
+                    owner = "alberand";
+                    repo = "xfsprogs";
+                    rev = "86a672f111328fc16e8ea5524498020b0c1152a8";
+                    sha256 = "sha256-XwKSp9ilEehseCoIvLRkjcdfTaIfpAHyHnlayDs5fO8=";
+                  };
+                });
+              })
+            ];
+
+            # Let's append real hardware to the QEMU run by "vmtest" command
+            virtualisation = {
+              qemu = {
+                networkingOptions = [
+                  "-hdc /dev/sdb4 -hdd /dev/sdb5 -serial mon:stdio"
+                ];
+              };
+            };
+
+            # Let's specify kernel we want our VM to be built with
+            boot.kernelPackages = let
+              linux-custom = { fetchurl, buildLinux, ... } @ args:
+              buildLinux (args // rec {
+                version = "6.4.0-rc3";
+                modDirVersion = version;
+
+                src = fetchurl {
+                  url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
+                  sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
+                };
+                kernelPatches = [
+                  {
+                    name = "XFS altered mount string";
+                    patch = /home/alberand/Projects/linux/patches/0001-test-custom-kernel-version-with-altered-XFS-mount-st.patch;
+                  }
+                ];
+
+                extraConfig = ''
+                '';
+              } // (args.argsOverride or {}));
+              kernel = pkgs.callPackage linux-custom {};
+            in
+              pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
+          })
+        ];
+
+      };
+
+      packages = rec {
+        default = pkgs.vmtest;
+        vmtest = pkgs.vmtest;
+      };
+
+      apps.default = flake-utils.lib.mkApp {
+        drv = pkgs.vmtest;
+      };
+    });
 }

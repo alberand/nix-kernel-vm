@@ -12,10 +12,31 @@ let
   });
 in {
   options.programs.xfstests = {
-
     enable = mkEnableOption {
-      name = "xfstests service";
+      name = "xfstests";
       default = true;
+      example = true;
+    };
+
+    arguments = mkOption {
+      description = "command line arguments for xfstests";
+      default = "";
+      example = "-g auto";
+      type = types.str;
+    };
+
+    testconfig = mkOption {
+      description = "xfstests configuration file";
+      default = null;
+      example = "./local.config.example";
+      type = types.path;
+    };
+
+    autoshutdown = mkOption {
+      description = "autoshutdown machine after test is complete";
+      default = false;
+      example = false;
+      type = types.bool;
     };
 
     src = mkOption {
@@ -86,32 +107,13 @@ in {
       postStop = ''
                   # Beep beep... Human... back to work
                   echo -ne '\007'
-                  # Handle case when there's no modules glob -> empty
-                  shopt -s nullglob
-                  for module in /root/vmtest/modules/*.ko; do
-                          if cat /proc/modules | grep -c "$module"; then
-                            ${pkgs.kmod}/bin/rmmod $module;
-                          fi
-                  done;
+      '' + optionalString cfg.autoshutdown ''
                   # Auto poweroff
-                  # ${pkgs.systemd}/bin/systemctl poweroff;
+                  ${pkgs.systemd}/bin/systemctl poweroff;
       '';
       script = ''
-                  # User wants to run shell script instead of fstests
-                  if [[ -f /root/vmtest/test.sh ]]; then
-                    chmod u+x /root/vmtest/test.sh
-                    ${pkgs.bash}/bin/bash /root/vmtest/test.sh
-                    exit $?
-                  fi
-
-                  # Handle case when there's no modules glob -> empty
-                  shopt -s nullglob
-                  for module in /root/vmtest/modules/*.ko; do
-                          ${pkgs.kmod}/bin/insmod $module;
-                  done;
-
                   ${pkgs.bash}/bin/bash -lc \
-                          "${pkgs.xfstests}/bin/xfstests-check -d $(cat /root/vmtest/totest)"
+                          "${pkgs.xfstests}/bin/xfstests-check -d ${cfg.arguments}"
       '';
     };
   };

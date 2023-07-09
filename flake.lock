@@ -1,5 +1,23 @@
 {
   "nodes": {
+    "fetch-lore": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1655103569,
+        "narHash": "sha256-cIW60k769Nw9g4GtsuvfBAKkq7k+BENGjQp40RNhllM=",
+        "owner": "dramforever",
+        "repo": "fetch-lore",
+        "rev": "6a847cd8ad76b2c2c51532299300850964f38a68",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dramforever",
+        "repo": "fetch-lore",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -19,6 +37,22 @@
       }
     },
     "nixpkgs": {
+      "locked": {
+        "lastModified": 1654953433,
+        "narHash": "sha256-TwEeh4r50NdWHFAHQSyjCk2cZxgwUfcCCAJOhPdXB28=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "90cd5459a1fd707819b9a3fb9c852beaaac3b79a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
       "locked": {
         "lastModified": 1684844536,
         "narHash": "sha256-M7HhXYVqAuNb25r/d3FOO0z4GxPqDIZp5UjHFbBgw0Q=",
@@ -50,8 +84,9 @@
     },
     "root": {
       "inputs": {
+        "fetch-lore": "fetch-lore",
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": "nixpkgs_2",
         "pkgs": "pkgs"
       }
     },
