@@ -39,6 +39,20 @@ in {
       type = types.bool;
     };
 
+    pre-test-hook = mkOption {
+      description = "bash script run before test execution";
+      default = "";
+      example = "trace-cmd start -e xfs";
+      type = types.str;
+    };
+
+    post-test-hook = mkOption {
+      description = "bash script run after test execution";
+      default = "";
+      example = "trace-cmd stop; trace-cmd show > /root/trace.log";
+      type = types.str;
+    };
+
     src = mkOption {
       type = types.package;
     };
@@ -105,6 +119,7 @@ in {
       wants = [ "network.target" "network-online.target" "local-fs.target" ];
       wantedBy = [ "multi-user.target" ];
       postStop = ''
+                  ${cfg.post-test-hook}
                   # Beep beep... Human... back to work
                   echo -ne '\007'
       '' + optionalString cfg.autoshutdown ''
@@ -112,6 +127,7 @@ in {
                   ${pkgs.systemd}/bin/systemctl poweroff;
       '';
       script = ''
+                  ${cfg.pre-test-hook}
                   ${pkgs.bash}/bin/bash -lc \
                           "${pkgs.xfstests}/bin/xfstests-check -d ${cfg.arguments}"
       '';
