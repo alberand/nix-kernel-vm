@@ -10,11 +10,9 @@
 # Kernel Config:
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
-{ config, modulesPath, pkgs, lib, ... }:
+{ config, pkgs, lib, sharepoint, ... }:
 {
   imports = [
-    (modulesPath + "/profiles/qemu-guest.nix")
-    (modulesPath + "/virtualisation/qemu-vm.nix")
     ./xfstests.nix
   ];
 
@@ -24,30 +22,6 @@
     # This is happens before systemd
     postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
     crashDump.enable = true;
-
-    # Set my custom kernel
-    # kernelPackages = kernel-custom;
-    # kernelPackages = pkgs.linuxKernel.packagesFor pkgs.linuxKernel.kernels.linux_6_2;
-    #kernelPackages = let
-    #  linux-custom = { fetchurl, buildLinux, ... } @ args:
-    #    buildLinux (args // rec {
-    #      version = "6.4.0-rc3";
-    #      modDirVersion = version;
-
-    #      src = fetchurl {
-    #        url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
-    #        sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
-    #      };
-    #      kernelPatches = [];
-
-    #      extraConfig = ''
-    #      '';
-
-    #      #extraMeta.branch = "5.4";
-    #    } // (args.argsOverride or {}));
-    #  kernel = pkgs.callPackage linux-custom {};
-    #in
-    #  pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
   };
 
   # Auto-login with empty password
@@ -83,7 +57,7 @@
 
   virtualisation = {
     diskSize = 20000; # MB
-    diskImage = "/tmp/vmtest/vm.qcow2";
+    diskImage = "${sharepoint}/vm.qcow2";
     memorySize = 4096; # MB
     cores = 4;
     writableStoreUseTmpfs = false;
@@ -100,11 +74,11 @@
 
     sharedDirectories = {
       results = {
-        source = "/tmp/vmtest/results";
+        source = "${sharepoint}/results";
         target = "/root/results";
       };
       vmtest = {
-        source = "/tmp/vmtest";
+        source = "${sharepoint}";
         target = "/root/vmtest";
       };
     };
