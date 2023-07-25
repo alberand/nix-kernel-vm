@@ -5,9 +5,10 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     fetch-lore.url = "github:dramforever/fetch-lore";
+    nixos-generators.url = "github:nix-community/nixos-generators";
   };
 
-  outputs = { self, nixpkgs, flake-utils, fetch-lore, pkgs }:
+  outputs = { self, nixpkgs, flake-utils, fetch-lore, nixos-generators, pkgs }:
   flake-utils.lib.eachDefaultSystem (system:
   let
     pkgs = import nixpkgs { inherit system; };
@@ -26,6 +27,20 @@
           ./vm.nix
         ] ++ user-modules;
       };
+
+      mkIso = {
+        pkgs,
+        user-modules ? []
+      }:
+      {
+        iso = nixos-generators.nixosGenerate {
+          system = "x86_64-linux";
+          modules = [
+            ./vm.nix
+          ] ++ user-modules;
+          format = "iso";
+        };
+      }
 
       mkVmTest = {
         pkgs,
@@ -162,6 +177,13 @@
     pkgs.vmtest = let
       pkgs = import nixpkgs { inherit system; };
     in lib.mkVmTest {
+      inherit pkgs;
+
+      };
+
+    pkgs.iso = let
+      pkgs = import nixpkgs { inherit system; };
+    in lib.mkIso {
       inherit pkgs;
 
       };
