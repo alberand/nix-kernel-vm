@@ -93,7 +93,8 @@ in {
     ];
 
     # Setup envirionment
-    environment.variables.HOST_OPTIONS = "/root/vmtest/xfstests-config";
+    environment.variables.HOST_OPTIONS = pkgs.writeText "xfstests-config"
+      (builtins.readFile cfg.testconfig);
 
     users.users.fsgqa = {
       isNormalUser  = true;
