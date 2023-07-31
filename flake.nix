@@ -24,7 +24,37 @@
       }: nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           modules = [
-            ./vm.nix { sharepoint = "/tmp/vmtest";}
+            ./vm.nix
+            ({ config, pkgs, ...}: {
+              virtualisation = {
+                diskSize = 20000; # MB
+                diskImage = "/tmp/vmtest/vm.qcow2";
+                memorySize = 4096; # MB
+                cores = 4;
+                writableStoreUseTmpfs = false;
+                useDefaultFilesystems = true;
+                # Run qemu in the terminal not in Qemu GUI
+                graphics = false;
+
+                qemu = {
+                  networkingOptions = [
+                    "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
+                    "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
+                  ];
+                };
+
+                sharedDirectories = {
+                  results = {
+                    source = "/tmp/vmtest/results";
+                    target = "/root/results";
+                  };
+                  vmtest = {
+                    source = "/tmp/vmtest";
+                    target = "/root/vmtest";
+                  };
+                };
+              };
+            })
           ] ++ user-modules;
           format = "vm";
         };
@@ -52,18 +82,9 @@
           inherit pkgs user-modules;
         };
 
-        vm-system = pkgs.symlinkJoin {
-          name = "vm-system";
-          paths = with nixos.config.system.build; [
-            vm
-            kernel
-          ];
-          preferLocalBuild = true;
-        };
-
         vmtest = pkgs.writeScriptBin "vmtest"
         ((builtins.readFile ./run.sh) + ''
-            ${vm-system}/bin/run-vm-vm
+            ${nixos}/bin/run-vm-vm
             echo "View results at $SHARE_DIR/results"
         '');
       };
@@ -194,19 +215,19 @@
             };
             autoshutdown = false;
             testconfig = ./xfstests.config;
-            arguments = "-g xfs_4k generic/001";
+            arguments = "-g xfs_4k generic/001 generic/002";
           };
 
           # Let's also include specific version of xfsprogs
           nixpkgs.overlays = [
             (self: super: {
-              xfsprogs = super.xfsprogs.overrideAttrs (prev: {
+              xfsprogs = super.xfsprogs.overrideAttrs ({
                 version = "git";
                 src = pkgs.fetchFromGitHub {
                   owner = "alberand";
                   repo = "xfsprogs";
-                  rev = "86a672f111328fc16e8ea5524498020b0c1152a8";
-                  sha256 = "sha256-XwKSp9ilEehseCoIvLRkjcdfTaIfpAHyHnlayDs5fO8=";
+                  rev = "12ee5324c60e5394b4d8a2b58726a4aadfaf0ac9";
+                  sha256 = "sha256-pWfBo6MHmiCTB172NFLdD/oNEih0ntLrM6NIQIVXD80=";
                 };
               });
             })
@@ -232,12 +253,6 @@
                 url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
                 sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
               };
-              kernelPatches = [
-                {
-                  name = "XFS altered mount string";
-                  patch = /home/alberand/Projects/linux/patches/0001-test-custom-kernel-version-with-altered-XFS-mount-st.patch;
-                }
-              ];
 
               extraConfig = ''
               '';
@@ -251,8 +266,71 @@
 
     packages = rec {
       default = vmtest;
-      vmtest = lib.mkVmTest { inherit pkgs; };
-      iso = lib.mkIso { inherit pkgs; };
+      vmtest = lib.mkVmTest {
+        inherit pkgs;
+        user-modules = [
+
+        ({config, pkgs, ...}: {
+          boot.kernelPackages = let
+            linux-custom = { fetchurl, buildLinux, ... } @ args:
+            buildLinux (args // rec {
+              version = "6.4.0-rc3";
+              modDirVersion = version;
+
+              src = fetchurl {
+                url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
+                sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
+              };
+
+              extraConfig = ''
+                SCSI_DEBUG m
+                FS_VERITY y
+                HAVE_KERNEL_XZ y
+                KERNEL_XZ y
+              '';
+            } // (args.argsOverride or {}));
+            kernel = pkgs.callPackage linux-custom {};
+          in
+            pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
+          })
+        ];
+      };
+      iso = lib.mkIso {
+        inherit pkgs;
+        user-modules = [
+          ({config, pkgs, ...}: {
+          programs.xfstests = {
+            enable = true;
+            src = pkgs.fetchFromGitHub {
+              owner = "alberand";
+              repo = "xfstests";
+              rev = "2500effc2c77939343161304bf436dfd58c73735";
+              sha256 = "sha256-XxtFm7a+NRvv8xzaVMBWe+B0BtLZLoNGH6IlGbTu4NE=";
+            };
+            autoshutdown = false;
+            testconfig = ./xfstests.config;
+            arguments = "-g xfs_4k generic/110";
+          };
+
+          # Let's also include specific version of xfsprogs
+          nixpkgs.overlays = [
+            (self: super: {
+              xfsprogs = super.xfsprogs.overrideAttrs ({
+                version = "git";
+                src = pkgs.fetchFromGitHub {
+                  owner = "alberand";
+                  repo = "xfsprogs";
+                  rev = "12ee5324c60e5394b4d8a2b58726a4aadfaf0ac9";
+                  sha256 = "sha256-pWfBo6MHmiCTB172NFLdD/oNEih0ntLrM6NIQIVXD80=";
+                };
+              });
+            })
+          ];
+        })
+
+
+        ];
+      };
     };
 
     apps.default = flake-utils.lib.mkApp {

@@ -69,6 +69,10 @@ in {
           patches = (o.patches or [ ]) ++ [
             ./0001-fix-nix-make-doesn-t-have-enough-permission-to-chang.patch
           ];
+          nativeBuildInputs = prev.xfsprogs.nativeBuildInputs ++ [
+            pkgs.libtool
+            pkgs.autoreconfHook
+          ];
         });
       })
     ];

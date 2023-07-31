@@ -10,14 +10,22 @@
 # Kernel Config:
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
-{ config, pkgs, lib, sharepoint, ... }:
-{
+{ config, pkgs, lib, ... }:
+let
+  sharepoint = "/tmp/vmtest";
+in {
   imports = [
     ./xfstests.nix
   ];
 
   boot = {
-    kernelParams = ["console=ttyS0,115200n8" "console=ttyS0"];
+    kernelParams = [
+      # consistent eth* naming
+      "net.ifnames=0"
+      "biosdevnames=0"
+      "console=ttyS0,115200n8"
+      "console=ttyS0"
+    ];
     consoleLogLevel = lib.mkDefault 7;
     # This is happens before systemd
     postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
@@ -48,40 +56,11 @@
   # Do something after systemd started
   systemd.services."serial-getty@ttyS0".enable = true;
 
-  networking.interfaces.eth1 = {
+  networking.interfaces.eth0 = {
     ipv4.addresses = [{
       address = "192.168.10.2";
       prefixLength = 24;
     }];
-  };
-
-  virtualisation = {
-    diskSize = 20000; # MB
-    diskImage = "${sharepoint}/vm.qcow2";
-    memorySize = 4096; # MB
-    cores = 4;
-    writableStoreUseTmpfs = false;
-    useDefaultFilesystems = true;
-    # Run qemu in the terminal not in Qemu GUI
-    graphics = false;
-
-    qemu = {
-      networkingOptions = [
-        "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
-        "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
-      ];
-    };
-
-    sharedDirectories = {
-      results = {
-        source = "${sharepoint}/results";
-        target = "/root/results";
-      };
-      vmtest = {
-        source = "${sharepoint}";
-        target = "/root/vmtest";
-      };
-    };
   };
 
   # Add packages to VM
