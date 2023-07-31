@@ -69,10 +69,21 @@ in {
           patches = (o.patches or [ ]) ++ [
             ./0001-fix-nix-make-doesn-t-have-enough-permission-to-chang.patch
           ];
+          # We need to add autoconf tools because nixpgs does it automatically
+          # somewhere inside
           nativeBuildInputs = prev.xfsprogs.nativeBuildInputs ++ [
             pkgs.libtool
-            pkgs.autoreconfHook
+            pkgs.autoconf
+            pkgs.automake
           ];
+          preConfigure = ''
+            for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in}; do
+              substituteInPlace "$file" \
+                --replace '@sbindir@' '/run/current-system/sw/bin'
+            done
+            make configure
+            patchShebangs ./install-sh
+          '';
         });
       })
     ];
