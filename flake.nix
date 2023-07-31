@@ -215,7 +215,7 @@
             };
             autoshutdown = false;
             testconfig = ./xfstests.config;
-            arguments = "-g xfs_4k generic/001 generic/002";
+            arguments = "-s xfs_4k generic/001 generic/002";
           };
 
           # Let's also include specific version of xfsprogs
@@ -237,29 +237,28 @@
           virtualisation = {
             qemu = {
               networkingOptions = [
-                "-hdc /dev/sdb4 -hdd /dev/sdb5 -serial mon:stdio"
+                "-hdc /dev/sdc4 -hdd /dev/sdc5 -serial mon:stdio"
               ];
             };
           };
-
           # Let's specify kernel we want our VM to be built with
-          boot.kernelPackages = let
-            linux-custom = { fetchurl, buildLinux, ... } @ args:
-            buildLinux (args // rec {
-              version = "6.4.0-rc3";
-              modDirVersion = version;
+          #boot.kernelPackages = let
+          #  linux-custom = { fetchurl, buildLinux, ... } @ args:
+          #  buildLinux (args // rec {
+          #    version = "6.4.0-rc3";
+          #    modDirVersion = version;
 
-              src = fetchurl {
-                url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
-                sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
-              };
+          #    src = fetchurl {
+          #      url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
+          #      sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
+          #    };
 
-              extraConfig = ''
-              '';
-            } // (args.argsOverride or {}));
-            kernel = pkgs.callPackage linux-custom {};
-          in
-            pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
+          #    extraConfig = ''
+          #    '';
+          #  } // (args.argsOverride or {}));
+          #  kernel = pkgs.callPackage linux-custom {};
+          #in
+          #  pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
         })
       ];
     };
@@ -269,29 +268,43 @@
       vmtest = lib.mkVmTest {
         inherit pkgs;
         user-modules = [
+          ({config, pkgs, ...}: {
+          programs.xfstests = {
+            enable = true;
+            src = pkgs.fetchFromGitHub {
+              owner = "alberand";
+              repo = "xfstests";
+              rev = "068d7af36369c7c3da7d165c50b378e7b7ce46fd";
+              sha256 = "sha256-okVvdUG7ixDm7awquBvLQmN4qGma4DFM8vSJ/4VJoL0=";
+            };
+            autoshutdown = false;
+            testconfig = ./xfstests.config;
+            arguments = "-s xfs_4k generic/110";
+          };
 
-        ({config, pkgs, ...}: {
-          boot.kernelPackages = let
-            linux-custom = { fetchurl, buildLinux, ... } @ args:
-            buildLinux (args // rec {
-              version = "6.4.0-rc3";
-              modDirVersion = version;
+          # Let's also include specific version of xfsprogs
+          nixpkgs.overlays = [
+            (self: super: {
+              xfsprogs = super.xfsprogs.overrideAttrs ({
+                version = "git";
+                src = pkgs.fetchFromGitHub {
+                  owner = "alberand";
+                  repo = "xfsprogs";
+                  rev = "12ee5324c60e5394b4d8a2b58726a4aadfaf0ac9";
+                  sha256 = "sha256-pWfBo6MHmiCTB172NFLdD/oNEih0ntLrM6NIQIVXD80=";
+                };
+              });
+            })
+          ];
 
-              src = fetchurl {
-                url = "https://git.kernel.org/torvalds/t/linux-6.4-rc3.tar.gz";
-                sha256 = "sha256-xlN7KcrtykVG3W9DDbODKNKJehGCAQOr4R2uw3hfxoE=";
-              };
-
-              extraConfig = ''
-                SCSI_DEBUG m
-                FS_VERITY y
-                HAVE_KERNEL_XZ y
-                KERNEL_XZ y
-              '';
-            } // (args.argsOverride or {}));
-            kernel = pkgs.callPackage linux-custom {};
-          in
-            pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
+          # Let's append real hardware to the QEMU run by "vmtest" command
+          virtualisation = {
+            qemu = {
+              networkingOptions = [
+                "-hdc /dev/sdc4 -hdd /dev/sdc5 -serial mon:stdio"
+              ];
+            };
+          };
           })
         ];
       };
@@ -304,12 +317,12 @@
             src = pkgs.fetchFromGitHub {
               owner = "alberand";
               repo = "xfstests";
-              rev = "2500effc2c77939343161304bf436dfd58c73735";
-              sha256 = "sha256-XxtFm7a+NRvv8xzaVMBWe+B0BtLZLoNGH6IlGbTu4NE=";
+              rev = "068d7af36369c7c3da7d165c50b378e7b7ce46fd";
+              sha256 = "sha256-okVvdUG7ixDm7awquBvLQmN4qGma4DFM8vSJ/4VJoL0=";
             };
             autoshutdown = false;
             testconfig = ./xfstests.config;
-            arguments = "-g xfs_4k generic/110";
+            arguments = "-s xfs_4k generic/110";
           };
 
           # Let's also include specific version of xfsprogs
@@ -327,8 +340,6 @@
             })
           ];
         })
-
-
         ];
       };
     };
