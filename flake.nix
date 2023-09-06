@@ -18,48 +18,48 @@
     root = builtins.toString ./.;
   in rec {
     lib = {
-      mkSys = {
+      mkVM = {
         pkgs,
         sharepoint,
         user-modules ? []
       }: nixos-generators.nixosGenerate {
-          system = "x86_64-linux";
-          modules = [
-            ./vm.nix
-            ({ config, pkgs, ...}: {
-              virtualisation = {
-                diskSize = 20000; # MB
-                # Store the image in sharepoint instead of pwd
-                diskImage = "${sharepoint}/vm.qcow2";
-                memorySize = 4096; # MB
-                cores = 4;
-                writableStoreUseTmpfs = false;
-                useDefaultFilesystems = true;
-                # Run qemu in the terminal not in Qemu GUI
-                graphics = false;
+        system = "x86_64-linux";
+        modules = [
+          ./system.nix
+          ({ config, pkgs, ...}: {
+            virtualisation = {
+              diskSize = 20000; # MB
+              # Store the image in sharepoint instead of pwd
+              diskImage = "${sharepoint}/vm.qcow2";
+              memorySize = 4096; # MB
+              cores = 4;
+              writableStoreUseTmpfs = false;
+              useDefaultFilesystems = true;
+              # Run qemu in the terminal not in Qemu GUI
+              graphics = false;
 
-                qemu = {
-                  networkingOptions = [
-                    "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
-                    "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
-                  ];
+              qemu = {
+                networkingOptions = [
+                  "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
+                  "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
+                ];
+              };
+
+              sharedDirectories = {
+                results = {
+                  source = "${sharepoint}/results";
+                  target = "/root/results";
                 };
-
-                sharedDirectories = {
-                  results = {
-                    source = "${sharepoint}/results";
-                    target = "/root/results";
-                  };
-                  vmtest = {
-                    source = "${sharepoint}";
-                    target = "/root/vmtest";
-                  };
+                vmtest = {
+                  source = "${sharepoint}";
+                  target = "/root/vmtest";
                 };
               };
-            })
-          ] ++ user-modules;
-          format = "vm";
-        };
+            };
+          })
+        ] ++ user-modules;
+        format = "vm";
+      };
 
       mkIso = {
         pkgs,
@@ -69,7 +69,7 @@
         iso = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           modules = [
-            ./vm.nix
+            ./system.nix
           ] ++ user-modules;
           format = "iso";
         };
@@ -81,7 +81,7 @@
         user-modules ? []
       }:
       builtins.getAttr "vmtest" rec {
-        nixos = lib.mkSys {
+        nixos = lib.mkVM {
           inherit pkgs sharepoint user-modules;
         };
 
@@ -92,52 +92,13 @@
         '');
       };
 
-      mkVmSystem = {
-        pkgs,
-        user-modules ? [],
-      }: builtins.getAttr "vm-system" rec {
-        nixos = lib.mkSys {
-          inherit pkgs user-modules;
-          sharepoint = "/tmp/vmtest";
-        };
-
-        vm-system = if vm-system then vm-system else pkgs.symlinkJoin {
-          name = "vm-system";
-          paths = with nixos.config.system.build; [
-            vm
-            kernel
-          ];
-          preferLocalBuild = true;
-        };
-      };
-
       mkLinuxShell = {
         pkgs,
         root,
         sharepoint ? "/tmp/vmtest",
         user-modules ? [],
-        vm-system ? null,
       }:
       builtins.getAttr "shell" rec {
-        nixos = lib.mkSys {
-          inherit pkgs sharepoint user-modules;
-        };
-
-        vm-system = if vm-system then vm-system else pkgs.symlinkJoin {
-          name = "vm-system";
-          paths = with nixos.config.system.build; [
-            vm
-            kernel
-          ];
-          preferLocalBuild = true;
-        };
-
-        vmtest = pkgs.writeScriptBin "vmtest"
-        ((builtins.readFile ./run.sh) + ''
-            ${vm-system}/bin/run-vm-vm
-            echo "View results at $SHARE_DIR/results"
-        '');
-
         shell = pkgs.mkShell {
           packages = with pkgs; [
             (lib.mkVmTest {
@@ -192,8 +153,6 @@
             fi
           '';
 
-        } // {
-          vm = nixos;
         };
       };
     };

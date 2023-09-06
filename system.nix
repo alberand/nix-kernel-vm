@@ -34,7 +34,7 @@
   services.getty.autologinUser = lib.mkDefault "root";
 
   networking.firewall.enable = false;
-  networking.hostName = "vm";
+  networking.hostName = "test-node";
   networking.useDHCP = true;
   services.getty.helpLine = ''
           Log in as "root" with an empty password.
