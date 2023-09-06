@@ -20,6 +20,7 @@
     lib = {
       mkSys = {
         pkgs,
+        sharepoint,
         user-modules ? []
       }: nixos-generators.nixosGenerate {
           system = "x86_64-linux";
@@ -28,7 +29,8 @@
             ({ config, pkgs, ...}: {
               virtualisation = {
                 diskSize = 20000; # MB
-                diskImage = "/tmp/vmtest/vm.qcow2";
+                # Store the image in sharepoint instead of pwd
+                diskImage = "${sharepoint}/vm.qcow2";
                 memorySize = 4096; # MB
                 cores = 4;
                 writableStoreUseTmpfs = false;
@@ -45,11 +47,11 @@
 
                 sharedDirectories = {
                   results = {
-                    source = "/tmp/vmtest/results";
+                    source = "${sharepoint}/results";
                     target = "/root/results";
                   };
                   vmtest = {
-                    source = "/tmp/vmtest";
+                    source = "${sharepoint}";
                     target = "/root/vmtest";
                   };
                 };
@@ -75,11 +77,12 @@
 
       mkVmTest = {
         pkgs,
+        sharepoint,
         user-modules ? []
       }:
       builtins.getAttr "vmtest" rec {
         nixos = lib.mkSys {
-          inherit pkgs user-modules;
+          inherit pkgs sharepoint user-modules;
         };
 
         vmtest = pkgs.writeScriptBin "vmtest"
@@ -94,7 +97,8 @@
         user-modules ? [],
       }: builtins.getAttr "vm-system" rec {
         nixos = lib.mkSys {
-          inherit user-modules;
+          inherit pkgs user-modules;
+          sharepoint = "/tmp/vmtest";
         };
 
         vm-system = if vm-system then vm-system else pkgs.symlinkJoin {
@@ -110,12 +114,13 @@
       mkLinuxShell = {
         pkgs,
         root,
+        sharepoint ? "/tmp/vmtest",
         user-modules ? [],
         vm-system ? null,
       }:
       builtins.getAttr "shell" rec {
         nixos = lib.mkSys {
-          inherit pkgs user-modules;
+          inherit pkgs sharepoint user-modules;
         };
 
         vm-system = if vm-system then vm-system else pkgs.symlinkJoin {
@@ -136,7 +141,7 @@
         shell = pkgs.mkShell {
           packages = with pkgs; [
             (lib.mkVmTest {
-              inherit pkgs user-modules;
+              inherit pkgs sharepoint user-modules;
             })
           ];
 
@@ -267,6 +272,7 @@
       default = vmtest;
       vmtest = lib.mkVmTest {
         inherit pkgs;
+        sharepoint = "/tmp/vmtest";
         user-modules = [
           ({config, pkgs, ...}: {
           programs.xfstests = {

@@ -10,10 +10,7 @@
 # Kernel Config:
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
-{ config, pkgs, lib, ... }:
-let
-  sharepoint = "/tmp/vmtest";
-in {
+{ config, pkgs, lib, ... }: {
   imports = [
     ./xfstests.nix
   ];
