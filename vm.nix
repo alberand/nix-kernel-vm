@@ -35,7 +35,7 @@
 
   networking.firewall.enable = false;
   networking.hostName = "vm";
-  networking.useDHCP = false;
+  networking.useDHCP = true;
   services.getty.helpLine = ''
           Log in as "root" with an empty password.
           If you are connect via serial console:
@@ -53,12 +53,12 @@
   # Do something after systemd started
   systemd.services."serial-getty@ttyS0".enable = true;
 
-  networking.interfaces.eth0 = {
-    ipv4.addresses = [{
-      address = "192.168.10.2";
-      prefixLength = 24;
-    }];
-  };
+  #networking.interfaces.eth0 = {
+  #  ipv4.addresses = [{
+  #    address = "192.168.10.2";
+  #    prefixLength = 24;
+  #  }];
+  #};
 
   # Add packages to VM
   environment.systemPackages = with pkgs; [
