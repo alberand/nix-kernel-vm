@@ -328,7 +328,7 @@
             };
             autoshutdown = false;
             testconfig = ./xfstests.config;
-            arguments = "-s xfs_4k generic/110";
+            arguments = "-g auto -g verity";
           };
 
           # Let's also include specific version of xfsprogs
@@ -345,7 +345,34 @@
               });
             })
           ];
-        })
+
+          boot.kernelPackages = let
+            linux-custom = { fetchurl, buildLinux, ... } @ args:
+            buildLinux (args // rec {
+              version = "6.4.0-rc2";
+              modDirVersion = version;
+
+              src = pkgs.fetchFromGitHub {
+                owner = "alberand";
+                repo = "linux";
+                rev = "17a940a32fd02da8e26ae984f0da9e73c1c163ab";
+                sha256 = "sha256-3iyomhZPVv/EoBdMyrtfB74FOFfcg+w36OWNtMJKHiU=";
+              };
+
+              extraConfig = ''
+                FS_VERITY y
+                FS_VERITY_BUILTIN_SIGNATURES y
+                XFS_DEBUG y
+                XFS_ASSERT_FATAL y
+                XFS_RT n
+                XFS_ONLINE_SCRUB n
+              '';
+            } // (args.argsOverride or {}));
+            kernel = pkgs.callPackage linux-custom {};
+          in
+            pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
+
+        }) # module end
         ];
       };
     };
