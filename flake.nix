@@ -6,9 +6,12 @@
     flake-utils.url = "github:numtide/flake-utils";
     fetch-lore.url = "github:dramforever/fetch-lore";
     nixos-generators.url = "github:nix-community/nixos-generators";
+    kernel-config.url = "/home/alberand/Projects/xfs-verity-v3/.config";
+    kernel-config.flake = false;
   };
 
-  outputs = { self, nixpkgs, flake-utils, fetch-lore, nixos-generators, pkgs }:
+  outputs = { self, nixpkgs, flake-utils, fetch-lore, nixos-generators,
+      kernel-config, pkgs }:
   flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
   let
     pkgs = import nixpkgs {
@@ -56,7 +59,7 @@
             rev = "17a940a32fd02da8e26ae984f0da9e73c1c163ab";
             sha256 = "sha256-3iyomhZPVv/EoBdMyrtfB74FOFfcg+w36OWNtMJKHiU=";
           };
-          configfile = /home/alberand/Projects/xfs-verity-v3/.config;
+          configfile = kernel-config;
           config = {
             CONFIG_AUTOFS4_FS = "y";
             CONFIG_VIRTIO_BLK = "y";

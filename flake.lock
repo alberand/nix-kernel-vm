@@ -36,6 +36,19 @@
         "type": "github"
       }
     },
+    "kernel-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1694096235,
+        "narHash": "sha256-QghYnIXkuApVy/eOYNe9tKJ/dlLeHG9gJmXWkyy/9rI=",
+        "path": "/home/alberand/Projects/xfs-verity-v3/.config",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/alberand/Projects/xfs-verity-v3/.config",
+        "type": "path"
+      }
+    },
     "nixlib": {
       "locked": {
         "lastModified": 1689469483,
@@ -136,6 +149,7 @@
       "inputs": {
         "fetch-lore": "fetch-lore",
         "flake-utils": "flake-utils",
+        "kernel-config": "kernel-config",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs_3",
         "pkgs": "pkgs"
