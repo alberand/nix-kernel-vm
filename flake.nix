@@ -99,38 +99,13 @@
                 CONFIG_NET = "y";
               };
           }));
-          #boot.kernelPackages = let
-          #  linux-custom = { fetchurl, buildLinux, ... } @ args:
-          #  buildLinux (args // rec {
-          #    version = "6.4.0-rc2";
-          #    modDirVersion = version;
-
-          #    src = pkgs.fetchFromGitHub {
-          #      owner = "alberand";
-          #      repo = "linux";
-          #      rev = "17a940a32fd02da8e26ae984f0da9e73c1c163ab";
-          #      sha256 = "sha256-3iyomhZPVv/EoBdMyrtfB74FOFfcg+w36OWNtMJKHiU=";
-          #    };
-
-          #    extraConfig = ''
-          #      FS_VERITY y
-          #      FS_VERITY_BUILTIN_SIGNATURES y
-          #      XFS_DEBUG y
-          #      XFS_ASSERT_FATAL y
-          #      XFS_RT n
-          #      XFS_ONLINE_SCRUB n
-          #    '';
-          #  } // (args.argsOverride or {}));
-          #  kernel = pkgs.callPackage linux-custom {};
-          #in
-          #  pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor kernel);
           })
     ];
   in rec {
     lib = {
       mkVM = {
         pkgs,
-        sharepoint,
+        sharedir,
         qemu-options ? [],
         user-modules ? []
       }: nixos-generators.nixosGenerate {
@@ -140,8 +115,8 @@
           ({ config, pkgs, ...}: {
             virtualisation = {
               diskSize = 20000; # MB
-              # Store the image in sharepoint instead of pwd
-              diskImage = "${sharepoint}/test-node.qcow2";
+              # Store the image in sharedir instead of pwd
+              diskImage = "${sharedir}/test-node.qcow2";
               memorySize = 4096; # MB
               cores = 4;
               writableStoreUseTmpfs = false;
@@ -158,11 +133,11 @@
 
               sharedDirectories = {
                 results = {
-                  source = "${sharepoint}/results";
+                  source = "${sharedir}/results";
                   target = "/root/results";
                 };
                 vmtest = {
-                  source = "${sharepoint}";
+                  source = "${sharedir}";
                   target = "/root/vmtest";
                 };
               };
@@ -188,13 +163,13 @@
 
       mkVmTest = {
         pkgs,
-        sharepoint,
+        sharedir,
         qemu-options ? [],
         user-modules ? []
       }:
       builtins.getAttr "vmtest" rec {
         nixos = lib.mkVM {
-          inherit pkgs sharepoint qemu-options user-modules;
+          inherit pkgs sharedir qemu-options user-modules;
         };
 
         vmtest = pkgs.writeScriptBin "vmtest"
@@ -207,7 +182,7 @@
       mkLinuxShell = {
         pkgs,
         root,
-        sharepoint ? "/tmp/vmtest",
+        sharedir ? "/tmp/vmtest",
         qemu-options ? [],
         user-modules ? [],
       }:
@@ -215,7 +190,7 @@
         shell = pkgs.mkShell {
           packages = with pkgs; [
             (lib.mkVmTest {
-              inherit pkgs sharepoint qemu-options user-modules;
+              inherit pkgs sharedir qemu-options user-modules;
             })
           ];
 
@@ -260,6 +235,8 @@
             zlib
           ];
 
+          SHARE_DIR = "${sharedir}";
+
           shellHook = ''
             if [ ! -f ${root}/compile_commands.json ] &&
                 [ -f ${root}/scripts/clang-tools/gen_compile_commands.py ]; then
@@ -273,7 +250,7 @@
 
     devShells.default = lib.mkLinuxShell {
       inherit pkgs root;
-      sharepoint = "/tmp/sharepoint";
+      sharedir = "/tmp/sharedir";
       qemu-options = [
         "-hdc /dev/sdd4 -hdd /dev/sdd5 -serial mon:stdio"
       ];
@@ -285,7 +262,7 @@
 
       vmtest = lib.mkVmTest {
         inherit pkgs;
-        sharepoint = "/tmp/vmtest";
+        sharedir = "/tmp/sharedir";
         qemu-options = [
           "-hdc /dev/sdd4 -hdd /dev/sdd5 -serial mon:stdio"
         ];

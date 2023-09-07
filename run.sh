@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
+#
+# Priority:
+# arguments > configuration file > environment variables
 
-VALID_ARGS=$(getopt -o hk:m:t:c:q: --long help,kernel:,module:,totest:,config:,qemu-opts: -- "$@")
+VALID_ARGS=$(getopt -o hk:m:t:c:q:s: --long help,kernel:,module:,totest:,config:,qemu-opts:,share-dir: -- "$@")
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi
 
 LOCAL_CONFIG=".vmtest"
-SHARE_DIR="/tmp/vmtest"
-KERNEL=""
-MODULE=""
-TOTEST=""
-TEST_CONFIG=""
-QEMU_OPTS=""
+SHARE_DIR="${SHARE_DIR:-/tmp/vmtest}"
+KERNEL="$KERNEL"
+MODULE="$MODULE"
+TOTEST="$TOTEST"
+TEST_CONFIG="$TEST_CONFIG"
+QEMU_OPTS="$QEMU_OPTS"
 
 function help() {
 	cat <<EOF
@@ -32,6 +35,8 @@ OPTIONS
         fstests's configuration file
     -q OPTIONS, --qemu-opts OPTIONS
         Options to add to QEMU
+    -s SHAREDIR, --share-dir SHAREDIR
+	Directory used for sharing files with VM (default /tmp/vmtest)
     -h, --help
         Print this help and exit
 CONFIG
@@ -45,6 +50,7 @@ CONFIG
     TOTEST = "-d -s xfs_1k_quota -s xfs_4k_quota -g verity"
     TEST_CONFIG = "./xfstests-config"
     QEMU_OPTS = "-hdc /dev/sdc4 -hdd /dev/sdc5 -serial mon:stdio"
+    SHARE_DIR = "/tmp/vmtest"
 
     The variables are capitalized options.
 EOF
@@ -99,6 +105,12 @@ function parse_args() {
 				shift
 				shift
 				;;
+			-s | --share-dir)
+				echo "Processing 'share-dir' option: $2"
+				SHARE_DIR="$2"
+				shift
+				shift
+				;;
 			-h | --help)
 				help
 				exit 0
@@ -139,8 +151,8 @@ function set_kernel() {
 
 	export NIXPKGS_QEMU_KERNEL_vm="$(realpath $1)"
 	export QEMU_OPTS="$QEMU_OPTS"
-	export NIX_DISK_IMAGE="$SHARE_DIR/vm.qcow2"
-	echo "Kernel is set to $NIXPKGS_QEMU_KERNEL_vm"
+	export NIX_DISK_IMAGE="$SHARE_DIR/test-node.qcow2"
+	echo "Kernel is set to $NIXPKGS_QEMU_KERNEL_test-node"
 }
 
 function add_module() {
@@ -189,8 +201,8 @@ if [[ -f "$LOCAL_CONFIG" ]]; then
 	load_config $LOCAL_CONFIG
 fi
 
-init_share
 parse_args
+init_share
 set_kernel $KERNEL
 add_module $MODULE
 set_totest "$TOTEST" "$TEST_CONFIG"
