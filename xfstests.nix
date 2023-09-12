@@ -141,7 +141,7 @@ in {
       after = [ "network.target" "network-online.target" "local-fs.target" ];
       wants = [ "network.target" "network-online.target" "local-fs.target" ];
       wantedBy = [ "multi-user.target" ];
-      postStop = ''
+      postStart = ''
                   ${cfg.post-test-hook}
                   # Beep beep... Human... back to work
                   echo -ne '\007'
