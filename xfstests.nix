@@ -173,8 +173,7 @@ in {
                     done;
                   fi
 
-                  local arguments=""
-
+                  arguments=""
                   if [ -f ${cfg.sharedir}/totest ]; then
                     arguments="$(cat ${cfg.sharedir}/totest)"
                   else
