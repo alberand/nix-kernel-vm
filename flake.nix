@@ -23,6 +23,7 @@
       ({config, pkgs, ...}: {
         programs.xfstests = {
           enable = true;
+          sharedir = "/root/vmtest";
           src = pkgs.fetchFromGitHub {
             owner = "alberand";
             repo = "xfstests";
@@ -110,7 +111,7 @@
 
     devShells.default = lib.mkLinuxShell {
       inherit pkgs root;
-      sharedir = "/tmp/sharedir";
+      sharedir = "/tmp/vmtest";
       qemu-options = [
         "-hdc /dev/sdd4 -hdd /dev/sdd5 -serial mon:stdio"
       ];
@@ -122,7 +123,7 @@
 
       vmtest = lib.mkVmTest {
         inherit pkgs;
-        sharedir = "/tmp/sharedir";
+        sharedir = "/tmp/vmtest";
         qemu-options = [
           "-hdc /dev/sdd4 -hdd /dev/sdd5 -serial mon:stdio"
         ];
