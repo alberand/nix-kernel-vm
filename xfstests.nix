@@ -73,6 +73,10 @@ in {
       # Apply xfsprogs fix
       (final: prev: {
         xfsprogs = prev.xfsprogs.overrideAttrs (o: {
+          # Don't know why but "bin" should not be here as it create dependency
+          # cycle
+          outputs = [ "dev" "out" "doc" ];
+
           patches = (o.patches or [ ]) ++ [
             ./0001-fix-nix-make-doesn-t-have-enough-permission-to-chang.patch
           ];
