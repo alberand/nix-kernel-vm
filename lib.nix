@@ -122,6 +122,7 @@ rec {
         fio
         linuxquota
         nvme-cli
+        xmlstarlet
       ];
 
       buildInputs = with pkgs; [
