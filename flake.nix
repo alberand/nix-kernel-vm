@@ -117,6 +117,9 @@
         "-hdc /dev/sdd4 -hdd /dev/sdd5 -serial mon:stdio"
       ];
       user-modules = modules;
+      packages = [
+        packages.deploy
+      ];
     };
 
     packages = rec {
@@ -134,6 +137,10 @@
       iso = lib.mkIso {
         inherit pkgs;
         user-modules = modules;
+      };
+
+      deploy = lib.deploy {
+        inherit pkgs;
       };
     };
 

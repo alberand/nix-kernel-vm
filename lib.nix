@@ -84,6 +84,7 @@ rec {
     sharedir ? "/tmp/vmtest",
     qemu-options ? [],
     user-modules ? [],
+    packages ? [],
   }:
   builtins.getAttr "shell" rec {
     shell = pkgs.mkShell {
@@ -127,7 +128,7 @@ rec {
         linuxquota
         nvme-cli
         xmlstarlet
-      ];
+      ] ++ packages;
 
       buildInputs = with pkgs; [
         elfutils
@@ -145,5 +146,10 @@ rec {
         fi
       '';
     };
+  };
+
+  deploy = { pkgs }:
+  builtins.getAttr "script" rec {
+    script = pkgs.writeScriptBin "deploy" (builtins.readFile ./deploy.sh);
   };
 }
