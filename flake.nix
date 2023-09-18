@@ -32,7 +32,6 @@
             rev = "068d7af36369c7c3da7d165c50b378e7b7ce46fd";
             sha256 = "sha256-okVvdUG7ixDm7awquBvLQmN4qGma4DFM8vSJ/4VJoL0=";
           };
-          autoshutdown = false;
           testconfig = xfstests-config;
           arguments = "-s xfs_4k generic/110";
         };

@@ -52,6 +52,9 @@ rec {
       system = "x86_64-linux";
       modules = [
         ./system.nix
+        ({ config, pkgs, ... }: {
+          programs.xfstests.autoshutdown = false;
+        })
       ] ++ user-modules;
       format = "iso";
     };
