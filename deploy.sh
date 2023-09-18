@@ -55,16 +55,16 @@ volume_xml "scratch"
 
 set -e
 
-rsync --compress --zc=lz4 -a -P \
+rsync --compress --zc=lz4 -avz -P \
 	$TEST_SYSTEM_XML \
 	$TEST_HOST:/tmp/$SYSNAME.xml
-rsync --compress --zc=lz4 -a -P \
+rsync --compress --zc=lz4 -avz -P \
 	$PREFIX-$SYSNAME-test.xml \
 	$TEST_HOST:/tmp/$PREFIX-$SYSNAME-test.xml
-rsync --compress --zc=lz4 -a -P \
+rsync --compress --zc=lz4 -avz -P \
 	$PREFIX-$SYSNAME-scratch.xml \
 	$TEST_HOST:/tmp/$PREFIX-$SYSNAME-scratch.xml
-rsync --compress --zc=lz4 -a -P \
+rsync -avz -I -P \
 	$TEST_ISO \
 	$TEST_HOST:/tmp/$PREFIX-$SYSNAME.iso
 
