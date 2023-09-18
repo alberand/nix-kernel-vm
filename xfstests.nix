@@ -159,17 +159,15 @@ in {
                   echo -ne '\007'
 
                   # Unload kernel module if we are in VM
-                  if [ ! -d ${cfg.sharedir}/modules ]; then
-                    exit 0
+                  if [ -d ${cfg.sharedir}/modules ]; then
+                    # Handle case when there's no modules glob -> empty
+                    shopt -s nullglob
+                    for module in ${cfg.sharedir}/modules/*.ko; do
+                            if cat /proc/modules | grep -c "$module"; then
+                              ${pkgs.kmod}/bin/rmmod $module;
+                            fi
+                    done;
                   fi
-
-                  # Handle case when there's no modules glob -> empty
-                  shopt -s nullglob
-                  for module in ${cfg.sharedir}/modules/*.ko; do
-                          if cat /proc/modules | grep -c "$module"; then
-                            ${pkgs.kmod}/bin/rmmod $module;
-                          fi
-                  done;
       '' + optionalString cfg.autoshutdown ''
                   # Auto poweroff
                   ${pkgs.systemd}/bin/systemctl poweroff;
