@@ -8,10 +8,12 @@
     nixos-generators.url = "github:nix-community/nixos-generators";
     kernel-config.url = "/home/alberand/Projects/xfs-verity-v3/.config";
     kernel-config.flake = false;
+    xfstests-config.url = "/home/alberand/Projects/nix-kernel-vm/xfstests.config";
+    xfstests-config.flake = false;
   };
 
   outputs = { self, nixpkgs, flake-utils, fetch-lore, nixos-generators,
-      kernel-config, pkgs }:
+      kernel-config, xfstests-config, pkgs }:
   flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
   let
     pkgs = import nixpkgs {
@@ -31,7 +33,7 @@
             sha256 = "sha256-okVvdUG7ixDm7awquBvLQmN4qGma4DFM8vSJ/4VJoL0=";
           };
           autoshutdown = false;
-          testconfig = ./xfstests.config;
+          testconfig = xfstests-config;
           arguments = "-s xfs_4k generic/110";
         };
 
