@@ -49,6 +49,11 @@ if [[ -z "$TEST_HOST" ]]; then
     exit 1
 fi
 
+if [ "$#" -ne 2 ]; then
+    echo "$(basename $0) <unique name> <path to iso>" 1>&2
+    exit 0
+fi
+
 # Cleaning
 ssh -t $TEST_HOST "sudo rm -rf /tmp/$PREFIX-$SYSNAME.iso"
 virsh --connect  qemu+ssh://$TEST_HOST/system vol-delete \
