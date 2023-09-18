@@ -49,11 +49,19 @@ if [[ -z "$TEST_HOST" ]]; then
     exit 1
 fi
 
+# Cleaning
+ssh -t $TEST_HOST "sudo rm -rf /tmp/$PREFIX-$SYSNAME.iso"
+virsh --connect  qemu+ssh://$TEST_HOST/system vol-delete \
+	--pool default \
+	$PREFIX-$SYSNAME-test
+virsh --connect  qemu+ssh://$TEST_HOST/system vol-delete \
+	--pool default \
+	$PREFIX-$SYSNAME-scratch
+
 system_xml
 volume_xml "test"
 volume_xml "scratch"
 
-set -e
 
 rsync --compress --zc=lz4 -avz -P \
 	$TEST_SYSTEM_XML \
@@ -70,6 +78,8 @@ rsync -avz -I -P \
 
 ssh -t $TEST_HOST "sudo virsh vol-create --pool default /tmp/$PREFIX-$SYSNAME-test.xml"
 ssh -t $TEST_HOST "sudo virsh vol-create --pool default /tmp/$PREFIX-$SYSNAME-scratch.xml"
+
+set -e
 ssh -t $TEST_HOST "sudo virsh create /tmp/$SYSNAME.xml"
 
 rm -rf \
