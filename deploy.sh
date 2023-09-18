@@ -19,7 +19,7 @@ function system_xml() {
 
 	xmlstarlet edit --inplace \
 		--update "/domain/devices/disk[@device='cdrom']/source/@file" \
-		--value "/tmp/$SYSNAME.iso" $TEST_SYSTEM_XML
+		--value "/tmp/$PREFIX-$SYSNAME.iso" $TEST_SYSTEM_XML
 
 	xmlstarlet edit --inplace \
 		--update "/domain/devices/disk[@device='disk'][1]/source/@volume" \
@@ -66,7 +66,7 @@ rsync --compress --zc=lz4 -a -P \
 	$TEST_HOST:/tmp/$PREFIX-$SYSNAME-scratch.xml
 rsync --compress --zc=lz4 -a -P \
 	$TEST_ISO \
-	$TEST_HOST:/tmp/$SYSNAME.iso
+	$TEST_HOST:/tmp/$PREFIX-$SYSNAME.iso
 
 ssh -t $TEST_HOST "sudo virsh vol-create --pool default /tmp/$PREFIX-$SYSNAME-test.xml"
 ssh -t $TEST_HOST "sudo virsh vol-create --pool default /tmp/$PREFIX-$SYSNAME-scratch.xml"
