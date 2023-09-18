@@ -174,8 +174,8 @@
     "xfstests-config": {
       "flake": false,
       "locked": {
-        "lastModified": 1695037436,
-        "narHash": "sha256-apALPPF4VkQGtAIWVXyih/uQXUA9X1z4u6DmisymiFg=",
+        "lastModified": 1695054430,
+        "narHash": "sha256-PGTiBkC3gGs3HS/dvtDijFpYLqg9WGygcbGk9uuf2Bw=",
         "path": "/home/alberand/Projects/nix-kernel-vm/xfstests.config",
         "type": "path"
       },
