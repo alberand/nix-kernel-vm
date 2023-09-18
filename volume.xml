@@ -1,6 +1,6 @@
 <volume>
 	<name>name</name>
-	<allocation>0</allocation>
+	<allocation unit="G">20</allocation>
 	<capacity unit="G">20</capacity>
 	<target>
 		<path>/var/lib/virt/images/sparse.img</path>
