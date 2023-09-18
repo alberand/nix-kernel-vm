@@ -98,6 +98,7 @@ rec {
         perl
         gnumake
         bc
+        jq
         pkg-config
         clang
         clang-tools
