@@ -32,7 +32,7 @@ function system_xml() {
 
 function volume_xml() {
 	name="$PREFIX-$SYSNAME-$1.xml"
-	
+
 	cp volume.xml $name
 
 	xmlstarlet edit --inplace \
@@ -71,3 +71,8 @@ rsync --compress --zc=lz4 -a -P \
 ssh -t $TEST_HOST "sudo virsh vol-create --pool default /tmp/$PREFIX-$SYSNAME-test.xml"
 ssh -t $TEST_HOST "sudo virsh vol-create --pool default /tmp/$PREFIX-$SYSNAME-scratch.xml"
 ssh -t $TEST_HOST "sudo virsh create /tmp/$SYSNAME.xml"
+
+rm -rf \
+	$TEST_SYSTEM_XML \
+	$PREFIX-$SYSNAME-test.xml \
+	$PREFIX-$SYSNAME-scratch.xml
