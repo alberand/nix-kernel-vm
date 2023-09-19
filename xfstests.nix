@@ -126,6 +126,12 @@ in {
     users.groups.fsgqa2.members = [ "fsgqa2" ];
     users.groups.fsgqa-123456.members = [ "fsgqa-123456" ];
 
+    systemd.tmpfiles.rules = [
+      "d /mnt 1777 root root"
+      "d /mnt/test 1777 root root"
+      "d /mnt/scratch 1777 root root"
+    ];
+
     fileSystems."/mnt/test" = {
       device = "/dev/vda";
       fsType = "xfs";
