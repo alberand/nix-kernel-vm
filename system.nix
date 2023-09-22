@@ -75,6 +75,7 @@
     xxd
     xterm
     neovim
+    lvm2
   ];
 
   environment.variables = {
