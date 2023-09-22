@@ -25,6 +25,7 @@ rec {
             options = [
               "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
               "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
+              "-device virtio-rng-pci"
             ] ++ qemu-options;
           };
 
