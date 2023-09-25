@@ -110,16 +110,19 @@ in {
     users.users.fsgqa = {
       isNormalUser  = true;
       description  = "Test user";
+      group = "fsgqa2";
     };
 
     users.users.fsgqa2 = {
       isNormalUser  = true;
       description  = "Test user";
+      group = "fsgqa2";
     };
 
     users.users.fsgqa-123456 = {
       isNormalUser  = true;
       description  = "Test user";
+      group = "fsgqa-123456";
     };
 
     users.groups.fsgqa.members = [ "fsgqa" ];
