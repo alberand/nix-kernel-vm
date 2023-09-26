@@ -126,7 +126,7 @@ in {
     };
 
     users.groups.fsgqa.members = [ "fsgqa" ];
-    users.groups.fsgqa2.members = [ "fsgqa2" ];
+-    users.groups.fsgqa2.members = [ "fsgqa2" ];
     users.groups.fsgqa-123456.members = [ "fsgqa-123456" ];
 
     systemd.tmpfiles.rules = [
@@ -155,6 +155,11 @@ in {
         Type = "oneshot";
         StandardOutput = "tty";
         StandardError = "tty";
+        # argh... Nix ignore SIGPIPE somewhere and it causes all child processes
+        # to ignore SIGPIPE. Don't remove it or otherwise many tests will fail
+        # due too Broken pipe. Test with yes | head should not return Brokne
+        # pipe.
+        IgnoreSIGPIPE = "no";
         User = "root";
         Group = "root";
         WorkingDirectory = "/root";
