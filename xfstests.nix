@@ -8,6 +8,9 @@ let
     xfstests = super.xfstests.overrideAttrs (prev: {
       version = "git";
       src = cfg.src;
+      patches = (prev.patches or [ ]) ++ [
+        ./0001-common-link-.out-file-to-the-output-directory.patch
+      ];
     });
   });
 in {
