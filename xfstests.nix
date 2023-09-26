@@ -110,24 +110,36 @@ in {
     users.users.fsgqa = {
       isNormalUser  = true;
       description  = "Test user";
+      uid = 2000;
       group = "fsgqa2";
     };
 
     users.users.fsgqa2 = {
       isNormalUser  = true;
       description  = "Test user";
+      uid = 2001;
       group = "fsgqa2";
     };
 
     users.users.fsgqa-123456 = {
       isNormalUser  = true;
       description  = "Test user";
+      uid = 2002;
       group = "fsgqa-123456";
     };
 
-    users.groups.fsgqa.members = [ "fsgqa" ];
--    users.groups.fsgqa2.members = [ "fsgqa2" ];
-    users.groups.fsgqa-123456.members = [ "fsgqa-123456" ];
+    users.groups.fsgqa = {
+      gid = 2000;
+      members = [ "fsgqa" ];
+    };
+    users.groups.fsgqa2 = {
+      gid = 2001;
+      members = [ "fsgqa2" ];
+    };
+    users.groups.fsgqa-123456 = {
+      gid = 2002;
+      members = [ "fsgqa-123456" ];
+    };
 
     systemd.tmpfiles.rules = [
       "d /mnt 1777 root root"
