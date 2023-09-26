@@ -74,7 +74,8 @@
       inherit pkgs root;
       sharedir = "/tmp/vmtest";
       qemu-options = [
-        "-hdc /dev/sdd4 -hdd /dev/sdd5 -serial mon:stdio"
+        "-hdb /dev/sda4"
+        "-hdc /dev/sda5"
       ];
       user-modules = modules;
       packages = [
@@ -89,7 +90,8 @@
         inherit pkgs;
         sharedir = "/tmp/vmtest";
         qemu-options = [
-          "-hdc /dev/sdd4 -hdd /dev/sdd5 -serial mon:stdio"
+          "-hdb /dev/sda4"
+          "-hdc /dev/sda5"
         ];
         user-modules = modules;
       };
