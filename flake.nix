@@ -6,6 +6,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     fetch-lore.url = "github:dramforever/fetch-lore";
     nixos-generators.url = "github:nix-community/nixos-generators";
+    nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
     kernel-config.url = "/home/alberand/Projects/xfs-verity-v3/.config";
     kernel-config.flake = false;
     xfstests-config.url = "/home/alberand/Projects/nix-kernel-vm/xfstests.config";
