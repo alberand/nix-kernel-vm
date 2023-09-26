@@ -111,7 +111,7 @@ in {
       isNormalUser  = true;
       description  = "Test user";
       uid = 2000;
-      group = "fsgqa2";
+      group = "fsgqa";
     };
 
     users.users.fsgqa2 = {
