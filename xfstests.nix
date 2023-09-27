@@ -8,6 +8,7 @@ let
     xfstests = super.xfstests.overrideAttrs (prev: {
       version = "git";
       src = cfg.src;
+      patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
       patches = (prev.patches or [ ]) ++ [
         ./0001-common-link-.out-file-to-the-output-directory.patch
         ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
@@ -105,6 +106,7 @@ in {
     ];
 
     environment.systemPackages = with pkgs; [
+      xfstests
       xfsprogs
     ];
 

@@ -7,6 +7,8 @@
     fetch-lore.url = "github:dramforever/fetch-lore";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
+    xfstests.url = "git+file:/home/alberand/Projects/xfstests-dev?branch=fsverity-v3";
+    xfstests.flake = false;
     kernel-config.url = "/home/alberand/Projects/xfs-verity-v3/.config";
     kernel-config.flake = false;
     xfstests-config.url = "/home/alberand/Projects/nix-kernel-vm/xfstests.config";
@@ -14,7 +16,7 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, fetch-lore, nixos-generators,
-      kernel-config, xfstests-config }:
+      xfstests, kernel-config, xfstests-config }:
   flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
   let
     pkgs = import nixpkgs {
@@ -27,12 +29,7 @@
         programs.xfstests = {
           enable = true;
           sharedir = "/root/vmtest";
-          src = pkgs.fetchFromGitHub {
-            owner = "alberand";
-            repo = "xfstests";
-            rev = "068d7af36369c7c3da7d165c50b378e7b7ce46fd";
-            sha256 = "sha256-okVvdUG7ixDm7awquBvLQmN4qGma4DFM8vSJ/4VJoL0=";
-          };
+          src = xfstests;
           testconfig = xfstests-config;
           arguments = "-s xfs_4k generic/110";
         };

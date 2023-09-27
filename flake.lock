@@ -124,6 +124,7 @@
         "kernel-config": "kernel-config",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs_2",
+        "xfstests": "xfstests",
         "xfstests-config": "xfstests-config"
       }
     },
@@ -140,6 +141,22 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "xfstests": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1695756494,
+        "narHash": "sha256-V3Ti+/xx5GEwsgssH6snW2fOi0L/MYml3JyVU3d9Og8=",
+        "ref": "refs/heads/fsverity-v3",
+        "rev": "4e829c9c9d3b0b819aa1697f38d1e0b49ed7996b",
+        "revCount": 5673,
+        "type": "git",
+        "url": "file:/home/alberand/Projects/xfstests-dev?branch=fsverity-v3"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:/home/alberand/Projects/xfstests-dev?branch=fsverity-v3"
       }
     },
     "xfstests-config": {
