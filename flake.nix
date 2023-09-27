@@ -14,7 +14,7 @@
   };
 
   outputs = { self, nixpkgs, flake-utils, fetch-lore, nixos-generators,
-      kernel-config, xfstests-config, pkgs }:
+      kernel-config, xfstests-config }:
   flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
   let
     pkgs = import nixpkgs {

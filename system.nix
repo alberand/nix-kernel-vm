@@ -1,7 +1,3 @@
-# Create two disks:
-#   xfs_io -f -c "falloc 0 13g" {test,scratch}.img
-# Build VM with:
-#   nix-build '<nixpkgs/nixos>' -A vm --arg configuration ./vm.nix
 # Exiting VM
 #   Use 'poweroff' command instead of CTRL-A X. Using the latter could lead to
 #   corrupted root image and your VM won't boot (not always). However, it is
@@ -11,10 +7,6 @@
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
 { config, pkgs, lib, ... }: {
-  imports = [
-    ./xfstests.nix
-  ];
-
   boot = {
     kernelParams = [
       # consistent eth* naming

@@ -8,6 +8,7 @@ rec {
   }: nixos-generators.nixosGenerate {
     system = "x86_64-linux";
     modules = [
+      ./xfstests.nix
       ./system.nix
       ({ config, pkgs, ...}: {
         virtualisation = {
@@ -52,6 +53,7 @@ rec {
     iso = nixos-generators.nixosGenerate {
       system = "x86_64-linux";
       modules = [
+        ./xfstests.nix
         ./system.nix
         ({ config, pkgs, ... }: {
           programs.xfstests.autoshutdown = false;

@@ -1,7 +1,7 @@
-From ce5d5640c1b185e978277a45d0db893b400f0516 Mon Sep 17 00:00:00 2001
+From 4beb84f4da970351a6110cf1e9e457e9d1e1a5c9 Mon Sep 17 00:00:00 2001
 From: Andrey Albershteyn <andrey.albershteyn@gmail.com>
 Date: Tue, 26 Sep 2023 22:27:42 +0200
-Subject: [PATCH] common: link .out file to the output directory
+Subject: [PATCH 1/2] common: link .out file to the output directory
 
 On the systems which source packages are read-only (e.g. NixOS) ln
 will fail to link necessary .out file to the tests/ directory.

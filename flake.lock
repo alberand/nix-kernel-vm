@@ -39,8 +39,8 @@
     "kernel-config": {
       "flake": false,
       "locked": {
-        "lastModified": 1695741242,
-        "narHash": "sha256-joGthQlNLwO/YaAfPLF2alEqaK5OIa62iJrzcjsn6n8=",
+        "lastModified": 1695766180,
+        "narHash": "sha256-0wCKEpNE6DzPX44KPduzVpFv7aaE335d93bIqpXKBqo=",
         "path": "/home/alberand/Projects/xfs-verity-v3/.config",
         "type": "path"
       },
@@ -117,20 +117,6 @@
         "type": "github"
       }
     },
-    "pkgs": {
-      "locked": {
-        "lastModified": 1695360818,
-        "narHash": "sha256-JlkN3R/SSoMTa+CasbxS1gq+GpGxXQlNZRUh9+LIy/0=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "e35dcc04a3853da485a396bdd332217d0ac9054f",
-        "type": "github"
-      },
-      "original": {
-        "id": "pkgs",
-        "type": "indirect"
-      }
-    },
     "root": {
       "inputs": {
         "fetch-lore": "fetch-lore",
@@ -138,7 +124,6 @@
         "kernel-config": "kernel-config",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs_2",
-        "pkgs": "pkgs",
         "xfstests-config": "xfstests-config"
       }
     },
@@ -160,8 +145,8 @@
     "xfstests-config": {
       "flake": false,
       "locked": {
-        "lastModified": 1695054430,
-        "narHash": "sha256-PGTiBkC3gGs3HS/dvtDijFpYLqg9WGygcbGk9uuf2Bw=",
+        "lastModified": 1695808605,
+        "narHash": "sha256-gcwkZV+eg28ZvoVCPXG0BUMjkn9vyZ3RMQNUU1CKNPo=",
         "path": "/home/alberand/Projects/nix-kernel-vm/xfstests.config",
         "type": "path"
       },
