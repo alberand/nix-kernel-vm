@@ -170,6 +170,8 @@ fi
 
 # Cleaning
 ssh -t $TEST_HOST "sudo rm -rf /tmp/$PREFIX-$SYSNAME.iso"
+virsh --connect  qemu+ssh://$TEST_HOST/system shutdown \
+	$PREFIX-$SYSNAME
 virsh --connect  qemu+ssh://$TEST_HOST/system vol-delete \
 	--pool default \
 	$PREFIX-$SYSNAME-test
