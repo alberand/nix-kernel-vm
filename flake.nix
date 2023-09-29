@@ -22,13 +22,23 @@
       inherit pkgs nixos-generators;
     };
 
+    devShells.default = lib.mkLinuxShell {
+      inherit pkgs root;
+      qemu-options = [
+        "-hda /dev/loop0"
+        "-hdb /dev/loop1"
+      ];
+    };
+
     packages = rec {
       default = vmtest;
 
       vmtest = lib.mkVmTest {
         inherit pkgs;
-        sharedir = "/tmp/vmtest";
-        qemu-options = [ ];
+        qemu-options = [
+          "-hda /dev/loop0"
+          "-hdb /dev/loop1"
+        ];
       };
 
       iso = lib.mkIso {

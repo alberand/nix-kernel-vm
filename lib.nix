@@ -82,7 +82,7 @@ rec {
 
   mkVmTest = {
     pkgs,
-    sharedir,
+    sharedir ? "/tmp/vmtest",
     qemu-options ? [],
     user-modules ? []
   }:

@@ -37,6 +37,20 @@ in {
       type = types.str;
     };
 
+    test-dev = mkOption {
+      description = "Path to disk used as TEST_DEV";
+      default = "";
+      example = "/dev/sda";
+      type = types.str;
+    };
+
+    scratch-dev = mkOption {
+      description = "Path to disk used as SCRATCH_DEV";
+      default = "";
+      example = "/dev/sdb";
+      type = types.str;
+    };
+
     testconfig = mkOption {
       description = "xfstests configuration file";
       default = null;
@@ -111,8 +125,12 @@ in {
     ];
 
     # Setup envirionment
-    environment.variables.HOST_OPTIONS = pkgs.writeText "xfstests.config"
-      (builtins.readFile cfg.testconfig);
+    environment.variables = {
+      HOST_OPTIONS = pkgs.writeText "xfstests.config"
+          (builtins.readFile cfg.testconfig);
+      TEST_DEV = cfg.test-dev;
+      SCRATCH_DEV = cfg.scratch-dev;
+    };
 
     users.users.fsgqa = {
       isNormalUser  = true;
