@@ -154,20 +154,6 @@ in {
       "d /mnt/scratch 1777 root root"
     ];
 
-    #fileSystems."/mnt/test" = {
-    #  device = "/dev/vda";
-    #  fsType = "xfs";
-    #  autoFormat = true;
-    #  label = "test";
-    #};
-
-    #fileSystems."/mnt/scratch" = {
-    #  device = "/dev/vdb";
-    #  fsType = "xfs";
-    #  autoFormat = true;
-    #  label = "scratch";
-    #};
-
     systemd.services.xfstests = {
       enable = true;
       serviceConfig = {

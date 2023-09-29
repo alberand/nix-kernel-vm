@@ -48,6 +48,8 @@ rec {
 
   mkIso = {
     pkgs,
+    test-disk,
+    scratch-disk,
     user-modules ? []
   }: builtins.getAttr "iso" {
     iso = nixos-generators.nixosGenerate {
@@ -56,7 +58,22 @@ rec {
         ./xfstests.nix
         ./system.nix
         ({ config, pkgs, ... }: {
+          # Don't shutdown system as libvirtd will remove the VM
           programs.xfstests.autoshutdown = false;
+
+          fileSystems."/mnt/test" = {
+            device = test-disk;
+            fsType = "xfs";
+            autoFormat = true;
+            label = "test";
+          };
+
+          fileSystems."/mnt/scratch" = {
+            device = scratch-disk;
+            fsType = "xfs";
+            autoFormat = true;
+            label = "scratch";
+          };
         })
       ] ++ user-modules;
       format = "iso";
