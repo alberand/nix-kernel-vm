@@ -157,10 +157,12 @@ in {
       gid = 2000;
       members = [ "fsgqa" ];
     };
+
     users.groups.fsgqa2 = {
       gid = 2001;
       members = [ "fsgqa2" ];
     };
+
     users.groups.fsgqa-123456 = {
       gid = 2002;
       members = [ "fsgqa-123456" ];
@@ -191,52 +193,54 @@ in {
       wants = [ "network.target" "network-online.target" "local-fs.target" ];
       wantedBy = [ "multi-user.target" ];
       postStart = ''
-                  ${cfg.post-test-hook}
-                  # Beep beep... Human... back to work
-                  echo -ne '\007'
+        ${cfg.post-test-hook}
+        # Beep beep... Human... back to work
+        echo -ne '\007'
 
-                  # Unload kernel module if we are in VM
-                  if [ -d ${cfg.sharedir}/modules ]; then
-                    # Handle case when there's no modules glob -> empty
-                    shopt -s nullglob
-                    for module in ${cfg.sharedir}/modules/*.ko; do
-                            if cat /proc/modules | grep -c "$module"; then
-                              ${pkgs.kmod}/bin/rmmod $module;
-                            fi
-                    done;
-                  fi
+        # Unload kernel module if we are in VM
+        if [ -d ${cfg.sharedir}/modules ]; then
+          # Handle case when there's no modules glob -> empty
+          shopt -s nullglob
+          for module in ${cfg.sharedir}/modules/*.ko; do
+            if cat /proc/modules | grep -c "$module"; then
+              ${pkgs.kmod}/bin/rmmod $module;
+            fi
+          done;
+        fi
       '' + optionalString cfg.autoshutdown ''
-                  # Auto poweroff
-                  ${pkgs.systemd}/bin/systemctl poweroff;
+        # Auto poweroff
+        ${pkgs.systemd}/bin/systemctl poweroff;
       '';
       script = ''
-                  ${cfg.pre-test-hook}
+        ${cfg.pre-test-hook}
 
-                  # Handle case when there's no modules glob -> empty
-                  if [ -d ${cfg.sharedir}/modules ]; then
-                    shopt -s nullglob
-                    for module in ${cfg.sharedir}/modules/*.ko; do
-                        ${pkgs.kmod}/bin/insmod $module;
-                    done;
-                  fi
+        # Handle case when there's no modules glob -> empty
+        if [ -d ${cfg.sharedir}/modules ]; then
+          shopt -s nullglob
+          for module in ${cfg.sharedir}/modules/*.ko; do
+              ${pkgs.kmod}/bin/insmod $module;
+          done;
+        fi
 
-                  arguments=""
-                  if [ -f ${cfg.sharedir}/totest ]; then
-                    arguments="$(cat ${cfg.sharedir}/totest)"
-                  else
-                    arguments="${cfg.arguments}"
-                  fi
+        arguments=""
+        if [ -f ${cfg.sharedir}/totest ]; then
+          arguments="$(cat ${cfg.sharedir}/totest)"
+        else
+          arguments="${cfg.arguments}"
+        fi
 
-                  # User wants to run shell script instead of fstests
-                  # TODO create a separate service for this
-                  if [[ -f ${cfg.sharedir}/test.sh ]]; then
-                    chmod u+x ${cfg.sharedir}/test.sh
-                    ${pkgs.bash}/bin/bash ${cfg.sharedir}/test.sh
-                    exit $?
-                  else
-                    ${pkgs.bash}/bin/bash -lc \
-                      "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
-                  fi
+        ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L test ${cfg.test-dev}
+        ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L scratch ${cfg.scratch-dev}
+        # User wants to run shell script instead of fstests
+        # TODO create a separate service for this
+        if [[ -f ${cfg.sharedir}/test.sh ]]; then
+          chmod u+x ${cfg.sharedir}/test.sh
+          ${pkgs.bash}/bin/bash ${cfg.sharedir}/test.sh
+          exit $?
+        else
+          ${pkgs.bash}/bin/bash -lc \
+            "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
+        fi
       '';
     };
   };
