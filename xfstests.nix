@@ -229,6 +229,8 @@ in {
           arguments="${cfg.arguments}"
         fi
 
+        ${pkgs.util-linux}/bin/umount ${cfg.test-dev}
+        ${pkgs.util-linux}/bin/umount ${cfg.scratch-dev}
         ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L test ${cfg.test-dev}
         ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L scratch ${cfg.scratch-dev}
         # User wants to run shell script instead of fstests
