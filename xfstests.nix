@@ -229,10 +229,15 @@ in {
           arguments="${cfg.arguments}"
         fi
 
-        ${pkgs.util-linux}/bin/umount ${cfg.test-dev}
-        ${pkgs.util-linux}/bin/umount ${cfg.scratch-dev}
+        if ${pkgs.util-linux}/bin/mountpoint /mnt/test; then
+          ${pkgs.util-linux}/bin/umount ${cfg.test-dev}
+        fi
+        if ${pkgs.util-linux}/bin/mountpoint /mnt/scratch; then
+          ${pkgs.util-linux}/bin/umount ${cfg.scratch-dev}
+        fi
         ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L test ${cfg.test-dev}
         ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L scratch ${cfg.scratch-dev}
+
         # User wants to run shell script instead of fstests
         # TODO create a separate service for this
         if [[ -f ${cfg.sharedir}/test.sh ]]; then
