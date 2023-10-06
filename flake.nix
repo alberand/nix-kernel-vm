@@ -30,6 +30,37 @@
       ];
     };
 
+    devShells."xfsprogs" = with pkgs; pkgs.mkShell {
+      nativeBuildInputs = [
+        gettext
+        pkg-config
+        libuuid # codegen tool uses libuuid
+        liburcu # required by crc32selftest
+        libtool
+        autoconf
+        automake
+      ];
+      buildInputs = [ readline icu inih liburcu ];
+    };
+
+    devShells."xfstests" = with pkgs; pkgs.mkShell {
+      nativeBuildInputs = [
+        autoconf automake libtool
+      ];
+      buildInputs = [
+        acl attr gawk libaio libuuid libxfs openssl perl
+      ];
+
+      shellHook = ''
+          export AWK=$(type -P awk)
+          export ECHO=$(type -P echo)
+          export LIBTOOL=$(type -P libtool)
+          export MAKE=$(type -P make)
+          export SED=$(type -P sed)
+          export SORT=$(type -P sort)
+      '';
+    };
+
     packages = rec {
       default = vmtest;
 
