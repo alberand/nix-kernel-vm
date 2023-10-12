@@ -161,9 +161,10 @@ rec {
       SHARE_DIR = "${sharedir}";
 
       shellHook = ''
-        if [ ! -f ${root}/compile_commands.json ] &&
-            [ -f ${root}/scripts/clang-tools/gen_compile_commands.py ]; then
-          ${root}/scripts/clang-tools/gen_compile_commands.py
+        curdir="$(pwd)"
+        if [ ! -f "$curdir/compile_commands.json" ] &&
+            [ -f "$curdir/scripts/clang-tools/gen_compile_commands.py" ]; then
+          "$curdir/scripts/clang-tools/gen_compile_commands.py"
         fi
       '';
     };
