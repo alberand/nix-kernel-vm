@@ -101,6 +101,7 @@ rec {
   mkLinuxShell = {
     pkgs,
     root,
+    no-vm ? false,
     sharedir ? "/tmp/vmtest",
     qemu-options ? [],
     user-modules ? [],
@@ -108,7 +109,7 @@ rec {
   }:
   builtins.getAttr "shell" rec {
     shell = pkgs.mkShell {
-      packages = [
+      packages = if no-vm then [] else [
         (mkVmTest {
           inherit pkgs sharedir qemu-options user-modules;
         })

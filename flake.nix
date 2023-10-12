@@ -30,6 +30,11 @@
       ];
     };
 
+    devShells."light" = lib.mkLinuxShell {
+      inherit pkgs root;
+      no-vm = true;
+    };
+
     devShells."xfsprogs" = with pkgs; pkgs.mkShell {
       nativeBuildInputs = [
         gettext
