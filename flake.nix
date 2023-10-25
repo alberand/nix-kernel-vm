@@ -35,6 +35,14 @@
       no-vm = true;
     };
 
+    devShells."old-kernel" = lib.mkLinuxShell {
+      inherit pkgs root;
+      packages = [
+        pkgs.gcc8
+      ];
+      no-vm = true;
+    };
+
     devShells."xfsprogs" = with pkgs; pkgs.mkShell {
       nativeBuildInputs = [
         gettext
