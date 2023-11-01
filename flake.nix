@@ -35,13 +35,16 @@
       no-vm = true;
     };
 
-    devShells."old-kernel" = lib.mkLinuxShell {
+    devShells."old-kernel" = (lib.mkLinuxShell {
       inherit pkgs root;
       packages = [
         pkgs.gcc8
       ];
       no-vm = true;
-    };
+    }).overrideAttrs (final: prev: {
+      nativeBuildInputs = nixpkgs.lib.lists.subtractLists
+        [ pkgs.clang pkgs.clang-tools] prev.nativeBuildInputs;
+    });
 
     devShells."xfsprogs" = with pkgs; pkgs.mkShell {
       nativeBuildInputs = [
