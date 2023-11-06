@@ -168,6 +168,11 @@ if [ "$#" -ne 2 ]; then
     exit 0
 fi
 
+if ! virsh --connect qemu+ssh://$TEST_HOST/system version; then
+    echo "Not able to connect to $TEST_HOST. Is your user in 'libvirt' group?"
+    exit 1
+fi
+
 # Cleaning
 ssh -t $TEST_HOST "sudo rm -rf /tmp/$PREFIX-$SYSNAME.iso"
 virsh --connect  qemu+ssh://$TEST_HOST/system shutdown \
