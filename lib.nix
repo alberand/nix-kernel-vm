@@ -148,7 +148,7 @@ rec {
         fio
         linuxquota
         nvme-cli
-        xmlstarlet
+        virt-manager # for deploy
       ] ++ packages;
 
       buildInputs = with pkgs; [
