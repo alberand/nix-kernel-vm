@@ -8,6 +8,7 @@
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
 { config, pkgs, lib, ... }: {
   boot = {
+    kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
     kernelParams = [
       # consistent eth* naming
       "net.ifnames=0"
