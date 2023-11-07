@@ -157,6 +157,7 @@ function set_kernel() {
 
 function add_module() {
 	if [[ -z "$1" ]]; then
+		rm "$SHARE_DIR/modules/*"
 		return;
 	fi
 
@@ -171,6 +172,7 @@ function add_module() {
 	fi
 
 	echo "Module is set to $1"
+	rm "$SHARE_DIR/modules/$1"
 	cp $1 "$SHARE_DIR/modules"
 }
 
