@@ -97,9 +97,10 @@ in {
           # cycle
           outputs = [ "bin" "dev" "out" "doc" ];
 
-          patches = (o.patches or [ ]) ++ [
-            ./0001-fix-nix-make-doesn-t-have-enough-permission-to-chang.patch
-          ];
+          patchPhase = ''
+            substituteInPlace Makefile \
+              --replace "cp include/install-sh ." "cp -f include/install-sh ."
+          '';
           # We need to add autoconf tools because nixpgs does it automatically
           # somewhere inside
           nativeBuildInputs = prev.xfsprogs.nativeBuildInputs ++ [
@@ -107,6 +108,7 @@ in {
             pkgs.autoconf
             pkgs.automake
           ];
+
           preConfigure = ''
             for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in}; do
               substituteInPlace "$file" \
