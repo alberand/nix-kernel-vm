@@ -4,16 +4,55 @@ with lib;
 
 let
   cfg = config.programs.xfstests;
-  xfstests-overlay-remote = (self: super: {
-    xfstests = super.xfstests.overrideAttrs (prev: {
-      version = "git";
-      src = cfg.src;
-      patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
-      patches = (prev.patches or [ ]) ++ [
-        ./0001-common-link-.out-file-to-the-output-directory.patch
-        ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
-      ];
+  xfstests-overlay-remote = (self: super: rec {
+    xfstests-hooks = (pkgs.stdenv.mkDerivation {
+      name = "xfstests-hooks";
+      src = cfg.hooks;
+      phases = [ "unpackPhase" "installPhase" ];
+      installPhase = ''
+            runHook preInstall
+
+            mkdir -p $out/lib/xfstests/hooks
+            cp --no-preserve=mode -r $src/* $out/lib/xfstests/hooks
+
+            runHook postInstall
+      '';
     });
+    xfstests = pkgs.symlinkJoin {
+      name = "xfstests";
+      paths = [
+        (super.xfstests.overrideAttrs (prev: {
+          version = "git";
+          src = cfg.src;
+          patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
+          patches = (prev.patches or [ ]) ++ [
+            ./0001-common-link-.out-file-to-the-output-directory.patch
+            ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
+          ];
+          wrapperScript = with pkgs; writeScript "xfstests-check" ''
+            #!${pkgs.runtimeShell}
+            set -e
+            export RESULT_BASE="$(pwd)/results"
+
+            dir=$(mktemp --tmpdir -d xfstests.XXXXXX)
+            trap "rm -rf $dir" EXIT
+
+            chmod a+rx "$dir"
+            cd "$dir"
+            for f in $(cd @out@/lib/xfstests; echo *); do
+              ln -s @out@/lib/xfstests/$f $f
+            done
+            ln -s ${pkgs.xfstests-hooks}/lib/xfstests/hooks hooks
+
+            export PATH=${lib.makeBinPath [acl attr bc e2fsprogs fio gawk keyutils
+                                           libcap lvm2 perl procps killall quota
+                                           util-linux which xfsprogs]}:$PATH
+            exec ./check "$@"
+          '';
+        }))
+        xfstests-hooks
+      ];
+    };
   });
 in {
   options.programs.xfstests = {
@@ -77,6 +116,13 @@ in {
       default = "";
       example = "trace-cmd stop; trace-cmd show > /root/trace.log";
       type = types.str;
+    };
+
+    hooks = mkOption {
+      description = "Path to hooks folder. 20210722064725.3077558-1-david@fromorbit.com";
+      default = null;
+      example = "./xfstests-hooks";
+      type = types.path;
     };
 
     src = mkOption {
