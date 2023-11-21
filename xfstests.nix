@@ -125,6 +125,20 @@ in {
       type = types.path;
     };
 
+    mkfs-cmd = mkOption {
+      description = "mkfs command to recreate the disks before tests";
+      default = "${pkgs.xfsprogs}/bin/mkfs.xfs";
+      example = "${pkgs.xfsprogs}/bin/mkfs.xfs";
+      type = types.str;
+    };
+
+    mkfs-opt = mkOption {
+      description = "Options for mkfs-cmd";
+      default = "-f";
+      example = "-f";
+      type = types.str;
+    };
+
     src = mkOption {
       type = types.package;
       default = null;
@@ -283,8 +297,8 @@ in {
         if ${pkgs.util-linux}/bin/mountpoint /mnt/scratch; then
           ${pkgs.util-linux}/bin/umount ${cfg.scratch-dev}
         fi
-        ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L test ${cfg.test-dev}
-        ${pkgs.xfsprogs}/bin/mkfs.xfs -f -L scratch ${cfg.scratch-dev}
+        ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L test ${cfg.test-dev}
+        ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L scratch ${cfg.scratch-dev}
 
         # User wants to run shell script instead of fstests
         # TODO create a separate service for this
