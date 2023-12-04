@@ -166,6 +166,11 @@ rec {
             [ -f "$curdir/scripts/clang-tools/gen_compile_commands.py" ]; then
           "$curdir/scripts/clang-tools/gen_compile_commands.py"
         fi
+
+        if type -p ccache; then
+          export KBUILD_BUILD_TIMESTAMP=""
+          alias make='make CC="ccache gcc"'
+        fi
       '';
     };
   };
