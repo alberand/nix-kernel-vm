@@ -149,6 +149,8 @@ rec {
         linuxquota
         nvme-cli
         virt-manager # for deploy
+        xmlstarlet
+        rpm
       ] ++ packages;
 
       buildInputs = with pkgs; [
