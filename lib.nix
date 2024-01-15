@@ -115,7 +115,18 @@ rec {
         })
       ];
 
-      nativeBuildInputs = with pkgs; [
+      nativeBuildInputs = 
+      let
+     mypkgs = import (builtins.fetchGit {
+         # Descriptive name to make the store path easier to identify
+         name = "my-old-revision";
+         url = "https://github.com/NixOS/nixpkgs/";
+         ref = "refs/heads/nixpkgs-unstable";
+         rev = "c8e344196154514112c938f2814e809b1ca82da1";
+     }) {};
+
+     myPkg = mypkgs.rpm;
+      in with pkgs; [
         ctags
         getopt
         flex
