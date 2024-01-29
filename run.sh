@@ -157,7 +157,7 @@ function set_kernel() {
 
 function add_module() {
 	if [[ -z "$1" ]]; then
-		rm "$SHARE_DIR/modules/*"
+		rm -f "$SHARE_DIR/modules/*"
 		return;
 	fi
 
