@@ -69,6 +69,7 @@
     xterm
     neovim
     lvm2
+    stress-ng
   ];
 
   environment.variables = {
