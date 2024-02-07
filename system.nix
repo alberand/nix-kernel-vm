@@ -22,6 +22,13 @@
     crashDump.enable = true;
   };
 
+  system.requiredKernelConfig = with config.lib.kernelConfig; [
+    # TODO fill this
+    (isYes "SERIAL_8250_CONSOLE")
+    (isYes "SERIAL_8250")
+    (isEnabled "VIRTIO_CONSOLE")
+  ];
+
   # Auto-login with empty password
   users.extraUsers.root.initialHashedPassword = "";
   services.getty.autologinUser = lib.mkDefault "root";
