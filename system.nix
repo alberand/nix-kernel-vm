@@ -77,6 +77,7 @@
     neovim
     lvm2
     stress-ng
+    fscrypt-experimental
   ];
 
   environment.variables = {
