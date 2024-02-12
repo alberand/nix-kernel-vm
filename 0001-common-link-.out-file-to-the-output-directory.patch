@@ -1,7 +1,7 @@
-From 4beb84f4da970351a6110cf1e9e457e9d1e1a5c9 Mon Sep 17 00:00:00 2001
+From a15b95351cf3006e0c7eede669fc9a71d8c38936 Mon Sep 17 00:00:00 2001
 From: Andrey Albershteyn <andrey.albershteyn@gmail.com>
 Date: Tue, 26 Sep 2023 22:27:42 +0200
-Subject: [PATCH 1/2] common: link .out file to the output directory
+Subject: [PATCH] common: link .out file to the output directory
 
 On the systems which source packages are read-only (e.g. NixOS) ln
 will fail to link necessary .out file to the tests/ directory.
@@ -56,15 +56,15 @@ index 71b9fbd0..c12da16b 100755
  			fi; } | sed -e 's/^\(.\)/    \1/'
  			tc_status="fail"
 diff --git a/common/rc b/common/rc
-index 76a7e774..8522a070 100644
+index 30c44ddd..0f5cc748 100644
 --- a/common/rc
 +++ b/common/rc
-@@ -3432,7 +3432,7 @@ _link_out_file_named()
+@@ -3474,7 +3474,7 @@ _link_out_file_named()
  		print $result
  		' <$seqfull.cfg)
- 	rm -f $1
--	ln -fs $(basename $1).$suffix $1
-+	ln -fs $(realpath $1.$suffix) $seqres.out.good
+ 	rm -f $1 || _fail "_link_out_file_named: failed to remove existing output file"
+-	ln -fs $(basename $1).$suffix $1 || _fail "$(basename $1).$suffix: could not setup output file"
++	ln -fs $(realpath $1.$suffix) $seqres.out.good || _fail "$(basename $1).$suffix: could not setup output file"
  }
  
  _link_out_file()
@@ -85,5 +85,5 @@ index 8373878a..91716705 100755
  
  _filter_io()
 -- 
-2.40.1
+2.42.0
 
