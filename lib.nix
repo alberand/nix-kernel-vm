@@ -7,6 +7,7 @@ rec {
     user-modules ? []
   }: nixos-generators.nixosGenerate {
     system = "x86_64-linux";
+    specialArgs = { diskSize = "20000"; };
     modules = [
       ./xfstests.nix
       ./system.nix
