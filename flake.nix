@@ -2,7 +2,7 @@
   description = "VM for filesystem testing of Linux Kernel";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
     flake-utils.url = "github:numtide/flake-utils";
     fetch-lore.url = "github:dramforever/fetch-lore";
     nixos-generators.url = "github:nix-community/nixos-generators";
