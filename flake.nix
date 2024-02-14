@@ -24,10 +24,6 @@
 
     devShells.default = lib.mkLinuxShell {
       inherit pkgs root;
-      qemu-options = [
-        "-hda /dev/loop0"
-        "-hdb /dev/loop1"
-      ];
     };
 
     devShells."light" = lib.mkLinuxShell {

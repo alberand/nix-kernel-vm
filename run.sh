@@ -3,7 +3,7 @@
 # Priority:
 # arguments > configuration file > environment variables
 
-VALID_ARGS=$(getopt -o hk:m:t:c:q:s: --long help,kernel:,module:,totest:,config:,qemu-opts:,share-dir: -- "$@")
+VALID_ARGS=$(getopt -o hk:m:t:c:q:s: --long help,kernel:,module:,totest:,config:,qemu-opts:,share-dir:,add: -- "$@")
 if [[ $? -ne 0 ]]; then
     exit 1;
 fi
@@ -109,6 +109,17 @@ function parse_args() {
 				echo "Processing 'share-dir' option: $2"
 				SHARE_DIR="$2"
 				shift
+				shift
+				;;
+			--add)
+				if [[ -z $SHARE_DIR ]]; then
+					echo "\$SHARE_DIR need to be set"
+					exit 1
+				fi
+				echo "Adding $2 test"
+				rm -f $SHARE_DIR/test.sh
+				ln $(readlink -f $2) $SHARE_DIR/test.sh
+				exit 0
 				shift
 				;;
 			-h | --help)

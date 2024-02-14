@@ -10,6 +10,7 @@ rec {
     specialArgs = { diskSize = "20000"; };
     modules = [
       ./xfstests.nix
+      ./simple-test.nix
       ./system.nix
       ({ config, pkgs, ...}: {
         virtualisation = {

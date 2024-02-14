@@ -58,7 +58,7 @@ in {
   options.programs.xfstests = {
     enable = mkEnableOption {
       name = "xfstests";
-      default = true;
+      default = false;
       example = true;
     };
 
@@ -300,16 +300,8 @@ in {
         ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L test ${cfg.test-dev}
         ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L scratch ${cfg.scratch-dev}
 
-        # User wants to run shell script instead of fstests
-        # TODO create a separate service for this
-        if [[ -f ${cfg.sharedir}/test.sh ]]; then
-          chmod u+x ${cfg.sharedir}/test.sh
-          ${pkgs.bash}/bin/bash ${cfg.sharedir}/test.sh
-          exit $?
-        else
-          ${pkgs.bash}/bin/bash -lc \
-            "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
-        fi
+        ${pkgs.bash}/bin/bash -lc \
+          "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
       '';
     };
   };
