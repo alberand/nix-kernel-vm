@@ -164,6 +164,7 @@ rec {
         virt-manager # for deploy
         xmlstarlet
         rpm
+        pahole
       ] ++ packages;
 
       buildInputs = with pkgs; [
