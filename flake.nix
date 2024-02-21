@@ -78,6 +78,8 @@
       '';
     };
 
+
+    # Config file derivation
     packages = rec {
       default = vmtest;
 
@@ -95,6 +97,34 @@
 
       deploy = lib.deploy {
         inherit pkgs;
+      };
+
+      kernel-config = lib.buildKernelConfig {
+        inherit nixpkgs pkgs;
+        defconfig = "allnoconfig";
+        structuredExtraConfig = with pkgs.lib.kernel; {
+          FS_VERITY = yes;
+          XFS_FS = yes;
+        };
+      };
+
+      kernel = lib.buildKernel {
+        inherit pkgs;
+        version = "6.8.0-rc4";
+        src = pkgs.fetchFromGithub {
+          owner = "alberand";
+          repo = "linux";
+          rev = "8eb99f6d07fa6e223f1d6035029088c7309cde05";
+          sha256 = "";
+        };
+        configfile = lib.buildKernelConfig {
+          inherit nixpkgs pkgs;
+          defconfig = "allnoconfig";
+          structuredExtraConfig = with pkgs.lib.kernel; {
+            FS_VERITY = yes;
+            XFS_FS = yes;
+          };
+        };
       };
     };
 

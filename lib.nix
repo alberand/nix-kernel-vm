@@ -191,6 +191,9 @@ rec {
     };
   };
 
+  buildKernelConfig = pkgs.callPackage ./kernel-config.nix {};
+  buildKernel = pkgs.callPackage ./kernel.nix {};
+
   deploy = { pkgs }:
   builtins.getAttr "script" rec {
     script = pkgs.writeScriptBin "deploy" (builtins.readFile ./deploy.sh);
