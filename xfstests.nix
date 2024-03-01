@@ -300,6 +300,7 @@ in {
         ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L test ${cfg.test-dev}
         ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L scratch ${cfg.scratch-dev}
 
+        export PATH="${cfg.sharedir}/bin:$PATH"
         ${pkgs.bash}/bin/bash -lc \
           "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
       '';
