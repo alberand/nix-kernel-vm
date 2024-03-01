@@ -165,6 +165,11 @@ rec {
         xmlstarlet
         rpm
         pahole
+        sphinx # for btrfs-progs
+        zstd # for btrfs-progs
+        udev # for btrfs-progs
+        lzo # for btrfs-progs
+        liburing # for btrfs-progs
       ] ++ packages;
 
       buildInputs = with pkgs; [
