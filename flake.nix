@@ -4,12 +4,11 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
     flake-utils.url = "github:numtide/flake-utils";
-    fetch-lore.url = "github:dramforever/fetch-lore";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils, fetch-lore, nixos-generators }:
+  outputs = { self, nixpkgs, flake-utils, nixos-generators }:
   flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
   let
     pkgs = import nixpkgs {
@@ -42,7 +41,7 @@
         pkgs.gcc8
       ];
       no-vm = true;
-    }).overrideAttrs (final: prev: {
+    }).overrideAttrs (_final: prev: {
       nativeBuildInputs = nixpkgs.lib.lists.subtractLists
         [ pkgs.clang pkgs.clang-tools] prev.nativeBuildInputs;
     });
@@ -113,30 +112,28 @@
 
       kernel-config = lib.buildKernelConfig {
         inherit nixpkgs pkgs;
-        defconfig = "allnoconfig";
+        defconfig = "tinyconfig";
         structuredExtraConfig = with pkgs.lib.kernel; {
+          MODULES = yes;
           FS_VERITY = yes;
+          FS_VERITY_BUILTIN_SIGNATURES = yes;
+          BLOCK = yes;
           XFS_FS = yes;
         };
       };
 
       kernel = lib.buildKernel {
-        inherit pkgs;
-        version = "6.8.0-rc4";
-        src = pkgs.fetchFromGithub {
+        inherit nixpkgs;
+        version = "6.8.0-rc2";
+        modDirVersion = "6.8.0-rc2";
+        src = pkgs.fetchFromGitHub {
           owner = "alberand";
           repo = "linux";
           rev = "8eb99f6d07fa6e223f1d6035029088c7309cde05";
-          sha256 = "";
+          sha256 = "zkMSIPthRauNYXSDBNb7WlTQ3c6Jdubb6HTOOrhU87E=";
         };
-        configfile = lib.buildKernelConfig {
-          inherit nixpkgs pkgs;
-          defconfig = "allnoconfig";
-          structuredExtraConfig = with pkgs.lib.kernel; {
-            FS_VERITY = yes;
-            XFS_FS = yes;
-          };
-        };
+
+        configfile = kernel-config;
       };
     };
 
