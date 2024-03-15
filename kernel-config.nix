@@ -24,6 +24,7 @@
   commonStructuredConfig ? [],
   structuredConfigFromPatches ? [],
   defconfig ? null,
+  autoModules ? false,
 }:
 stdenv.mkDerivation
 rec {
@@ -39,7 +40,6 @@ rec {
   # ignoreConfigErrors: Ignores any config errors in script (eg unused options)
   # autoModules: Build every available module
   # preferBuiltin: Build modules as builtin
-  inherit (stdenv.hostPlatform.linux-kernel) autoModules;
   preferBuiltin = false; # or false
   ignoreConfigErrors = true;
   generateConfig = "${nixpkgs}/pkgs/os-specific/linux/kernel/generate-config.pl";
