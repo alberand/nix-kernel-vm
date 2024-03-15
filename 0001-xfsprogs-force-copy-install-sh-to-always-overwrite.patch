@@ -1,0 +1,32 @@
+From a7b8ed68538bbcf7d7ddbd11d41e446e1f23363b Mon Sep 17 00:00:00 2001
+From: Andrey Albershteyn <aalbersh@redhat.com>
+Date: Fri, 15 Mar 2024 12:39:43 +0100
+Subject: [PATCH] xfsprogs: force copy install-sh to always overwrite
+
+On system with read-only packages (e.g. NixOS) libtoolize copies
+install-sh without write permissions. This leads to "make" failing
+on "cp include/install-sh .".
+
+Fix this by always overwriting ./install-sh
+
+Signed-off-by: Andrey Albershteyn <aalbersh@redhat.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 4e768526c6..9bf27b0f36 100644
+--- a/Makefile
++++ b/Makefile
+@@ -109,7 +109,7 @@ endif
+ 
+ configure: configure.ac
+ 	libtoolize -c -i -f
+-	cp include/install-sh .
++	cp -f include/install-sh .
+ 	aclocal -I m4
+ 	autoconf
+ 
+-- 
+2.42.0
+

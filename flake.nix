@@ -56,8 +56,20 @@
         libtool
         autoconf
         automake
+        (pkgs.writeScriptBin "nix-fix" ''
+          #!${pkgs.stdenv.shell}
+          git am -3 ${./0001-xfsprogs-force-copy-install-sh-to-always-overwrite.patch}
+        '')
       ];
       buildInputs = [ readline icu inih liburcu ];
+      shellHook = ''
+        echo ""
+        echo "Build with ccache:"
+        echo -e '\tmake CC="ccache cc" -j$(nproc)'
+        echo "Apply NixOS fix:"
+        echo -e '\tnix-fix'
+        echo ""
+      '';
     };
 
     devShells."xfstests" = with pkgs; pkgs.mkShell {
