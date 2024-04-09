@@ -12,7 +12,6 @@
   configfile,
   modDirVersion,
   version,
-  ccacheStdenv,
   enableRust ? false, # Install the Rust Analyzer
   enableGdb ? false, # Install the GDB scripts
   kernelPatches ? [],
@@ -23,7 +22,6 @@
       {
         inherit src modDirVersion version kernelPatches lib configfile;
 
-        #stdenv = ccacheStdenv;
         allowImportFromDerivation = true;
       })
     .overrideAttrs (old: {
@@ -31,11 +29,6 @@
         old.nativeBuildInputs
         ++ lib.optionals enableRust [rustc cargo rust-bindgen];
       RUST_LIB_SRC = lib.optionalString enableRust rustPlatform.rustLibSrc;
-
-      preConfigure = ''
-        export CCACHE_DIR=/var/cache/ccache
-        export CCACHE_UMASK=007
-      '';
       dontStrip = true;
     });
 

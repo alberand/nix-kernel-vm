@@ -155,7 +155,6 @@
         in
           lib.buildKernel {
             inherit nixpkgs src version;
-            inherit (pkgs) ccacheStdenv;
             modDirVersion = version;
 
             configfile = lib.buildKernelConfig {
