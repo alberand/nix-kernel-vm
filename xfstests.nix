@@ -20,7 +20,7 @@ with lib; let
         runHook postInstall
       '';
     };
-    xfstests = pkgs.symlinkJoin {
+    self.xfstests = pkgs.symlinkJoin {
       name = "xfstests";
       paths = [
         (super.xfstests.overrideAttrs (prev: {
@@ -112,7 +112,6 @@ in {
 
     testconfig = mkOption {
       description = "xfstests configuration file";
-      default = null;
       example = "./local.config.example";
       type = types.path;
     };
@@ -142,7 +141,7 @@ in {
       description = "Path to hooks folder. 20210722064725.3077558-1-david@fromorbit.com";
       default = null;
       example = "./xfstests-hooks";
-      type = types.path;
+      type = types.nullOr types.path;
     };
 
     mkfs-cmd = mkOption {
@@ -161,14 +160,17 @@ in {
 
     src = mkOption {
       type = types.package;
-      default = null;
+      default = pkgs.xfstests;
     };
   };
 
   config = mkIf cfg.enable {
+    programs.xfsprogs = {
+      enable = true;
+    };
+
     nixpkgs.overlays = [
       xfstests-overlay-remote
-      lib.xfsprogs-overlay
     ];
 
     environment.systemPackages = with pkgs; [

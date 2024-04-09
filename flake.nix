@@ -27,6 +27,18 @@
 
       devShells.default = lib.mkLinuxShell {
         inherit pkgs root;
+        user-modules = [
+          ./xfsprogs.nix
+          ({
+            config,
+            lib,
+            ...
+          }: {
+            programs.xfsprogs = {
+              enable = true;
+            };
+          })
+        ];
       };
 
       devShells."light" = lib.mkLinuxShell {
@@ -167,8 +179,6 @@
             };
           };
       };
-
-      overlays.xfsprogs = lib.xfsprogs-overlay;
 
       apps.default = flake-utils.lib.mkApp {
         drv = packages.vmtest;
