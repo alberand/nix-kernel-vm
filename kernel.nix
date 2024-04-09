@@ -12,6 +12,7 @@
   configfile,
   modDirVersion,
   version,
+  ccacheStdenv,
   enableRust ? false, # Install the Rust Analyzer
   enableGdb ? false, # Install the GDB scripts
   kernelPatches ? [],
@@ -22,10 +23,7 @@
       {
         inherit src modDirVersion version kernelPatches lib configfile;
 
-        # Because allowedImportFromDerivation is not enabled,
-        # the function cannot set anything based on the configfile. These settings do not
-        # actually change the .config but let the kernel derivation know what can be built.
-        # See manual-config.nix for other options
+        #stdenv = ccacheStdenv;
         allowImportFromDerivation = true;
       })
     .overrideAttrs (old: {
@@ -34,6 +32,10 @@
         ++ lib.optionals enableRust [rustc cargo rust-bindgen];
       RUST_LIB_SRC = lib.optionalString enableRust rustPlatform.rustLibSrc;
 
+      preConfigure = ''
+        export CCACHE_DIR=/var/cache/ccache
+        export CCACHE_UMASK=007
+      '';
       dontStrip = true;
     });
 

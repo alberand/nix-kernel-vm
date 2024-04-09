@@ -1,59 +1,79 @@
-{ lib, pkgs, config, ... }:
-
-with lib;
-
-let
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+with lib; let
   cfg = config.programs.xfstests;
-  xfstests-overlay-remote = (self: super: rec {
-    xfstests-hooks = (pkgs.stdenv.mkDerivation {
+  xfstests-overlay-remote = self: super: rec {
+    xfstests-hooks = pkgs.stdenv.mkDerivation {
       name = "xfstests-hooks";
       src = cfg.hooks;
-      phases = [ "unpackPhase" "installPhase" ];
+      phases = ["unpackPhase" "installPhase"];
       installPhase = ''
-            runHook preInstall
+        runHook preInstall
 
-            mkdir -p $out/lib/xfstests/hooks
-            cp --no-preserve=mode -r $src/* $out/lib/xfstests/hooks
+        mkdir -p $out/lib/xfstests/hooks
+        cp --no-preserve=mode -r $src/* $out/lib/xfstests/hooks
 
-            runHook postInstall
+        runHook postInstall
       '';
-    });
+    };
     xfstests = pkgs.symlinkJoin {
       name = "xfstests";
       paths = [
         (super.xfstests.overrideAttrs (prev: {
+          inherit (cfg) src;
           version = "git";
-          src = cfg.src;
           patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
-          patches = (prev.patches or [ ]) ++ [
-            ./0001-common-link-.out-file-to-the-output-directory.patch
-            ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
-          ];
-          wrapperScript = with pkgs; writeScript "xfstests-check" ''
-            #!${pkgs.runtimeShell}
-            set -e
-            export RESULT_BASE="$(pwd)/results"
+          patches =
+            (prev.patches or [])
+            ++ [
+              ./0001-common-link-.out-file-to-the-output-directory.patch
+              ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
+            ];
+          wrapperScript = with pkgs;
+            writeScript "xfstests-check" ''
+              #!${pkgs.runtimeShell}
+              set -e
+              export RESULT_BASE="$(pwd)/results"
 
-            dir=$(mktemp --tmpdir -d xfstests.XXXXXX)
-            trap "rm -rf $dir" EXIT
+              dir=$(mktemp --tmpdir -d xfstests.XXXXXX)
+              trap "rm -rf $dir" EXIT
 
-            chmod a+rx "$dir"
-            cd "$dir"
-            for f in $(cd @out@/lib/xfstests; echo *); do
-              ln -s @out@/lib/xfstests/$f $f
-            done
-            ln -s ${pkgs.xfstests-hooks}/lib/xfstests/hooks hooks
+              chmod a+rx "$dir"
+              cd "$dir"
+              for f in $(cd @out@/lib/xfstests; echo *); do
+                ln -s @out@/lib/xfstests/$f $f
+              done
+              ln -s ${pkgs.xfstests-hooks}/lib/xfstests/hooks hooks
 
-            export PATH=${lib.makeBinPath [acl attr bc e2fsprogs fio gawk keyutils
-                                           libcap lvm2 perl procps killall quota
-                                           util-linux which xfsprogs]}:$PATH
-            exec ./check "$@"
-          '';
+              export PATH=${lib.makeBinPath [
+                acl
+                attr
+                bc
+                e2fsprogs
+                fio
+                gawk
+                keyutils
+                libcap
+                lvm2
+                perl
+                procps
+                killall
+                quota
+                util-linux
+                which
+                xfsprogs
+              ]}:$PATH
+              exec ./check "$@"
+            '';
         }))
         xfstests-hooks
       ];
     };
-  });
+  };
 in {
   options.programs.xfstests = {
     enable = mkEnableOption {
@@ -143,42 +163,12 @@ in {
       type = types.package;
       default = null;
     };
-
   };
 
   config = mkIf cfg.enable {
-
     nixpkgs.overlays = [
       xfstests-overlay-remote
-      # Apply xfsprogs fix
-      (final: prev: {
-        xfsprogs = prev.xfsprogs.overrideAttrs (o: {
-          # Don't know why but "bin" should not be here as it create dependency
-          # cycle
-          outputs = [ "bin" "dev" "out" "doc" ];
-
-          patchPhase = ''
-            substituteInPlace Makefile \
-              --replace "cp include/install-sh ." "cp -f include/install-sh ."
-          '';
-          # We need to add autoconf tools because nixpgs does it automatically
-          # somewhere inside
-          nativeBuildInputs = prev.xfsprogs.nativeBuildInputs ++ [
-            pkgs.libtool
-            pkgs.autoconf
-            pkgs.automake
-          ];
-
-          preConfigure = ''
-            for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in}; do
-              substituteInPlace "$file" \
-                --replace '@sbindir@' '/run/current-system/sw/bin'
-            done
-            make configure
-            patchShebangs ./install-sh
-          '';
-        });
-      })
+      lib.xfsprogs-overlay
     ];
 
     environment.systemPackages = with pkgs; [
@@ -188,46 +178,53 @@ in {
 
     # Setup envirionment
     environment.variables = {
-      HOST_OPTIONS = pkgs.writeText "xfstests.config"
-          (builtins.readFile cfg.testconfig);
+      HOST_OPTIONS =
+        pkgs.writeText "xfstests.config"
+        (builtins.readFile cfg.testconfig);
       TEST_DEV = cfg.test-dev;
       SCRATCH_DEV = cfg.scratch-dev;
     };
 
-    users.users.fsgqa = {
-      isNormalUser  = true;
-      description  = "Test user";
-      uid = 2000;
-      group = "fsgqa";
-    };
+    users = {
+      users = {
+        fsgqa = {
+          isNormalUser = true;
+          description = "Test user";
+          uid = 2000;
+          group = "fsgqa";
+        };
 
-    users.users.fsgqa2 = {
-      isNormalUser  = true;
-      description  = "Test user";
-      uid = 2001;
-      group = "fsgqa2";
-    };
+        fsgqa2 = {
+          isNormalUser = true;
+          description = "Test user";
+          uid = 2001;
+          group = "fsgqa2";
+        };
 
-    users.users.fsgqa-123456 = {
-      isNormalUser  = true;
-      description  = "Test user";
-      uid = 2002;
-      group = "fsgqa-123456";
-    };
+        fsgqa-123456 = {
+          isNormalUser = true;
+          description = "Test user";
+          uid = 2002;
+          group = "fsgqa-123456";
+        };
+      };
 
-    users.groups.fsgqa = {
-      gid = 2000;
-      members = [ "fsgqa" ];
-    };
+      groups = {
+        fsgqa = {
+          gid = 2000;
+          members = ["fsgqa"];
+        };
 
-    users.groups.fsgqa2 = {
-      gid = 2001;
-      members = [ "fsgqa2" ];
-    };
+        fsgqa2 = {
+          gid = 2001;
+          members = ["fsgqa2"];
+        };
 
-    users.groups.fsgqa-123456 = {
-      gid = 2002;
-      members = [ "fsgqa-123456" ];
+        fsgqa-123456 = {
+          gid = 2002;
+          members = ["fsgqa-123456"];
+        };
+      };
     };
 
     systemd.tmpfiles.rules = [
@@ -251,28 +248,30 @@ in {
         Group = "root";
         WorkingDirectory = "/root";
       };
-      after = [ "network.target" "network-online.target" "local-fs.target" ];
-      wants = [ "network.target" "network-online.target" "local-fs.target" ];
-      wantedBy = [ "multi-user.target" ];
-      postStop = ''
-        ${cfg.post-test-hook}
-        # Beep beep... Human... back to work
-        echo -ne '\007'
+      after = ["network.target" "network-online.target" "local-fs.target"];
+      wants = ["network.target" "network-online.target" "local-fs.target"];
+      wantedBy = ["multi-user.target"];
+      postStop =
+        ''
+          ${cfg.post-test-hook}
+          # Beep beep... Human... back to work
+          echo -ne '\007'
 
-        # Unload kernel module if we are in VM
-        if [ -d ${cfg.sharedir}/modules ]; then
-          # Handle case when there's no modules glob -> empty
-          shopt -s nullglob
-          for module in ${cfg.sharedir}/modules/*.ko; do
-            if cat /proc/modules | grep -c "$module"; then
-              ${pkgs.kmod}/bin/rmmod $module;
-            fi
-          done;
-        fi
-      '' + optionalString cfg.autoshutdown ''
-        # Auto poweroff
-        ${pkgs.systemd}/bin/systemctl poweroff;
-      '';
+          # Unload kernel module if we are in VM
+          if [ -d ${cfg.sharedir}/modules ]; then
+            # Handle case when there's no modules glob -> empty
+            shopt -s nullglob
+            for module in ${cfg.sharedir}/modules/*.ko; do
+              if cat /proc/modules | grep -c "$module"; then
+                ${pkgs.kmod}/bin/rmmod $module;
+              fi
+            done;
+          fi
+        ''
+        + optionalString cfg.autoshutdown ''
+          # Auto poweroff
+          ${pkgs.systemd}/bin/systemctl poweroff;
+        '';
       script = ''
         ${cfg.pre-test-hook}
 
