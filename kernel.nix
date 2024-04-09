@@ -20,8 +20,7 @@
   kernel =
     ((callPackage "${nixpkgs}/pkgs/os-specific/linux/kernel/manual-config.nix" {})
       {
-        inherit src modDirVersion version kernelPatches configfile;
-        inherit lib stdenv;
+        inherit src modDirVersion version kernelPatches lib configfile;
 
         # Because allowedImportFromDerivation is not enabled,
         # the function cannot set anything based on the configfile. These settings do not

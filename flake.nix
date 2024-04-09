@@ -112,7 +112,13 @@
 
       kernel-config = lib.buildKernelConfig {
         inherit nixpkgs pkgs;
-        defconfig = "tinyconfig";
+        version = "6.8.0-rc2";
+        src = pkgs.fetchFromGitHub {
+          owner = "alberand";
+          repo = "linux";
+          rev = "8eb99f6d07fa6e223f1d6035029088c7309cde05";
+          sha256 = "zkMSIPthRauNYXSDBNb7WlTQ3c6Jdubb6HTOOrhU87E=";
+        };
         structuredExtraConfig = with pkgs.lib.kernel; {
           MODULES = yes;
           FS_VERITY = yes;
@@ -122,18 +128,27 @@
         };
       };
 
-      kernel = lib.buildKernel {
-        inherit nixpkgs;
+      kernel = let 
         version = "6.8.0-rc2";
-        modDirVersion = "6.8.0-rc2";
         src = pkgs.fetchFromGitHub {
           owner = "alberand";
           repo = "linux";
           rev = "8eb99f6d07fa6e223f1d6035029088c7309cde05";
           sha256 = "zkMSIPthRauNYXSDBNb7WlTQ3c6Jdubb6HTOOrhU87E=";
         };
+      in lib.buildKernel {
+        inherit nixpkgs src version;
+        inherit (pkgs) ccacheStdenv;
+        modDirVersion = version;
 
-        configfile = kernel-config;
+        configfile = lib.buildKernelConfig {
+          inherit nixpkgs pkgs src version;
+          structuredExtraConfig = with pkgs.lib.kernel; {
+            FS_VERITY = yes;
+            FS_VERITY_BUILTIN_SIGNATURES = yes;
+            XFS_FS = yes;
+          };
+        };
       };
     };
 

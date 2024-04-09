@@ -18,13 +18,15 @@
   pkgs,
   nixpkgs,
   structuredExtraConfig,
-  kernel ? pkgs.linuxPackages_latest.kernel,
+  src,
+  version,
   withRust ? false,
   enableCommonConfig ? false,
   commonStructuredConfig ? [],
   structuredConfigFromPatches ? [],
   defconfig ? "alldefconfig",
   autoModules ? false,
+  randstructSeed ? "",
 }: let
   defaultConfig = with lib.kernel; {
     DEBUG_FS = yes;
@@ -179,7 +181,8 @@ in
     kernelArch = stdenv.hostPlatform.linuxArch;
     extraMakeFlags = [];
 
-    inherit (kernel) src patches version;
+    inherit version src;
+
     pname = "linux-config";
 
     RUST_LIB_SRC = lib.optionalString withRust rustPlatform.rustLibSrc;
@@ -212,15 +215,46 @@ in
       lib.optionals (stdenv.hostPlatform.linux-kernel ? makeFlags)
       stdenv.hostPlatform.linux-kernel.makeFlags;
 
-    postPatch =
-      kernel.postPatch
-      + ''
+    postPatch = ''
+        # Ensure that depmod gets resolved through PATH
+        sed -i Makefile -e 's|= /sbin/depmod|= depmod|'
+
+        # Don't include a (random) NT_GNU_BUILD_ID, to make the build more deterministic.
+        # This way kernels can be bit-by-bit reproducible depending on settings
+        # (e.g. MODULE_SIG and SECURITY_LOCKDOWN_LSM need to be disabled).
+        # See also https://kernelnewbies.org/BuildId
+        sed -i Makefile -e 's|--build-id=[^ ]*|--build-id=none|'
+
+        # Some linux-hardened patches now remove certain files in the scripts directory, so the file may not exist.
+        [[ -f scripts/ld-version.sh ]] && patchShebangs scripts/ld-version.sh
+
+        # Set randstruct seed to a deterministic but diversified value. Note:
+        # we could have instead patched gen-random-seed.sh to take input from
+        # the buildFlags, but that would require also patching the kernel's
+        # toplevel Makefile to add a variable export. This would be likely to
+        # cause future patch conflicts.
+        for file in scripts/gen-randstruct-seed.sh scripts/gcc-plugins/gen-random-seed.sh; do
+          if [ -f "$file" ]; then
+            substituteInPlace "$file" \
+              --replace NIXOS_RANDSTRUCT_SEED \
+              $(echo ${randstructSeed}${src} ${placeholder "configfile"} | sha256sum | cut -d ' ' -f 1 | tr -d '\n')
+            break
+          fi
+        done
+
+        patchShebangs scripts
+
+        # also patch arch-specific install scripts
+        for i in $(find arch -name install.sh); do
+            patchShebangs "$i"
+        done
+
         # Patch kconfig to print "###" after every question so that
         # generate-config.pl from the generic builder can answer them.
         sed -e '/fflush(stdout);/i\printf("###");' -i scripts/kconfig/conf.c
       '';
 
-    preUnpack = kernel.preUnpack or "";
+    preUnpack = "";
 
     buildPhase = ''
       export buildRoot="''${buildRoot:-build}"
