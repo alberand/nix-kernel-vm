@@ -9,8 +9,8 @@ with lib; let
   xfsprogs-overlay = {
     version,
     src,
-  }: final: prev: {
-    final.xfsprogs = prev.xfsprogs.overrideAttrs (_: {
+  }: _final: prev: {
+    xfsprogs = prev.xfsprogs.overrideAttrs (_old: {
       inherit version src;
       # Don't know why but "bin" should not be here as it create dependency
       # cycle

@@ -28,16 +28,11 @@
       devShells.default = lib.mkLinuxShell {
         inherit pkgs root;
         user-modules = [
-          ./xfsprogs.nix
           ({
             config,
             lib,
             ...
-          }: {
-            programs.xfsprogs = {
-              enable = true;
-            };
-          })
+          }: { })
         ];
       };
 

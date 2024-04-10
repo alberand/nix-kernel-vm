@@ -175,7 +175,6 @@ in {
 
     environment.systemPackages = with pkgs; [
       xfstests
-      xfsprogs
     ];
 
     # Setup envirionment

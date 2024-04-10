@@ -132,7 +132,7 @@
     user-modules ? [],
     packages ? [],
   }:
-    builtins.getAttr "shell" rec {
+    builtins.getAttr "shell" {
       shell = pkgs.mkShell {
         packages =
           if no-vm
@@ -143,17 +143,7 @@
             })
           ];
 
-        nativeBuildInputs = let
-          mypkgs = import (builtins.fetchGit {
-            # Descriptive name to make the store path easier to identify
-            name = "my-old-revision";
-            url = "https://github.com/NixOS/nixpkgs/";
-            ref = "refs/heads/nixpkgs-unstable";
-            rev = "c8e344196154514112c938f2814e809b1ca82da1";
-          }) {};
-
-          myPkg = mypkgs.rpm;
-        in
+        nativeBuildInputs =
           with pkgs;
             [
               ctags
@@ -184,7 +174,6 @@
               util-linux
               stress-ng
               dbench
-              pkgs.xfsprogs
               fio
               linuxquota
               nvme-cli
@@ -228,7 +217,7 @@
   buildKernel = pkgs.callPackage ./kernel.nix {};
 
   deploy = {pkgs}:
-    builtins.getAttr "script" rec {
+    builtins.getAttr "script" {
       script = pkgs.writeScriptBin "deploy" (builtins.readFile ./deploy.sh);
     };
 }
