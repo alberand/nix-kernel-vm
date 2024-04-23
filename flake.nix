@@ -64,6 +64,7 @@
       devShells."xfsprogs" = with pkgs;
         pkgs.mkShell {
           nativeBuildInputs = [
+            icu
             gettext
             pkg-config
             libuuid # codegen tool uses libuuid
