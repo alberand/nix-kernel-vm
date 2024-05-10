@@ -186,6 +186,17 @@
               udev # for btrfs-progs
               lzo # for btrfs-progs
               liburing # for btrfs-progs
+
+              # probably better to move it to separate module
+              smatch
+              sqlite
+              openssl
+              libllvm
+              libxml2.dev
+              perl
+              perl536Packages.DBI
+              perl536Packages.DBDSQLite
+              perl536Packages.TryTiny
             ]
             ++ packages;
 
