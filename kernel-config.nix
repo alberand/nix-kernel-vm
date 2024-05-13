@@ -38,6 +38,8 @@
     DEBUG_SHIRQ = yes;
     DEBUG_ATOMIC_SLEEP = yes;
 
+    LOCALVERSION_AUTO = no;
+
     IKCONFIG = yes;
     IKCONFIG_PROC = yes;
     # Compile with headers
