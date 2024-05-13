@@ -35,7 +35,7 @@
 
   networking.firewall.enable = false;
   networking.hostName = "test-node";
-  networking.useDHCP = true;
+  networking.useDHCP = false;
   services.getty.helpLine = ''
           Log in as "root" with an empty password.
           If you are connect via serial console:
