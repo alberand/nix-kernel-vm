@@ -20,7 +20,7 @@ with lib; let
         runHook postInstall
       '';
     };
-    self.xfstests = pkgs.symlinkJoin {
+    xfstests = pkgs.symlinkJoin {
       name = "xfstests";
       paths = [
         (super.xfstests.overrideAttrs (prev: {
@@ -70,7 +70,7 @@ with lib; let
               exec ./check "$@"
             '';
         }))
-        xfstests-hooks
+        mkIf cfg.hooks xfstests-hooks
       ];
     };
   };
