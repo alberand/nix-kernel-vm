@@ -6,7 +6,7 @@
 }:
 with lib; let
   cfg = config.programs.xfstests;
-  xfstests-overlay-remote = self: super: rec {
+  xfstests-overlay-remote = final: prev: rec {
     xfstests-hooks = pkgs.stdenv.mkDerivation {
       name = "xfstests-hooks";
       src = cfg.hooks;
@@ -23,7 +23,7 @@ with lib; let
     xfstests = pkgs.symlinkJoin {
       name = "xfstests";
       paths = [
-        (super.xfstests.overrideAttrs (prev: {
+        (prev.xfstests.overrideAttrs (prev: {
           inherit (cfg) src;
           version = "git";
           patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
@@ -34,7 +34,7 @@ with lib; let
               ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
             ];
           wrapperScript = with pkgs;
-            writeScript "xfstests-check" ''
+            writeScript "xfstests-check" (''
               #!${pkgs.runtimeShell}
               set -e
               export RESULT_BASE="$(pwd)/results"
@@ -47,8 +47,13 @@ with lib; let
               for f in $(cd @out@/lib/xfstests; echo *); do
                 ln -s @out@/lib/xfstests/$f $f
               done
+              ''
+              +
+              (optionalString (cfg.hooks != null) ''
               ln -s ${pkgs.xfstests-hooks}/lib/xfstests/hooks hooks
-
+              '')
+              +
+              ''
               export PATH=${lib.makeBinPath [
                 acl
                 attr
@@ -68,9 +73,10 @@ with lib; let
                 xfsprogs
               ]}:$PATH
               exec ./check "$@"
-            '';
+            '');
         }))
-        mkIf cfg.hooks xfstests-hooks
+      ] ++ optionals (cfg.hooks != null) [
+        xfstests-hooks
       ];
     };
   };
