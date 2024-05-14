@@ -170,11 +170,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    programs.xfsprogs = {
-      enable = true;
-      src = pkgs.xfsprogs.src;
-    };
-
     nixpkgs.overlays = [
       xfstests-overlay-remote
     ];
