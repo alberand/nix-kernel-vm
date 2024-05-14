@@ -32,7 +32,7 @@
             config,
             lib,
             ...
-          }: { })
+          }: {})
         ];
       };
 
@@ -88,7 +88,9 @@
           '';
         };
 
-      devShells."xfstests" = with pkgs;
+      devShells."xfstests" = with pkgs; let
+        xfstests-env = writeShellScriptBin "xfstests-env" (builtins.readFile ./xfstests-env.sh);
+      in
         pkgs.mkShell {
           nativeBuildInputs = [
             autoconf
@@ -104,6 +106,7 @@
             libxfs
             openssl
             perl
+            xfstests-env
           ];
 
           shellHook = ''
@@ -113,6 +116,12 @@
             export MAKE=$(type -P make)
             export SED=$(type -P sed)
             export SORT=$(type -P sort)
+
+            export PATH=${pkgs.lib.makeBinPath [acl attr bc e2fsprogs fio gawk keyutils
+                                   libcap lvm2 perl procps killall quota
+                                   util-linux which xfsprogs]}:$PATH
+
+            ${xfstests-env}/bin/xfstests-env
           '';
         };
 
@@ -125,6 +134,37 @@
           qemu-options = [
             "-hda /dev/loop0"
             "-hdb /dev/loop1"
+          ];
+          user-modules = [
+            ({
+              config,
+              pkgs,
+              lib,
+              ...
+            }: {
+              programs.xfstests = {
+                enable = true;
+                src = builtins.fetchGit {
+                  url = /home/alberand/Projects/xfstests-dev;
+                  ref = "prj-quota-syscall";
+                  rev = "f85dae4747350aba71e721acc437f3a1a910e8c7";
+                  shallow = true;
+                };
+                testconfig = pkgs.fetchurl {
+                  url = "https://gist.githubusercontent.com/alberand/85fa4d7e0929902ef5d303ae1de5cc8a/raw/f42bc75660efbf03ec6ee4f31e70d632735aeeec/xfstests-config";
+                  hash = "sha256-dVNkh2FU1wSvPcIRAtFQryfQrKikyKMpbDCHHnvlMd0=";
+                };
+              };
+              programs.xfsprogs = {
+                enable = true;
+                src = builtins.fetchGit {
+                  url = /home/alberand/Projects/xfsprogs-dev;
+                  ref = "prj-quota-syscall";
+                  rev = "46045cfdc3a9bae4082daa2ba54ce8819f95a7da";
+                  shallow = true;
+                };
+              };
+            })
           ];
         };
 
