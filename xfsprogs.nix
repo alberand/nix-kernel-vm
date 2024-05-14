@@ -9,9 +9,10 @@ with lib; let
   xfsprogs-overlay = {
     version,
     src,
-  }: _final: prev: {
+  }: final: prev: {
     xfsprogs = prev.xfsprogs.overrideAttrs (_old: {
       inherit version src;
+
       # Don't know why but "bin" should not be here as it create dependency
       # cycle
       outputs = ["bin" "dev" "out" "doc"];
@@ -50,7 +51,6 @@ in {
 
     src = mkOption {
       type = types.package;
-      default = null;
     };
   };
 

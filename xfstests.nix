@@ -160,13 +160,13 @@ in {
 
     src = mkOption {
       type = types.package;
-      default = pkgs.xfstests;
     };
   };
 
   config = mkIf cfg.enable {
     programs.xfsprogs = {
       enable = true;
+      src = pkgs.xfsprogs.src;
     };
 
     nixpkgs.overlays = [
