@@ -18,7 +18,7 @@
     ];
     consoleLogLevel = lib.mkDefault 7;
     # This is happens before systemd
-    postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
+    # postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
     crashDump.enable = true;
   };
 
