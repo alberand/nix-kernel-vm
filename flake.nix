@@ -14,8 +14,7 @@
     flake-utils,
     nixos-generators,
   }:
-    let
-      system = "x86_64-linux";
+    flake-utils.lib.eachSystem ["x86_64-linux" "aarch64-linux"] (system: let
       pkgs = import nixpkgs {
         inherit system;
       };
@@ -118,9 +117,7 @@
             export SED=$(type -P sed)
             export SORT=$(type -P sort)
 
-            export PATH=${pkgs.lib.makeBinPath [acl attr bc e2fsprogs fio gawk keyutils
-                                   libcap lvm2 perl procps killall quota
-                                   util-linux which xfsprogs]}:$PATH
+            export PATH=${pkgs.lib.makeBinPath [libxfs]}:$PATH
             ${xfstests-env}/bin/xfstests-env
           '';
         };
@@ -220,6 +217,6 @@
         drv = packages.vmtest;
       };
 
-      nixosConfigurations.xfstests-env = import ./xfstests-env.nix { inherit nixpkgs pkgs;};
-    };
+      #nixosConfigurations.xfstests-env = import ./xfstests-env.nix { inherit nixpkgs pkgs;};
+    });
 }
