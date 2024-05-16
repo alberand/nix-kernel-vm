@@ -90,6 +90,7 @@
 
     PROC_FS = yes;
     SYSFS = yes;
+    SYSCTL = yes;
 
     MODULES = yes;
     MODULE_UNLOAD = yes;
