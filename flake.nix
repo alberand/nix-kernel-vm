@@ -118,6 +118,9 @@
             export SED=$(type -P sed)
             export SORT=$(type -P sort)
 
+            export PATH=${pkgs.lib.makeBinPath [acl attr bc e2fsprogs fio gawk keyutils
+                                   libcap lvm2 perl procps killall quota
+                                   util-linux which xfsprogs]}:$PATH
             ${xfstests-env}/bin/xfstests-env
           '';
         };
