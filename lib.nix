@@ -197,6 +197,15 @@
               perl536Packages.DBI
               perl536Packages.DBDSQLite
               perl536Packages.TryTiny
+
+              # kselftest deps
+              libcap
+              libcap_ng
+              fuse3
+              fuse
+              alsa-lib
+              libmnl
+              numactl
             ]
             ++ packages;
 
