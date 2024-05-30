@@ -32,7 +32,10 @@
             config,
             lib,
             ...
-          }: {})
+          }: {
+            vm.sharedir = "/tmp/vmtest";
+            vm.disks = [5000 5000];
+          })
         ];
       };
 

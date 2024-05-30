@@ -1,38 +1,67 @@
 {
-  sharedir,
-  qemu-options ? [],
+  config,
+  lib,
   ...
-}: {
-  virtualisation = {
-    diskSize = 20000; # MB
-    # Store the image in sharedir instead of pwd
-    diskImage = "${sharedir}/test-node.qcow2";
-    memorySize = 4096; # MB
-    cores = 4;
-    writableStoreUseTmpfs = false;
-    useDefaultFilesystems = true;
-    # Run qemu in the terminal not in Qemu GUI
-    graphics = false;
-
-    qemu = {
-      # Network requires tap0 netowrk on the host
-      options =
-        [
-          "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
-          "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
-          "-device virtio-rng-pci"
-        ]
-        ++ qemu-options;
+}: let
+  cfg = config.vm;
+in {
+  options.vm = {
+    sharedir = lib.mkOption {
+      description = "path to the share directory inside VM";
+      default = "";
+      example = "/root/vmtest";
+      type = lib.types.str;
     };
 
-    sharedDirectories = {
-      results = {
-        source = "${sharedir}/results";
-        target = "/root/results";
+    qemu-options = lib.mkOption {
+      description = "QEMU command line options";
+      default = [];
+      example = "-serial stdio";
+      type = lib.types.listOf lib.types.str;
+    };
+
+    disks = lib.mkOption {
+      description = "Create empty disks of specified size";
+      default = [];
+      example = "[5000 5000]";
+      type = lib.types.listOf lib.types.int;
+    };
+  };
+
+  config = {
+    virtualisation = {
+      diskSize = 20000; # MB
+      # Store the image in sharedir instead of pwd
+      diskImage = "${cfg.sharedir}/test-node.qcow2";
+      memorySize = 4096; # MB
+      cores = 4;
+      writableStoreUseTmpfs = false;
+      useDefaultFilesystems = true;
+      # Run qemu in the terminal not in Qemu GUI
+      graphics = false;
+
+      emptyDiskImages = cfg.disks;
+
+      qemu = {
+        # Network requires tap0 netowrk on the host
+        options =
+          [
+            "-device e1000,netdev=network0,mac=00:00:00:00:00:00"
+            "-netdev tap,id=network0,ifname=tap0,script=no,downscript=no"
+            "-device virtio-rng-pci"
+          ]
+          ++ cfg.qemu-options;
       };
-      vmtest = {
-        source = "${sharedir}";
-        target = "/root/vmtest";
+
+      sharedDirectories = {
+        results = {
+          source = "${cfg.sharedir}/results";
+          target = "/root/results";
+        };
+        vmtest = {
+          source = "${cfg.sharedir}";
+          target = "/root/vmtest";
+        };
       };
     };
   };

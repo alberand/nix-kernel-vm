@@ -18,7 +18,7 @@
           ./xfsprogs.nix
           ./simple-test.nix
           ./system.nix
-          (import ./vm.nix {inherit sharedir qemu-options; })
+          ./vm.nix
         ]
         ++ user-modules;
       format = "vm";
