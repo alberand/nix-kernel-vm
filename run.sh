@@ -198,7 +198,7 @@ function set_totest() {
 		return
 	fi
 
-	eecho "${1:--g verity}" > $SHARE_DIR/totest
+	echo "${1:--g verity}" > $SHARE_DIR/totest
 	if [[ ! -f "$2" ]]; then
 		cat << EOF > $SHARE_DIR/xfstests-config
 export FSTYP="xfs"
