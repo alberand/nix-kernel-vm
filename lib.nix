@@ -118,8 +118,9 @@
         pkgs.writeScriptBin "vmtest"
         ((builtins.readFile ./run.sh)
           + ''
-            ${nixos}/bin/run-test-node-vm
+            ${nixos}/bin/run-test-node-vm | tee $LOG_FILE
             echo "View results at $SHARE_DIR/results"
+            echo "Log is in $LOG_FILE/results"
           '');
     };
 

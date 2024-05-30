@@ -15,6 +15,7 @@ MODULE="$MODULE"
 TOTEST="$TOTEST"
 TEST_CONFIG="$TEST_CONFIG"
 QEMU_OPTS="$QEMU_OPTS"
+LOG_FILE="/tmp/vmtest-$(date +%s).log"
 
 function help() {
 	cat <<EOF
@@ -54,6 +55,10 @@ CONFIG
 
     The variables are capitalized options.
 EOF
+}
+
+function eecho() {
+	echo "$1" | tee $LOG_FILE
 }
 
 function load_config() {
