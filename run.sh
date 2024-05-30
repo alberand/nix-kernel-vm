@@ -58,7 +58,7 @@ EOF
 }
 
 function eecho() {
-	echo "$1" | tee $LOG_FILE
+	echo "$1" | tee -a $LOG_FILE
 }
 
 function load_config() {
