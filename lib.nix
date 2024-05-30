@@ -7,7 +7,7 @@
     pkgs,
     sharedir,
     qemu-options ? [],
-    user-modules ? [],
+    user-config ? {},
   }:
     nixos-generators.nixosGenerate {
       system = "x86_64-linux";
@@ -19,8 +19,8 @@
           ./simple-test.nix
           ./system.nix
           ./vm.nix
-        ]
-        ++ user-modules;
+          ({...}: user-config)
+        ];
       format = "vm";
     };
 
@@ -28,7 +28,7 @@
     pkgs,
     test-disk,
     scratch-disk,
-    user-modules ? [],
+    user-config ? {},
   }:
     builtins.getAttr "iso" {
       iso = nixos-generators.nixosGenerate {
@@ -59,9 +59,9 @@
                 autoFormat = true;
                 label = "scratch";
               };
-            })
-          ]
-          ++ user-modules;
+            } // user-config)
+
+          ];
         format = "iso";
       };
     };
@@ -70,11 +70,11 @@
     pkgs,
     sharedir ? "/tmp/vmtest",
     qemu-options ? [],
-    user-modules ? [],
+    user-config ? {},
   }:
     builtins.getAttr "vmtest" rec {
       nixos = mkVM {
-        inherit pkgs sharedir qemu-options user-modules;
+        inherit pkgs sharedir qemu-options user-config;
       };
 
       vmtest =
@@ -93,7 +93,7 @@
     no-vm ? false,
     sharedir ? "/tmp/vmtest",
     qemu-options ? [],
-    user-modules ? [],
+    user-config ? {},
     packages ? [],
   }:
     builtins.getAttr "shell" {
@@ -103,7 +103,7 @@
           then []
           else [
             (mkVmTest {
-              inherit pkgs sharedir qemu-options user-modules;
+              inherit pkgs sharedir qemu-options user-config;
             })
           ];
 

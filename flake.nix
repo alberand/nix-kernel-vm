@@ -27,16 +27,10 @@
 
       devShells.default = lib.mkLinuxShell {
         inherit pkgs root;
-        user-modules = [
-          ({
-            config,
-            lib,
-            ...
-          }: {
-            vm.sharedir = "/tmp/vmtest";
-            vm.disks = [5000 5000];
-          })
-        ];
+        user-config = {
+          vm.sharedir = "/tmp/vmtest";
+          vm.disks = [5000 5000];
+        };
       };
 
       devShells."light" = lib.mkLinuxShell {
@@ -131,14 +125,6 @@
 
         vmtest = lib.mkVmTest {
           inherit pkgs;
-          user-modules = [
-            ({
-              config,
-              pkgs,
-              lib,
-              ...
-            }: {})
-          ];
         };
 
         iso = lib.mkIso {
