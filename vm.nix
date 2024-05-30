@@ -8,8 +8,8 @@ in {
   options.vm = {
     sharedir = lib.mkOption {
       description = "path to the share directory inside VM";
-      default = "";
-      example = "/root/vmtest";
+      default = "/tmp/vmtest";
+      example = "/tmp/vmtest";
       type = lib.types.str;
     };
 
