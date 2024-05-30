@@ -71,7 +71,7 @@ function load_config() {
 			rhs="${rhs%\"*}"     # Del opening string quotes
 			rhs="${rhs#\"*}"     # Del closing string quotes
 			export $lhs="$rhs"
-			echo "Option $lhs = '$rhs'"
+			eecho "Option $lhs = '$rhs'"
 		fi
 	done < $1
 }
@@ -81,47 +81,47 @@ function parse_args() {
 	while [ : ]; do
 		case "$1" in
 			-k | --kernel)
-				echo "Processing 'kernel' option: $2"
+				eecho "Processing 'kernel' option: $2"
 				KERNEL="$2"
 				shift
 				shift
 				;;
 			-m | --module)
-				echo "Processing 'module' option: $2"
+				eecho "Processing 'module' option: $2"
 				MODULE="$2"
 				shift
 				shift
 				;;
 			-t | --totest)
-				echo "Processing 'totest' option: $2"
+				eecho "Processing 'totest' option: $2"
 				TOTEST="$2"
 				shift
 				shift
 				;;
 			-c | --test-config)
-				echo "Processing 'test-config' option: $2"
+				eecho "Processing 'test-config' option: $2"
 				TEST_CONFIG="$2"
 				shift
 				shift
 				;;
 			-q | --qemu-opts)
-				echo "Processing 'qemu-opts' option: $2"
+				eecho "Processing 'qemu-opts' option: $2"
 				QEMU_OPTS="$2"
 				shift
 				shift
 				;;
 			-s | --share-dir)
-				echo "Processing 'share-dir' option: $2"
+				eecho "Processing 'share-dir' option: $2"
 				SHARE_DIR="$2"
 				shift
 				shift
 				;;
 			--add)
 				if [[ -z $SHARE_DIR ]]; then
-					echo "\$SHARE_DIR need to be set"
+					eecho "\$SHARE_DIR need to be set"
 					exit 1
 				fi
-				echo "Adding $2 test"
+				eecho "Adding $2 test"
 				rm -f $SHARE_DIR/test.sh
 				ln $(readlink -f $2) $SHARE_DIR/test.sh
 				exit 0
@@ -143,7 +143,7 @@ function init_share() {
 	mkdir -p $SHARE_DIR
 
 	if [ ! -w "$SHARE_DIR" ]; then
-		echo "$SHARE_DIR is not writable"
+		eecho "$SHARE_DIR is not writable"
 		return
 	fi
 	mkdir -p $SHARE_DIR/modules
@@ -156,19 +156,19 @@ function set_kernel() {
 	fi
 
 	if [[ ! -f "$1" ]]; then
-		echo "File $1 doesn't exist"
+		eecho "File $1 doesn't exist"
 		return
 	fi
 
 	filename=$(basename $1)
 	if [[ "$filename" != "vmlinux" && "$filename" != "bzImage" ]]; then
-		echo "File $1 is not a kernel (vmlinuz or bzImage)"
+		eecho "File $1 is not a kernel (vmlinuz or bzImage)"
 	fi
 
 	export NIXPKGS_QEMU_KERNEL_test_node="$(realpath $1)"
 	export QEMU_OPTS="$QEMU_OPTS"
 	export NIX_DISK_IMAGE="$SHARE_DIR/test-node.qcow2"
-	echo "Kernel is set to $NIXPKGS_QEMU_KERNEL_test_node"
+	eecho "Kernel is set to $NIXPKGS_QEMU_KERNEL_test_node"
 }
 
 function add_module() {
@@ -178,16 +178,16 @@ function add_module() {
 	fi
 
 	if [[ ! -f "$1" ]]; then
-		echo "File $1 doesn't exist"
+		eecho "File $1 doesn't exist"
 		return
 	fi
 
 	filename=$(basename $1)
 	if [[ "$filename" != *.ko && "$filename" != *.o ]]; then
-		echo "File $filename is not a module (.ko or .o)"
+		eecho "File $filename is not a module (.ko or .o)"
 	fi
 
-	echo "Module is set to $1"
+	eecho "Module is set to $1"
 	rm -f -- "$SHARE_DIR/modules/$1"
 	cp $1 "$SHARE_DIR/modules"
 }
@@ -198,7 +198,7 @@ function set_totest() {
 		return
 	fi
 
-	echo "${1:--g verity}" > $SHARE_DIR/totest
+	eecho "${1:--g verity}" > $SHARE_DIR/totest
 	if [[ ! -f "$2" ]]; then
 		cat << EOF > $SHARE_DIR/xfstests-config
 export FSTYP="xfs"
@@ -215,7 +215,7 @@ EOF
 }
 
 if [[ -f "$LOCAL_CONFIG" ]]; then
-	echo "Loading local config $LOCAL_CONFIG"
+	eecho "Loading local config $LOCAL_CONFIG"
 	load_config $LOCAL_CONFIG
 fi
 
