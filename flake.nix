@@ -128,40 +128,13 @@
 
         vmtest = lib.mkVmTest {
           inherit pkgs;
-          qemu-options = [
-            "-hda /dev/loop0"
-            "-hdb /dev/loop1"
-          ];
           user-modules = [
             ({
               config,
               pkgs,
               lib,
               ...
-            }: {
-              programs.xfstests = {
-                enable = true;
-                src = builtins.fetchGit {
-                  url = /home/alberand/Projects/xfstests-dev;
-                  ref = "prj-quota-syscall";
-                  rev = "f85dae4747350aba71e721acc437f3a1a910e8c7";
-                  shallow = true;
-                };
-                testconfig = pkgs.fetchurl {
-                  url = "https://gist.githubusercontent.com/alberand/85fa4d7e0929902ef5d303ae1de5cc8a/raw/f42bc75660efbf03ec6ee4f31e70d632735aeeec/xfstests-config";
-                  hash = "sha256-dVNkh2FU1wSvPcIRAtFQryfQrKikyKMpbDCHHnvlMd0=";
-                };
-              };
-              programs.xfsprogs = {
-                enable = true;
-                src = builtins.fetchGit {
-                  url = /home/alberand/Projects/xfsprogs-dev;
-                  ref = "prj-quota-syscall";
-                  rev = "46045cfdc3a9bae4082daa2ba54ce8819f95a7da";
-                  shallow = true;
-                };
-              };
-            })
+            }: {})
           ];
         };
 
