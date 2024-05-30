@@ -224,3 +224,5 @@ init_share
 set_kernel $KERNEL
 add_module $MODULE
 set_totest "$TOTEST" "$TEST_CONFIG"
+
+# After this line nix will insert more bash code. Don't exit
