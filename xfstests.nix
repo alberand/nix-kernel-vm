@@ -22,62 +22,62 @@ with lib; let
     };
     xfstests = pkgs.symlinkJoin {
       name = "xfstests";
-      paths = [
-        (prev.xfstests.overrideAttrs (prev: {
-          inherit (cfg) src;
-          version = "git";
-          patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
-          patches =
-            (prev.patches or [])
-            ++ [
-              ./0001-common-link-.out-file-to-the-output-directory.patch
-              ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
-            ];
-          wrapperScript = with pkgs;
-            writeScript "xfstests-check" (''
-              #!${pkgs.runtimeShell}
-              set -e
-              export RESULT_BASE="$(pwd)/results"
+      paths =
+        [
+          (prev.xfstests.overrideAttrs (prev: {
+            inherit (cfg) src;
+            version = "git";
+            patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
+            patches =
+              (prev.patches or [])
+              ++ [
+                ./0001-common-link-.out-file-to-the-output-directory.patch
+                ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
+              ];
+            wrapperScript = with pkgs;
+              writeScript "xfstests-check" (''
+                  #!${pkgs.runtimeShell}
+                  set -e
+                  export RESULT_BASE="$(pwd)/results"
 
-              dir=$(mktemp --tmpdir -d xfstests.XXXXXX)
-              trap "rm -rf $dir" EXIT
+                  dir=$(mktemp --tmpdir -d xfstests.XXXXXX)
+                  trap "rm -rf $dir" EXIT
 
-              chmod a+rx "$dir"
-              cd "$dir"
-              for f in $(cd @out@/lib/xfstests; echo *); do
-                ln -s @out@/lib/xfstests/$f $f
-              done
-              ''
-              +
-              (optionalString (cfg.hooks != null) ''
-              ln -s ${pkgs.xfstests-hooks}/lib/xfstests/hooks hooks
-              '')
-              +
-              ''
-              export PATH=${lib.makeBinPath [
-                acl
-                attr
-                bc
-                e2fsprogs
-                fio
-                gawk
-                keyutils
-                libcap
-                lvm2
-                perl
-                procps
-                killall
-                quota
-                util-linux
-                which
-                xfsprogs
-              ]}:$PATH
-              exec ./check "$@"
-            '');
-        }))
-      ] ++ optionals (cfg.hooks != null) [
-        xfstests-hooks
-      ];
+                  chmod a+rx "$dir"
+                  cd "$dir"
+                  for f in $(cd @out@/lib/xfstests; echo *); do
+                    ln -s @out@/lib/xfstests/$f $f
+                  done
+                ''
+                + (optionalString (cfg.hooks != null) ''
+                  ln -s ${pkgs.xfstests-hooks}/lib/xfstests/hooks hooks
+                '')
+                + ''
+                  export PATH=${lib.makeBinPath [
+                    acl
+                    attr
+                    bc
+                    e2fsprogs
+                    fio
+                    gawk
+                    keyutils
+                    libcap
+                    lvm2
+                    perl
+                    procps
+                    killall
+                    quota
+                    util-linux
+                    which
+                    xfsprogs
+                  ]}:$PATH
+                  exec ./check "$@"
+                '');
+          }))
+        ]
+        ++ optionals (cfg.hooks != null) [
+          xfstests-hooks
+        ];
     };
   };
 in {

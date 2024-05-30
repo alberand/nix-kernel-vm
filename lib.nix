@@ -12,15 +12,14 @@
     nixos-generators.nixosGenerate {
       system = "x86_64-linux";
       specialArgs = {diskSize = "20000";};
-      modules =
-        [
-          ./xfstests.nix
-          ./xfsprogs.nix
-          ./simple-test.nix
-          ./system.nix
-          ./vm.nix
-          ({...}: user-config)
-        ];
+      modules = [
+        ./xfstests.nix
+        ./xfsprogs.nix
+        ./simple-test.nix
+        ./system.nix
+        ./vm.nix
+        ({...}: user-config)
+      ];
       format = "vm";
     };
 
@@ -33,16 +32,16 @@
     builtins.getAttr "iso" {
       iso = nixos-generators.nixosGenerate {
         system = "x86_64-linux";
-        modules =
-          [
-            ./xfstests.nix
-            ./xfsprogs.nix
-            ./system.nix
-            ({
-              config,
-              pkgs,
-              ...
-            }: {
+        modules = [
+          ./xfstests.nix
+          ./xfsprogs.nix
+          ./system.nix
+          ({
+            config,
+            pkgs,
+            ...
+          }:
+            {
               # Don't shutdown system as libvirtd will remove the VM
               programs.xfstests.autoshutdown = false;
 
@@ -59,9 +58,9 @@
                 autoFormat = true;
                 label = "scratch";
               };
-            } // user-config)
-
-          ];
+            }
+            // user-config)
+        ];
         format = "iso";
       };
     };
@@ -107,71 +106,70 @@
             })
           ];
 
-        nativeBuildInputs =
-          with pkgs;
-            [
-              ctags
-              getopt
-              flex
-              bison
-              perl
-              gnumake
-              bc
-              jq
-              pkg-config
-              clang
-              clang-tools
-              file
-              gettext
-              libtool
-              qemu_full
-              qemu-utils
-              automake
-              autoconf
-              e2fsprogs
-              attr
-              acl
-              libaio
-              keyutils
-              fsverity-utils
-              ima-evm-utils
-              util-linux
-              stress-ng
-              dbench
-              fio
-              linuxquota
-              nvme-cli
-              virt-manager # for deploy
-              xmlstarlet
-              rpm
-              pahole
-              sphinx # for btrfs-progs
-              zstd # for btrfs-progs
-              udev # for btrfs-progs
-              lzo # for btrfs-progs
-              liburing # for btrfs-progs
+        nativeBuildInputs = with pkgs;
+          [
+            ctags
+            getopt
+            flex
+            bison
+            perl
+            gnumake
+            bc
+            jq
+            pkg-config
+            clang
+            clang-tools
+            file
+            gettext
+            libtool
+            qemu_full
+            qemu-utils
+            automake
+            autoconf
+            e2fsprogs
+            attr
+            acl
+            libaio
+            keyutils
+            fsverity-utils
+            ima-evm-utils
+            util-linux
+            stress-ng
+            dbench
+            fio
+            linuxquota
+            nvme-cli
+            virt-manager # for deploy
+            xmlstarlet
+            rpm
+            pahole
+            sphinx # for btrfs-progs
+            zstd # for btrfs-progs
+            udev # for btrfs-progs
+            lzo # for btrfs-progs
+            liburing # for btrfs-progs
 
-              # probably better to move it to separate module
-              smatch
-              sqlite
-              openssl
-              libllvm
-              libxml2.dev
-              perl
-              perl536Packages.DBI
-              perl536Packages.DBDSQLite
-              perl536Packages.TryTiny
+            # probably better to move it to separate module
+            smatch
+            sqlite
+            openssl
+            libllvm
+            libxml2.dev
+            perl
+            perl536Packages.DBI
+            perl536Packages.DBDSQLite
+            perl536Packages.TryTiny
 
-              # kselftest deps
-              libcap
-              libcap_ng
-              fuse3
-              fuse
-              alsa-lib
-              libmnl
-              numactl
-            ]
-            ++ packages;
+            # kselftest deps
+            libcap
+            libcap_ng
+            fuse3
+            fuse
+            alsa-lib
+            libmnl
+            numactl
+          ]
+          ++ packages;
 
         buildInputs = with pkgs; [
           elfutils

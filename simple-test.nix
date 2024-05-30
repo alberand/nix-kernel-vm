@@ -1,8 +1,10 @@
-{ lib, pkgs, config, ... }:
-
-with lib;
-
-let
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+with lib; let
   cfg = config.programs.simple-test;
 in {
   options.programs.simple-test = {
@@ -70,7 +72,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-
     systemd.tmpfiles.rules = [
       "d /mnt 1777 root root"
       "d /mnt/test 1777 root root"
@@ -91,28 +92,30 @@ in {
         Group = "root";
         WorkingDirectory = "/root";
       };
-      after = [ "network.target" "network-online.target" "local-fs.target" ];
-      wants = [ "network.target" "network-online.target" "local-fs.target" ];
-      wantedBy = [ "multi-user.target" ];
-      postStop = ''
-        ${cfg.post-test-hook}
-        # Beep beep... Human... back to work
-        echo -ne '\007'
+      after = ["network.target" "network-online.target" "local-fs.target"];
+      wants = ["network.target" "network-online.target" "local-fs.target"];
+      wantedBy = ["multi-user.target"];
+      postStop =
+        ''
+          ${cfg.post-test-hook}
+          # Beep beep... Human... back to work
+          echo -ne '\007'
 
-        # Unload kernel module if we are in VM
-        if [ -d ${cfg.sharedir}/modules ]; then
-          # Handle case when there's no modules glob -> empty
-          shopt -s nullglob
-          for module in ${cfg.sharedir}/modules/*.ko; do
-            if cat /proc/modules | grep -c "$module"; then
-              ${pkgs.kmod}/bin/rmmod $module;
-            fi
-          done;
-        fi
-      '' + optionalString cfg.autoshutdown ''
-        # Auto poweroff
-        ${pkgs.systemd}/bin/systemctl poweroff;
-      '';
+          # Unload kernel module if we are in VM
+          if [ -d ${cfg.sharedir}/modules ]; then
+            # Handle case when there's no modules glob -> empty
+            shopt -s nullglob
+            for module in ${cfg.sharedir}/modules/*.ko; do
+              if cat /proc/modules | grep -c "$module"; then
+                ${pkgs.kmod}/bin/rmmod $module;
+              fi
+            done;
+          fi
+        ''
+        + optionalString cfg.autoshutdown ''
+          # Auto poweroff
+          ${pkgs.systemd}/bin/systemctl poweroff;
+        '';
       script = ''
         ${cfg.pre-test-hook}
         # Handle case when there's no modules glob -> empty

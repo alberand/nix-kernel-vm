@@ -28,7 +28,6 @@
       devShells.default = lib.mkLinuxShell {
         inherit pkgs root;
         user-config = {
-          vm.sharedir = "/tmp/vmtest";
           vm.disks = [5000 5000];
         };
       };
