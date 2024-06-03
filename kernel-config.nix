@@ -38,6 +38,8 @@
     DEBUG_SHIRQ = yes;
     DEBUG_ATOMIC_SLEEP = yes;
     DEBUG_KMEMLEAK = yes;
+    DEBUG_INFO_DWARF5 = yes;
+    DEBUG_INFO_COMPRESSED_NONE = yes;
 
     LOCALVERSION_AUTO = no;
 
