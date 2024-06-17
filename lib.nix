@@ -104,6 +104,11 @@
             (mkVmTest {
               inherit pkgs sharedir qemu-options user-config;
             })
+            (pkgs.writeScriptBin "kernel-config" ''
+              cat ${user-config.boot.kernelPackages.kernel.configfile} > new-config
+              echo "Wrote config to new-config. Run to use:"
+              echo "cp new-config .config"
+            '')
           ];
 
         nativeBuildInputs = with pkgs;
