@@ -107,7 +107,15 @@
             (pkgs.writeScriptBin "kernel-config" ''
               cat ${user-config.boot.kernelPackages.kernel.configfile} > new-config
               echo "Wrote config to new-config. Run to use:"
-              echo "cp new-config .config"
+              echo "mv new-config .config"
+            '')
+            (pkgs.writeScriptBin "kernel-build" ''
+              if [ ! -f .config ]; then
+                kernel-config
+                mv new-config .config
+              fi
+              echo "Building Kernel"
+              make -j$(nproc)
             '')
           ];
 
