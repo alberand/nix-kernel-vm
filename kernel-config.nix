@@ -40,6 +40,13 @@
     DEBUG_KMEMLEAK = yes;
     DEBUG_INFO_DWARF5 = yes;
     DEBUG_INFO_COMPRESSED_NONE = yes;
+    KERNEL_XZ = yes;
+    FUNCTION_TRACER = yes;
+    FUNCTION_GRAPH_TRACER = yes;
+    FUNCTION_GRAPH_RETVAL = yes;
+    FPROBE = yes;
+    FUNCTION_PROFILER = yes;
+    FTRACE_SYSCALLS = yes;
 
     LOCALVERSION_AUTO = no;
 
