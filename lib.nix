@@ -132,6 +132,7 @@
             pkg-config
             clang
             clang-tools
+            lld
             file
             gettext
             libtool
