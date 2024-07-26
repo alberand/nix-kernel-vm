@@ -22,7 +22,7 @@
       root = builtins.toString ./.;
     in rec {
       lib = import ./lib.nix {
-        inherit pkgs nixos-generators;
+        inherit pkgs nixos-generators nixpkgs;
       };
 
       devShells.default = lib.mkLinuxShell {
@@ -161,6 +161,22 @@
         in
           lib.buildKernel {
             inherit nixpkgs src version;
+            modDirVersion = version;
+
+            configfile = lib.buildKernelConfig {
+              inherit nixpkgs pkgs src version;
+              structuredExtraConfig = with pkgs.lib.kernel; {
+                FS_VERITY = yes;
+                FS_VERITY_BUILTIN_SIGNATURES = yes;
+                XFS_FS = yes;
+              };
+            };
+          };
+
+        kernel-latest =
+          lib.buildKernel rec {
+            inherit (pkgs.linuxPackages_latest.kernel) src version;
+            inherit nixpkgs;
             modDirVersion = version;
 
             configfile = lib.buildKernelConfig {

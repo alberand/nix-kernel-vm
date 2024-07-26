@@ -6,9 +6,23 @@
 # Kernel Config:
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
+{ buildKernel, buildKernelConfig, nixpkgs }:
 { config, pkgs, lib, ... }: {
   boot = {
-    kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor(
+        buildKernel rec {
+            inherit (pkgs.linuxPackages_latest.kernel) src version;
+            inherit nixpkgs;
+            modDirVersion = version;
+
+            configfile = buildKernelConfig {
+              inherit nixpkgs pkgs src version;
+              structuredExtraConfig = with pkgs.lib.kernel; {
+                XFS_FS = yes;
+              };
+            };
+          }
+    ));
     kernelParams = [
       # consistent eth* naming
       "net.ifnames=0"
@@ -20,6 +34,7 @@
     # This is happens before systemd
     # postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
     crashDump.enable = true;
+    initrd.enable = true;
   };
 
   system.requiredKernelConfig = with config.lib.kernelConfig; [

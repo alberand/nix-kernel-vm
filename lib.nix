@@ -1,6 +1,7 @@
 {
   pkgs,
   nixos-generators,
+  nixpkgs,
   ...
 }: rec {
   mkVM = {
@@ -16,7 +17,7 @@
         ./xfstests.nix
         ./xfsprogs.nix
         ./simple-test.nix
-        ./system.nix
+        (pkgs.callPackage ./system.nix { inherit buildKernel buildKernelConfig nixpkgs; })
         ./vm.nix
         ({...}: user-config)
       ];
