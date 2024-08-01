@@ -13,10 +13,6 @@ with lib; let
     xfsprogs = prev.xfsprogs.overrideAttrs (_old: {
       inherit version src;
 
-      # Don't know why but "bin" should not be here as it create dependency
-      # cycle
-      outputs = ["bin" "dev" "out" "doc"];
-
       patchPhase = ''
         substituteInPlace Makefile \
           --replace "cp include/install-sh ." "cp -f include/install-sh ."
@@ -32,10 +28,6 @@ with lib; let
         ];
 
       preConfigure = ''
-        for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in}; do
-          substituteInPlace "$file" \
-            --replace '@sbindir@' '/run/current-system/sw/bin'
-        done
         make configure
         patchShebangs ./install-sh
       '';
