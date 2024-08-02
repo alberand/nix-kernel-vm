@@ -188,6 +188,8 @@
               };
             };
           };
+
+        xfsprogs = (pkgs.callPackage ./xfsprogs.nix {});
       };
 
       apps.default = flake-utils.lib.mkApp {
