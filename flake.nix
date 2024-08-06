@@ -17,6 +17,47 @@
     flake-utils.lib.eachSystem ["x86_64-linux" "aarch64-linux"] (system: let
       pkgs = import nixpkgs {
         inherit system;
+        overlays = [
+          (final: prev: {
+            xfsprogs = prev.xfsprogs.overrideAttrs (_old: {
+                  src = builtins.fetchGit {
+                    url = ~/Projects/xfsprogs-dev;
+                    ref = "fsverity";
+                    rev = "c3bdf55a7a8051c0f9c5e79828729c92508fb0b7";
+                    shallow = true;
+                  };
+
+              # We need to add autoconfHook because if you look into nixpkgs#xfsprogs
+              # the source code fetched is not a git tree - it's tarball. The tarball is
+              # actually created with 'make dist' command. This tarball already has some
+              # additional stuff produced by autoconf. Here we want to take raw git tree
+              # so we need to run 'make dist', but this is not the best way (why?), just
+              # add autoreconfHook which will do autoconf automatically.
+              nativeBuildInputs =
+                prev.xfsprogs.nativeBuildInputs
+                ++ [
+                  pkgs.autoreconfHook
+                  pkgs.attr
+                ];
+
+              # Here we need to add a few more files to the for-loop as in newer version
+              # of xfsprogs there's more references to @sbindir@. No doing so will cause
+              # cycle error
+              # for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in}; do
+              preConfigure = ''
+                for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in,xfs_scrub_all.in,xfs_scrub_media@.service.in}; do
+                  substituteInPlace "$file" \
+                    --replace '@sbindir@' '/run/current-system/sw/bin'
+                done
+                patchShebangs ./install-sh
+              '';
+              postConfigure =''
+                cp include/install-sh install-sh
+                patchShebangs ./install-sh
+              '';
+            });
+          })
+        ];
       };
       # default kernel if no custom kernel were specified
       root = builtins.toString ./.;
@@ -173,23 +214,22 @@
             };
           };
 
-        kernel-latest =
-          lib.buildKernel rec {
-            inherit (pkgs.linuxPackages_latest.kernel) src version;
-            inherit nixpkgs;
-            modDirVersion = version;
+        kernel-latest = lib.buildKernel rec {
+          inherit (pkgs.linuxPackages_latest.kernel) src version;
+          inherit nixpkgs;
+          modDirVersion = version;
 
-            configfile = lib.buildKernelConfig {
-              inherit nixpkgs pkgs src version;
-              structuredExtraConfig = with pkgs.lib.kernel; {
-                FS_VERITY = yes;
-                FS_VERITY_BUILTIN_SIGNATURES = yes;
-                XFS_FS = yes;
-              };
+          configfile = lib.buildKernelConfig {
+            inherit nixpkgs pkgs src version;
+            structuredExtraConfig = with pkgs.lib.kernel; {
+              FS_VERITY = yes;
+              FS_VERITY_BUILTIN_SIGNATURES = yes;
+              XFS_FS = yes;
             };
           };
+        };
 
-        xfsprogs = (pkgs.callPackage ./xfsprogs.nix {});
+        xfsprogs = pkgs.xfsprogs;
       };
 
       apps.default = flake-utils.lib.mkApp {

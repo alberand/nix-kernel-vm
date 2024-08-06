@@ -13,22 +13,33 @@ with lib; let
     xfsprogs = prev.xfsprogs.overrideAttrs (_old: {
       inherit version src;
 
-      patchPhase = ''
-        substituteInPlace Makefile \
-          --replace "cp include/install-sh ." "cp -f include/install-sh ."
-      '';
-      # We need to add autoconf tools because nixpgs does it automatically
-      # somewhere inside
+      # We need to add autoconfHook because if you look into nixpkgs#xfsprogs
+      # the source code fetched is not a git tree - it's tarball. The tarball is
+      # actually created with 'make dist' command. This tarball already has some
+      # additional stuff produced by autoconf. Here we want to take raw git tree
+      # so we need to run 'make dist', but this is not the best way (why?), just
+      # add autoreconfHook which will do autoconf automatically.
       nativeBuildInputs =
         prev.xfsprogs.nativeBuildInputs
         ++ [
-          pkgs.libtool
-          pkgs.autoconf
-          pkgs.automake
+          pkgs.autoreconfHook
+          pkgs.attr
         ];
 
+      # Here we need to add a few more files to the for-loop as in newer version
+      # of xfsprogs there's more references to @sbindir@. No doing so will cause
+      # cycle error
+      # for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in}; do
       preConfigure = ''
-        make configure
+        for file in scrub/{xfs_scrub_all.cron.in,xfs_scrub@.service.in,xfs_scrub_all.service.in,xfs_scrub_all.in,xfs_scrub_media@.service.in}; do
+          substituteInPlace "$file" \
+            --replace '@sbindir@' '/run/current-system/sw/bin'
+        done
+        patchShebangs ./install-sh
+      '';
+
+      postConfigure = ''
+        cp include/install-sh install-sh
         patchShebangs ./install-sh
       '';
     });
