@@ -101,6 +101,8 @@
     lvm2
     stress-ng
     fscrypt-experimental
+    lsof
+    gdb
   ];
 
   environment.variables = {
