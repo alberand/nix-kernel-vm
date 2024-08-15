@@ -55,9 +55,9 @@
     # Compile with headers
     IKHEADERS = yes;
 
-    #SLUB_DEBUG = yes;
+    SLUB_DEBUG = yes;
     DEBUG_MEMORY_INIT = yes;
-    #KASAN = yes;
+    KASAN = yes;
     #SLUB_TINY = no;
 
     # FRAME_WARN - warn at build time for stack frames larger tahn this.
