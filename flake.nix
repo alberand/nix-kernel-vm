@@ -109,6 +109,7 @@
             libtool
             autoconf
             automake
+            attr
             (pkgs.writeScriptBin "nix-fix" ''
               #!${pkgs.stdenv.shell}
               git am -3 ${./0001-xfsprogs-force-copy-install-sh-to-always-overwrite.patch}
