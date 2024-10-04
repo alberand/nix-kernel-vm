@@ -34,11 +34,6 @@
 
       devShells."light" = lib.mkLinuxShell {
         inherit pkgs root;
-        packages = [
-          (lib.deploy {
-            inherit pkgs;
-          })
-        ];
         no-vm = true;
       };
 

@@ -183,6 +183,8 @@
             alsa-lib
             libmnl
             numactl
+
+            (deploy { inherit pkgs; })
           ]
           ++ packages;
 
