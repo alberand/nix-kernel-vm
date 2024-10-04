@@ -105,11 +105,11 @@
             (mkVmTest {
               inherit pkgs sharedir qemu-options user-config;
             })
-            #(pkgs.writeScriptBin "kernel-config" ''
-              #cat ${user-config.boot.kernelPackages.kernel.configfile} > new-config
-              #echo "Wrote config to new-config. Run to use:"
-              #echo "mv new-config .config"
-            #'')
+            (pkgs.writeScriptBin "kernel-config" ''
+              cat ${user-config.boot.kernelPackages.kernel.configfile} > new-config
+              echo "Wrote config to new-config. Run to use:"
+              echo "mv new-config .config"
+            '')
             (pkgs.writeScriptBin "kernel-build" ''
               if [ ! -f .config ]; then
                 kernel-config
