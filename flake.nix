@@ -132,12 +132,11 @@
 
         kernel-config = lib.buildKernelConfig {
           inherit nixpkgs pkgs;
-          version = "6.8.0-rc2";
-          src = pkgs.fetchFromGitHub {
-            owner = "alberand";
-            repo = "linux";
-            rev = "8eb99f6d07fa6e223f1d6035029088c7309cde05";
-            sha256 = "zkMSIPthRauNYXSDBNb7WlTQ3c6Jdubb6HTOOrhU87E=";
+          version = "6.11.0";
+          src = pkgs.fetchgit {
+            url = "git://git.kernel.org/pub/scm/fs/xfs/xfs-linux.git";
+            rev = "refs/tags/xfs-6.11-fixes-4";
+            hash = "sha256-xLdrvh35kHuaN0bBxOM7TURUJvPsd2yt2TcM+XoqbIk=";
           };
           structuredExtraConfig = with pkgs.lib.kernel; {
             FS_VERITY = yes;

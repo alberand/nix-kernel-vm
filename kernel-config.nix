@@ -24,8 +24,6 @@
   enableCommonConfig ? false,
   commonStructuredConfig ? [],
   structuredConfigFromPatches ? [],
-  defconfig ? "alldefconfig",
-  autoModules ? false,
   randstructSeed ? "",
 }: let
   defaultConfig = with lib.kernel; {
@@ -205,7 +203,6 @@ in
 
     # Flags that get passed to generate-config.pl
     # ignoreConfigErrors: Ignores any config errors in script (eg unused options)
-    # autoModules: Build every available module
     # preferBuiltin: Build modules as builtin
     preferBuiltin = false; # or false
     ignoreConfigErrors = false;
@@ -222,10 +219,7 @@ in
     platformName = stdenv.hostPlatform.linux-kernel.name;
     # e.g. "bzImage"
     kernelTarget = stdenv.hostPlatform.linux-kernel.target;
-    kernelBaseConfig =
-      if defconfig != null
-      then defconfig
-      else stdenv.hostPlatform.linux-kernel.baseConfig;
+    kernelBaseConfig = stdenv.hostPlatform.linux-kernel.baseConfig;
 
     makeFlags =
       lib.optionals (stdenv.hostPlatform.linux-kernel ? makeFlags)
@@ -290,7 +284,7 @@ in
       # Create the config file.
       echo "generating kernel configuration..."
       ln -s "$kernelConfigPath" "$buildRoot/kernel-config"
-      DEBUG=1 ARCH=$kernelArch KERNEL_CONFIG="$buildRoot/kernel-config" AUTO_MODULES=$autoModules \
+      DEBUG=1 ARCH=$kernelArch KERNEL_CONFIG="$buildRoot/kernel-config" \
         PREFER_BUILTIN=$preferBuiltin BUILD_ROOT="$buildRoot" SRC=. MAKE_FLAGS="$makeFlags" \
         perl -w $generateConfig
     '';
