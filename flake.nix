@@ -124,6 +124,8 @@
 
         iso = lib.mkIso {
           inherit pkgs;
+          test-disk = "/dev/sda";
+          scratch-disk = "/dev/sdb";
         };
 
         deploy = lib.deploy {
