@@ -60,6 +60,7 @@ virt-install --connect qemu+ssh://$TEST_HOST/system \
 	--vcpu 16 \
 	--disk vol=default/$PREFIX-$SYSNAME-test,target.bus=sata \
 	--disk vol=default/$PREFIX-$SYSNAME-scratch,target.bus=sata \
+	--network network=default \
 	--cdrom "/tmp/$PREFIX-$SYSNAME.iso" \
 	--serial pty \
 	--graphics none \
