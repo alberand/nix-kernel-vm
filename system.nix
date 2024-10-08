@@ -53,7 +53,7 @@
   ];
 
   # Auto-login with empty password
-  users.extraUsers.root.initialHashedPassword = "";
+  users.extraUsers.root.initialHashedPassword = "$y$j9T$TKzQNuxk898Qk7J6JC5NU1$xDW5NFyr0H/wW/k/MaTpbCRIMEsv.SbvBbj6Wu/1060";
   services.getty.autologinUser = lib.mkDefault "root";
 
   networking.firewall.enable = false;
