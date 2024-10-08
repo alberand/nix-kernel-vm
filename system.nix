@@ -6,29 +6,37 @@
 # Kernel Config:
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
-{ buildKernel, buildKernelConfig, nixpkgs }:
-{ config, pkgs, lib, ... }: {
+{
+  buildKernel,
+  buildKernelConfig,
+  nixpkgs,
+}: {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   boot = {
-    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor(
-        buildKernel rec {
-            inherit (pkgs.linuxPackages_latest.kernel) src version;
-            inherit nixpkgs;
-            modDirVersion = version;
+    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor (
+      buildKernel rec {
+        inherit (pkgs.linuxPackages_latest.kernel) src version;
+        inherit nixpkgs;
+        modDirVersion = version;
 
-            configfile = buildKernelConfig {
-              inherit nixpkgs pkgs src version;
-              structuredExtraConfig = with pkgs.lib.kernel; {
-                XFS_FS = yes;
-              };
-            };
-          }
+        configfile = buildKernelConfig {
+          inherit nixpkgs pkgs src version;
+          structuredExtraConfig = with pkgs.lib.kernel; {
+            XFS_FS = yes;
+          };
+        };
+      }
     ));
     kernelParams = [
       # consistent eth* naming
       "net.ifnames=0"
       "biosdevnames=0"
       "console=ttyS0,115200n8"
-      "console=ttyS0"
+      "console=tty0"
     ];
     consoleLogLevel = lib.mkDefault 7;
     # This is happens before systemd
@@ -60,9 +68,9 @@
   networking.hostName = "test-node";
   networking.useDHCP = false;
   services.getty.helpLine = ''
-          Log in as "root" with an empty password.
-          If you are connect via serial console:
-          Type CTRL-A X to exit QEMU
+    Log in as "root" with an empty password.
+    If you are connect via serial console:
+    Type CTRL-A X to exit QEMU
   '';
 
   # Not needed in VM
@@ -74,7 +82,17 @@
   programs.command-not-found.enable = false;
 
   # Do something after systemd started
-  systemd.services."serial-getty@ttyS0".enable = true;
+  systemd.services."serial-getty@ttyS0" = {
+    enable = true;
+    wantedBy = ["getty.target"]; # to start at boot
+    serviceConfig.Restart = "always"; # restart when session is closed
+  };
+
+  systemd.services."serial-getty@ttyS2" = {
+    enable = true;
+    wantedBy = ["getty.target"]; # to start at boot
+    serviceConfig.Restart = "always"; # restart when session is closed
+  };
 
   #networking.interfaces.eth0 = {
   #  ipv4.addresses = [{
