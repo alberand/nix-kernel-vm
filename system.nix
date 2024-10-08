@@ -70,7 +70,7 @@
   documentation.man.enable = false;
   documentation.nixos.enable = false;
   documentation.info.enable = false;
-  programs.bash.enableCompletion = false;
+  programs.bash.completion.enable = false;
   programs.command-not-found.enable = false;
 
   # Do something after systemd started
