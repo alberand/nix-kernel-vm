@@ -132,6 +132,10 @@
           inherit pkgs;
         };
 
+        configs = {
+          xfstests = import ./xfstests/configs.nix;
+        };
+
         kernel-config = lib.buildKernelConfig {
           inherit nixpkgs pkgs;
           version = "6.11.0";

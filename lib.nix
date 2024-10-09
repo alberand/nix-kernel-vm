@@ -14,7 +14,7 @@
       system = "x86_64-linux";
       specialArgs = {diskSize = "20000";};
       modules = [
-        ./xfstests.nix
+        ./xfstests/xfstests.nix
         ./xfsprogs.nix
         ./simple-test.nix
         (pkgs.callPackage ./system.nix { inherit buildKernel buildKernelConfig nixpkgs; })
@@ -34,7 +34,7 @@
       iso = nixos-generators.nixosGenerate {
         system = "x86_64-linux";
         modules = [
-          ./xfstests.nix
+          ./xfstests/xfstests.nix
           ./xfsprogs.nix
           (pkgs.callPackage ./system.nix { inherit buildKernel buildKernelConfig nixpkgs; })
           ({
