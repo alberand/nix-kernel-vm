@@ -59,7 +59,7 @@
   services.getty.autologinUser = lib.mkDefault "root";
 
   networking.firewall.enable = false;
-  networking.hostName = "test-node";
+  networking.hostName = lib.mkDefault "test-node";
   networking.useDHCP = false;
   services.getty.helpLine = ''
     Log in as "root" with an empty password.
@@ -72,7 +72,6 @@
   documentation.man.enable = false;
   documentation.nixos.enable = false;
   documentation.info.enable = false;
-  programs.bash.completion.enable = false;
   programs.command-not-found.enable = false;
 
   # Do something after systemd started
