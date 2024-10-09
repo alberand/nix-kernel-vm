@@ -25,7 +25,7 @@ with lib; let
       paths =
         [
           (prev.xfstests.overrideAttrs (prev: {
-            src = mkIf (cfg.src != null) cfg.src;
+            src = if (cfg.src != null) then cfg.src else prev.src;
             version = "git";
             patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
             patches =
@@ -165,8 +165,8 @@ in {
     };
 
     src = mkOption {
-      type = types.package;
-      default = false;
+      type = types.nullOr types.package;
+      default = null;
     };
   };
 
