@@ -46,6 +46,8 @@
               # Don't shutdown system as libvirtd will remove the VM
               programs.xfstests.autoshutdown = false;
 
+              networking.networkmanager.enable = true;
+
               fileSystems."/mnt/test" = {
                 device = test-disk;
                 fsType = "xfs";
