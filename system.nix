@@ -42,14 +42,8 @@
     # This is happens before systemd
     # postBootCommands = "echo 'Not much to do before systemd :)' > /dev/kmsg";
     crashDump.enable = true;
-    # kernelModules = lib.mkForce [];
     initrd = {
       enable = true;
-      # Override required kernel modules by nixos/modules/profiles/qemu-guest.nix
-      # As we use kernel build outside of Nix, it will have different uname and
-      # will not be able to find these modules. This probably can be fixed
-      # availableKernelModules = lib.mkForce [];
-      # kernelModules = lib.mkForce [];
     };
   };
 
