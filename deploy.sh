@@ -48,7 +48,7 @@ virsh --connect  qemu+ssh://$TEST_HOST/system \
 	$PREFIX-$SYSNAME-test \
 	$PREFIX-$SYSNAME-scratch \
 
-rsync -avz -I -P \
+rsync -avz -I -P --ignore-existing \
        $TEST_ISO \
        $TEST_HOST:/tmp/$PREFIX-$SYSNAME.iso
 
@@ -56,8 +56,8 @@ virt-install --connect qemu+ssh://$TEST_HOST/system \
 	--name "$PREFIX-$SYSNAME" \
 	--hvm \
 	--osinfo "nixos-unstable" \
-	--memory=32000 \
-	--vcpu 16 \
+	--memory=8000 \
+	--vcpu 4 \
 	--disk vol=default/$PREFIX-$SYSNAME-test,target.bus=sata \
 	--disk vol=default/$PREFIX-$SYSNAME-scratch,target.bus=sata \
 	--network network=default \
