@@ -65,5 +65,4 @@ virt-install --connect qemu+ssh://$TEST_HOST/system \
 	--serial pty \
 	--graphics none \
 	--noautoconsole \
-	--destroy-on-exit \
 	--transient
