@@ -64,5 +64,6 @@ virt-install --connect qemu+ssh://$TEST_HOST/system \
 	--cdrom "/tmp/$PREFIX-$SYSNAME.iso" \
 	--serial pty \
 	--graphics none \
+	--noautoconsole \
 	--destroy-on-exit \
 	--transient
