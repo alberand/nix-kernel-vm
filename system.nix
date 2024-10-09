@@ -88,12 +88,6 @@
     serviceConfig.Restart = "always"; # restart when session is closed
   };
 
-  systemd.services."serial-getty@ttyS2" = {
-    enable = true;
-    wantedBy = ["getty.target"]; # to start at boot
-    serviceConfig.Restart = "always"; # restart when session is closed
-  };
-
   #networking.interfaces.eth0 = {
   #  ipv4.addresses = [{
   #    address = "192.168.10.2";
