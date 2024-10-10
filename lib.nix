@@ -97,6 +97,7 @@
     qemu-options ? [],
     user-config ? {},
     packages ? [],
+    name ? "test-node",
   }:
     builtins.getAttr "shell" {
       shell = pkgs.mkShell {
@@ -198,6 +199,7 @@
         ];
 
         SHARE_DIR = "${sharedir}";
+        NODE_NAME = "${name}";
 
         shellHook = ''
           curdir="$(pwd)"
