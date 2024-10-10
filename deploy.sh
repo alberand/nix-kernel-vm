@@ -40,17 +40,18 @@ if [[ -z "$NODE_NAME" ]]; then
 	if [ "$#" -ne 2 ]; then
 		echo '$NODE_NAME is not defined. Use first argument' 1>&2
 		help
+	else
+		NODE_NAME="$1"
+		TEST_ISO="$2"
 	fi
 fi
 
+TEST_ISO="$1"
 TEST_HOST=$TEST_HOST
-NODE_NAME="$1"
-TEST_ISO="$2"
 PREFIX="aalbersh"
-TEST_SYSTEM_XML="$PREFIX-$NODE_NAME.xml"
-
 SYSURI="qemu+ssh://$TEST_HOST/system"
-NODE="$NODE"
+NODE="$PREFIX-$NODE_NAME"
+TEST_SYSTEM_XML="$NODE.xml"
 
 if ! virsh --connect $SYSURI version; then
     echo "Not able to connect to $SYSURI. Is your user in 'libvirt' group?"
@@ -62,7 +63,7 @@ ssh -t $TEST_HOST "sudo rm -rf /tmp/$NODE.iso"
 
 state=$(virsh --connect $SYSURI list --all | grep " $NODE " | awk '{ print $3}')
 if [ "$state" != "" ]; then
-	remote_node $SYSURI $NODE
+	remove_node $SYSURI $NODE
 fi
 
 echo "Creating volumes for new '$NODE'"
