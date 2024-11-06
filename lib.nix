@@ -174,9 +174,9 @@
             libllvm
             libxml2.dev
             perl
-            perl536Packages.DBI
-            perl536Packages.DBDSQLite
-            perl536Packages.TryTiny
+            perl538Packages.DBI
+            perl538Packages.DBDSQLite
+            perl538Packages.TryTiny
 
             # kselftest deps
             libcap
