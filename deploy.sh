@@ -31,12 +31,12 @@ function remove_node() {
 		$node-scratch
 }
 
-if [[ -z "$TEST_HOST" ]]; then
+if [ -z "$TEST_HOST" ]; then
     echo '$TEST_HOST is not defined' 1>&2
     exit 1
 fi
 
-if [[ -z "$NODE_NAME" ]]; then
+if [ -z "$NODE_NAME" ]; then
 	if [ "$#" -ne 2 ]; then
 		echo '$NODE_NAME is not defined. Use first argument' 1>&2
 		help
@@ -46,8 +46,9 @@ if [[ -z "$NODE_NAME" ]]; then
 	fi
 fi
 
-TEST_ISO="$1"
-TEST_HOST=$TEST_HOST
+if [ -z "$NODE_NAME" ]; then
+	TEST_ISO="$1"
+fi
 PREFIX="aalbersh"
 SYSURI="qemu+ssh://$TEST_HOST/system"
 NODE="$PREFIX-$NODE_NAME"
