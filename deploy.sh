@@ -59,8 +59,6 @@ if ! virsh --connect $SYSURI version; then
     exit 1
 fi
 
-# Cleaning
-ssh -t $TEST_HOST "sudo rm -rf /tmp/$NODE.iso"
 
 state=$(virsh --connect $SYSURI list --all | grep " $NODE " | awk '{ print $3}')
 if [ "$state" != "" ]; then
@@ -81,7 +79,8 @@ virsh --connect $SYSURI \
 	$NODE-scratch \
 
 echo "Uploading ISO"
-rsync -avz -I -P --ignore-existing \
+rsync -avz -I -P \
+       --remove-source-files \
        $TEST_ISO \
        $TEST_HOST:/tmp/$NODE.iso
 
