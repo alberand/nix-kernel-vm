@@ -86,17 +86,34 @@ if [ "$state" != "" ]; then
 fi
 
 echo "Creating volumes for new '$NODE'"
-virsh --connect $SYSURI \
-	vol-create-as \
-	--pool default \
-	--name $NODE-test \
-	--capacity 20G \
-	--format qcow2
-virsh --connect $SYSURI \
-	vol-clone \
-	--pool default \
-	$NODE-test \
-	$NODE-scratch \
+virsh --connect $SYSURI vol-list --pool default | grep -q "$NODE-test"
+if [ $? -eq 0 ]; then
+	virsh --connect $SYSURI \
+		vol-wipe \
+		--pool default \
+		$NODE-test
+else
+	virsh --connect $SYSURI \
+		vol-create-as \
+		--pool default \
+		--name $NODE-test \
+		--capacity 20G \
+		--format qcow2
+fi;
+
+virsh --connect $SYSURI vol-list --pool default | grep -q "$NODE-scratch"
+if [ $? -eq 0 ]; then
+	virsh --connect $SYSURI \
+		vol-wipe \
+		--pool default \
+		$NODE-scratch
+else
+	virsh --connect $SYSURI \
+		vol-clone \
+		--pool default \
+		$NODE-test \
+		$NODE-scratch
+fi;
 
 echo "Uploading ISO"
 rsync -avz -I -P \
