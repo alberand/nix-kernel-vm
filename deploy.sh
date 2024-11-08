@@ -100,7 +100,6 @@ virsh --connect $SYSURI \
 
 echo "Uploading ISO"
 rsync -avz -I -P \
-       --remove-source-files \
        $TEST_ISO \
        $TEST_HOST:/tmp/$NODE.iso
 
