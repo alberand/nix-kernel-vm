@@ -37,10 +37,6 @@ while [ $# -gt 0 ]; do
     --remove)
       REMOVE=1
       ;;
-    *)
-      >&2 printf "Error: Invalid argument\n"
-      exit 1
-      ;;
   esac
   shift
 done
