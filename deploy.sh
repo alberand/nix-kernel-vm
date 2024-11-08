@@ -119,7 +119,7 @@ echo "Uploading ISO"
 rsync -avz -P \
        $TEST_ISO \
        $TEST_HOST:/tmp/$NODE.iso
-if [ $? -ne 0 ];
+if [ $? -ne 0 ]; then
 	exit 1;
 fi;
 
@@ -138,3 +138,6 @@ virt-install --connect $SYSURI \
 	--graphics none \
 	--noautoconsole \
 	--transient
+
+echo "Open console with:"
+echo "\tvirsh --connect $SYSURI console $NODE"
