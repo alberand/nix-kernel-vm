@@ -31,31 +31,13 @@ function remove_node() {
 		$node-scratch
 }
 
-REMOVE=0
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --remove)
-      REMOVE=1
-      ;;
-  esac
-  shift
-done
-
-
 if [ -z "$TEST_HOST" ]; then
     echo '$TEST_HOST is not defined' 1>&2
     exit 1
 fi
 
-if [ -z "$NODE_NAME" ]; then
-	if [ $REMOVE -eq 0 ]; then
-		NODE_NAME="$1"
-	fi;
-
-	if [ "$#" -ne 2 ]; then
-		echo '$NODE_NAME is not defined. Use first argument' 1>&2
-		help
-	else
+if [ ! -z "$NODE_NAME" ]; then
+	if [ $# -eq 2 ]; then
 		NODE_NAME="$1"
 		TEST_ISO="$2"
 	fi
@@ -72,12 +54,6 @@ TEST_SYSTEM_XML="$NODE.xml"
 if ! virsh --connect $SYSURI version; then
     echo "Not able to connect to $SYSURI. Is your user in 'libvirt' group?"
     exit 1
-fi
-
-if [ $REMOVE -eq 1 ]; then
-    echo "Remvoing node '$NODE'" 1>&2
-    remove_node $SYSURI $NODE
-    exit 0
 fi
 
 state=$(virsh --connect $SYSURI list --all | grep " $NODE " | awk '{ print $3}')
@@ -115,7 +91,7 @@ else
 		$NODE-scratch
 fi;
 
-echo "Uploading ISO"
+echo "Uploading '$TEST_ISO' to '$TEST_HOST:/tmp/$NODE.iso'"
 rsync -avz -P \
        $TEST_ISO \
        $TEST_HOST:/tmp/$NODE.iso
