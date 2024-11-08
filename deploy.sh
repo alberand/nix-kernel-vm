@@ -116,9 +116,12 @@ else
 fi;
 
 echo "Uploading ISO"
-rsync -avz -I -P \
+rsync -avz -P \
        $TEST_ISO \
        $TEST_HOST:/tmp/$NODE.iso
+if [ $? -ne 0 ];
+	exit 1;
+fi;
 
 echo "Bringing up the node"
 virt-install --connect $SYSURI \
