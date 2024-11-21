@@ -62,6 +62,12 @@
   networking.firewall.enable = true;
   networking.hostName = lib.mkDefault "test-node";
   networking.useDHCP = true;
+  #networking.interfaces.eth0 = {
+  #  ipv4.addresses = [{
+  #    address = "192.168.10.2";
+  #    prefixLength = 24;
+  #  }];
+  #};
 
   # Not needed in VM
   documentation.doc.enable = false;
@@ -76,13 +82,6 @@
     wantedBy = ["getty.target"]; # to start at boot
     serviceConfig.Restart = "always"; # restart when session is closed
   };
-
-  #networking.interfaces.eth0 = {
-  #  ipv4.addresses = [{
-  #    address = "192.168.10.2";
-  #    prefixLength = 24;
-  #  }];
-  #};
 
   # Add packages to VM
   environment.systemPackages = with pkgs; [
