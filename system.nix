@@ -62,11 +62,6 @@
   networking.firewall.enable = true;
   networking.hostName = lib.mkDefault "test-node";
   networking.useDHCP = true;
-  services.getty.helpLine = ''
-    Log in as "root" with an empty password.
-    If you are connect via serial console:
-    Type CTRL-A X to exit QEMU
-  '';
 
   # Not needed in VM
   documentation.doc.enable = false;
@@ -132,6 +127,18 @@
       PermitRootLogin = "yes";
     };
   };
+
+  bash.interactiveShellInit = let
+    motd =
+      pkgs.writeShellScriptBin "motd"
+      ''
+        #! /usr/bin/env bash
+
+        echo "QEMU exit CTRL-A X"
+        echo "libvirtd exit CTRL+]"
+      '';
+  in
+    builtins.readFile "${motd}/bin/motd";
 
   system.stateVersion = "23.11";
 }
