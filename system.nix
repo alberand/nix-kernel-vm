@@ -59,9 +59,9 @@
     "$y$j9T$TKzQNuxk898Qk7J6JC5NU1$xDW5NFyr0H/wW/k/MaTpbCRIMEsv.SbvBbj6Wu/1060"; # notsecret
   services.getty.autologinUser = lib.mkDefault "root";
 
-  networking.firewall.enable = false;
+  networking.firewall.enable = true;
   networking.hostName = lib.mkDefault "test-node";
-  networking.useDHCP = false;
+  networking.useDHCP = true;
   services.getty.helpLine = ''
     Log in as "root" with an empty password.
     If you are connect via serial console:
