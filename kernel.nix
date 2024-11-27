@@ -1,5 +1,6 @@
 {
   stdenv,
+  ccacheStdenv,
   lib,
   callPackage,
   rustc,
@@ -23,6 +24,7 @@
         inherit src modDirVersion version kernelPatches lib configfile;
 
         allowImportFromDerivation = true;
+        stdenv = ccacheStdenv;
       })
     .overrideAttrs (old: {
       nativeBuildInputs =
@@ -30,6 +32,13 @@
         ++ lib.optionals enableRust [rustc cargo rust-bindgen];
       RUST_LIB_SRC = lib.optionalString enableRust rustPlatform.rustLibSrc;
       dontStrip = true;
+      preConfigure = ''
+        export CCACHE_DEBUG=1
+        export CCACHE_DEBUGDIR=/tmp/ccache-debug
+        export CCACHE_DIR=/var/cache/ccache
+        export CCACHE_UMASK=007
+        export KBUILD_BUILD_TIMESTAMP=""
+      '';
     });
 
   kernelPassthru = {
