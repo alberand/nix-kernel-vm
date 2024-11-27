@@ -1,4 +1,5 @@
 {
+  pkgs,
   stdenv,
   ccacheStdenv,
   lib,
@@ -34,10 +35,11 @@
       dontStrip = true;
       preConfigure = ''
         export CCACHE_DEBUG=1
-        export CCACHE_DEBUGDIR=/tmp/ccache-debug
+        export CCACHE_MAXSIZE=10G
+        export CCACHE_DEBUGDIR=/var/cache/ccache/ccache-debug-2
         export CCACHE_DIR=/var/cache/ccache
-        export CCACHE_UMASK=007
         export KBUILD_BUILD_TIMESTAMP=""
+        export SOURCE_DATE_EPOCH=100
       '';
     });
 
