@@ -152,12 +152,12 @@
         };
 
         kernel = let
-          version = "6.8.0-rc2";
+          version = "6.12.0-rc6";
           src = pkgs.fetchFromGitHub {
             owner = "alberand";
             repo = "linux";
-            rev = "8eb99f6d07fa6e223f1d6035029088c7309cde05";
-            sha256 = "zkMSIPthRauNYXSDBNb7WlTQ3c6Jdubb6HTOOrhU87E=";
+            rev = "a54431da279d591c526a6a97e56ff4a2fe1dd50e";
+            sha256 = "sha256-vpFsNOzwvovrQ9TdpkSHCr3IK0aNuUarmxv78o7vvbg=";
           };
         in
           lib.buildKernel {
