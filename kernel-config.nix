@@ -38,6 +38,7 @@
     DEBUG_KMEMLEAK = yes;
     DEBUG_INFO_DWARF5 = yes;
     DEBUG_INFO_COMPRESSED_NONE = yes;
+    DEBUG_VM = yes;
     KERNEL_XZ = yes;
     FUNCTION_TRACER = yes;
     FUNCTION_GRAPH_TRACER = yes;
