@@ -109,10 +109,6 @@
     EDITOR = "nvim";
   };
 
-  environment.interactiveShellInit = ''
-    alias vim='nvim'
-  '';
-
   services.openssh = {
     enable = true;
     ports = [22];
@@ -127,7 +123,7 @@
     };
   };
 
-  bash.interactiveShellInit = let
+  programs.bash.interactiveShellInit = let
     motd =
       pkgs.writeShellScriptBin "motd"
       ''
