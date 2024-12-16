@@ -59,7 +59,7 @@
     "$y$j9T$TKzQNuxk898Qk7J6JC5NU1$xDW5NFyr0H/wW/k/MaTpbCRIMEsv.SbvBbj6Wu/1060"; # notsecret
   services.getty.autologinUser = lib.mkDefault "root";
 
-  networking.firewall.enable = true;
+  networking.firewall.enable = false;
   networking.hostName = lib.mkDefault "test-node";
   networking.useDHCP = true;
   #networking.interfaces.eth0 = {
