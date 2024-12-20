@@ -166,6 +166,7 @@
             udev # for btrfs-progs
             lzo # for btrfs-progs
             liburing # for btrfs-progs
+            guilt
 
             # probably better to move it to separate module
             smatch

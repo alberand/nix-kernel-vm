@@ -68,6 +68,7 @@
               #!${pkgs.stdenv.shell}
               git am -3 ${./0001-xfsprogs-force-copy-install-sh-to-always-overwrite.patch}
             '')
+            guilt
           ];
           buildInputs = [readline icu inih liburcu];
           shellHook = ''
@@ -88,6 +89,7 @@
             autoconf
             automake
             libtool
+            guilt
           ];
           buildInputs = [
             acl
