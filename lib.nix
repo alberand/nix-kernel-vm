@@ -52,14 +52,12 @@
                 device = test-disk;
                 fsType = "xfs";
                 autoFormat = true;
-                label = "test";
               };
 
               fileSystems."/mnt/scratch" = {
                 device = scratch-disk;
                 fsType = "xfs";
                 autoFormat = true;
-                label = "scratch";
               };
             }
             // user-config)
