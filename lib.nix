@@ -17,7 +17,7 @@
         ./xfstests/xfstests.nix
         ./xfsprogs.nix
         ./simple-test.nix
-        (pkgs.callPackage ./system.nix { inherit buildKernel buildKernelConfig nixpkgs; })
+        (pkgs.callPackage ./system.nix {inherit buildKernel buildKernelConfig nixpkgs;})
         ./vm.nix
         ({...}: user-config)
       ];
@@ -36,7 +36,7 @@
         modules = [
           ./xfstests/xfstests.nix
           ./xfsprogs.nix
-          (pkgs.callPackage ./system.nix { inherit buildKernel buildKernelConfig nixpkgs; })
+          (pkgs.callPackage ./system.nix {inherit buildKernel buildKernelConfig nixpkgs;})
           ({
             config,
             pkgs,
@@ -151,7 +151,6 @@
             ima-evm-utils
             util-linux
             stress-ng
-            dbench
             fio
             linuxquota
             nvme-cli
@@ -167,7 +166,6 @@
             guilt
 
             # probably better to move it to separate module
-            smatch
             sqlite
             openssl
             libllvm
@@ -186,7 +184,7 @@
             libmnl
             numactl
 
-            (deploy { inherit pkgs; })
+            (deploy {inherit pkgs;})
           ]
           ++ packages;
 
