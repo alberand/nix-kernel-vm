@@ -63,16 +63,21 @@
 in {
   shell = nix-kernel-vm.lib.${system}.mkLinuxShell {
     inherit pkgs root name;
-    user-config =
-      user-config
-      // {
-        vm.disks = [5000 5000];
-      };
-    };
+    no-vm = true;
+  };
 
   iso = nix-kernel-vm.lib.${system}.mkIso {
     inherit pkgs user-config;
     test-disk = "/dev/sda";
     scratch-disk = "/dev/sdb";
+  };
+
+  vm = nix-kernel-vm.lib.${system}.mkVmTest {
+    inherit pkgs;
+    user-config =
+      user-config
+      // {
+        vm.disks = [5000 5000];
+      };
   };
 }

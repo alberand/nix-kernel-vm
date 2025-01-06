@@ -24,6 +24,7 @@
     in {
       packages = rec {
         iso = xfsprogs.iso;
+        vm = xfsprogs.vm;
         default = iso;
       };
       devShells = rec {
