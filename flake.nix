@@ -234,6 +234,25 @@
         drv = packages.vmtest;
       };
 
+      templates."xfsprogs" = {
+        path = ./templates/xfsprogs;
+        description = "VM for testing xfsprogs with xfstests";
+        welcomeText = ''
+            This is template for testing 'xfsprogs' package.
+
+            To modify an image modify parameters in xfsprogs.nix
+
+            To build runnable image run:
+
+            $ nix build .#iso
+
+            To activate development shell:
+
+            $ nix develop .#
+        '';
+      };
+      templates.default = self.templates."xfsprogs";
+
       #nixosConfigurations.xfstests-env = import ./xfstests-env.nix { inherit nixpkgs pkgs;};
     });
 }
