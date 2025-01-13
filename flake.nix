@@ -110,9 +110,6 @@
             export MAKE=$(type -P make)
             export SED=$(type -P sed)
             export SORT=$(type -P sort)
-
-            export PATH=${pkgs.lib.makeBinPath [libxfs]}:$PATH
-            ${xfstests-env}/bin/xfstests-env
           '';
         };
 
