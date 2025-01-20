@@ -90,8 +90,6 @@
             automake
             libtool
             guilt
-          ];
-          buildInputs = [
             acl
             attr
             gawk
@@ -103,6 +101,7 @@
             xfstests-env
             libtool
             liburing
+            pkg-config
           ];
 
           shellHook = ''
