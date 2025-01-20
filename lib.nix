@@ -187,10 +187,10 @@
 
             (deploy {inherit pkgs;})
             (pkgs.writeScriptBin "vmtest-build" ''
-              nix build ${root}#$NODE_NAME.vm
+              nix build ${root}#vm
             '')
             (pkgs.writeScriptBin "vmtest-build-iso" ''
-              nix build ${root}#$NODE_NAME.iso
+              nix build ${root}#iso
             '')
           ]
           ++ packages;
