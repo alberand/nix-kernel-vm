@@ -164,6 +164,7 @@
             lzo # for btrfs-progs
             liburing # for btrfs-progs
             guilt
+            nix-prefetch-git
 
             # probably better to move it to separate module
             sqlite
