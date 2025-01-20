@@ -101,6 +101,8 @@
             openssl
             perl
             xfstests-env
+            libtool
+            liburing
           ];
 
           shellHook = ''
