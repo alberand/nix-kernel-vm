@@ -185,7 +185,7 @@
             libmnl
             numactl
 
-            (deploy {inherit pkgs;})
+            (vmtest-deploy {inherit pkgs;})
             (pkgs.writeScriptBin "vmtest-build" ''
               nix build ${root}#vm
             '')

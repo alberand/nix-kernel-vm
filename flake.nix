@@ -128,7 +128,7 @@
           scratch-disk = "/dev/sdb";
         };
 
-        deploy = lib.deploy {
+        vmtest-deploy = lib.deploy {
           inherit pkgs;
         };
 
