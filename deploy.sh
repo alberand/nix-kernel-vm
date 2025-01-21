@@ -5,7 +5,7 @@
 #	NODE_NAME - name to identify machine to be deployed
 
 function help() {
-    echo "$(basename $0) <unique name> <path to iso>" 1>&2
+    echo "$(basename $0) <path to iso>" 1>&2
     exit 0
 }
 
@@ -36,16 +36,17 @@ if [ -z "$TEST_HOST" ]; then
     exit 1
 fi
 
-if [ ! -z "$NODE_NAME" ]; then
-	if [ $# -eq 2 ]; then
-		NODE_NAME="$1"
-		TEST_ISO="$2"
-	fi
+if [ -z "$NODE_NAME" ]; then
+    echo '$NODE_NAME is not defined' 1>&2
+    exit 1
 fi
 
-if [ -z "$NODE_NAME" ]; then
-	TEST_ISO="$1"
+if [ "$#" -ne 1 ]; then
+    echo "Illegal number of parameters"
+    help
 fi
+
+TEST_ISO="$1"
 PREFIX="aalbersh"
 SYSURI="qemu+ssh://$TEST_HOST/system"
 NODE="$PREFIX-$NODE_NAME"
