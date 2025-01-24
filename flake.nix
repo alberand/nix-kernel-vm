@@ -37,6 +37,18 @@
         configs = {
           xfstests = import ./xfstests/configs.nix;
         };
+
+        kconfig = lib.buildKernelConfig {
+          src = pkgs.fetchgit {
+            url = "git@github.com:alberand/linux.git";
+            rev = "xfs-xattrat";
+            hash = "sha256-uP7gBhVhGxy0ADazteJ5u1vvftlCua8jTkylwDrLQZY=";
+          };
+          version = "xfs-xattrat";
+          kconfig = with pkgs.lib.kernel; {
+            FS_VERITY = yes;
+          };
+        };
       };
 
       apps.default = flake-utils.lib.mkApp {

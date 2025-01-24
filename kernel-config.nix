@@ -9,28 +9,15 @@
   flex,
   pahole,
   buildPackages,
-  rustPlatform,
-  rustc,
-  rustfmt,
-  cargo,
-  rust-bindgen,
 }: {
-  pkgs,
-  nixpkgs,
-  structuredExtraConfig,
+  kconfig,
   src,
   version,
-  withRust ? false,
-  enableCommonConfig ? false,
-  commonStructuredConfig ? [],
-  structuredConfigFromPatches ? [],
-  randstructSeed ? "",
 }: let
   defaultConfig = with lib.kernel; {
     DEBUG_FS = yes;
     DEBUG_KERNEL = yes;
     DEBUG_MISC = yes;
-    #DEBUG_BUGVERBOSE = yes;
     DEBUG_BOOT_PARAMS = yes;
     DEBUG_STACK_USAGE = yes;
     DEBUG_SHIRQ = yes;
@@ -192,36 +179,17 @@
     LIBCRC32C = yes;
   };
 in
-  stdenv.mkDerivation
-  rec {
-    kernelArch = stdenv.hostPlatform.linuxArch;
-    extraMakeFlags = [];
-
+  stdenv.mkDerivation rec {
     inherit version src;
-
     pname = "linux-config";
 
-    RUST_LIB_SRC = lib.optionalString withRust rustPlatform.rustLibSrc;
-
-    # Flags that get passed to generate-config.pl
-    # ignoreConfigErrors: Ignores any config errors in script (eg unused options)
-    # preferBuiltin: Build modules as builtin
-    preferBuiltin = false; # or false
-    ignoreConfigErrors = false;
-    generateConfig = "${nixpkgs}/pkgs/os-specific/linux/kernel/generate-config.pl";
+    generateConfig = ./generate-config.pl;
 
     kernelConfig = passthru.moduleStructuredConfig.intermediateNixConfig;
     passAsFile = ["kernelConfig"];
 
     depsBuildBuild = [buildPackages.stdenv.cc];
-    nativeBuildInputs =
-      [perl gmp libmpc mpfr bison flex bison flex pahole]
-      ++ lib.optionals withRust [rust-bindgen rustc rustfmt cargo];
-
-    platformName = stdenv.hostPlatform.linux-kernel.name;
-    # e.g. "bzImage"
-    kernelTarget = stdenv.hostPlatform.linux-kernel.target;
-    kernelBaseConfig = stdenv.hostPlatform.linux-kernel.baseConfig;
+    nativeBuildInputs = [perl gmp libmpc mpfr bison flex bison flex pahole];
 
     makeFlags =
       lib.optionals (stdenv.hostPlatform.linux-kernel ? makeFlags)
@@ -245,11 +213,11 @@ in
       # the buildFlags, but that would require also patching the kernel's
       # toplevel Makefile to add a variable export. This would be likely to
       # cause future patch conflicts.
-      for file in scripts/gen-randstruct-seed.sh scripts/gcc-plugins/gen-random-seed.sh; do
+      for file in scripts/gen-randstruct-seed.sh; do
         if [ -f "$file" ]; then
           substituteInPlace "$file" \
             --replace NIXOS_RANDSTRUCT_SEED \
-            $(echo ${randstructSeed}${src} ${placeholder "configfile"} | sha256sum | cut -d ' ' -f 1 | tr -d '\n')
+            $(echo ${src} ${placeholder "configfile"} | sha256sum | cut -d ' ' -f 1 | tr -d '\n')
           break
         fi
       done
@@ -266,8 +234,6 @@ in
       sed -e '/fflush(stdout);/i\printf("###");' -i scripts/kconfig/conf.c
     '';
 
-    preUnpack = "";
-
     buildPhase = ''
       export buildRoot="''${buildRoot:-build}"
       export HOSTCC=$CC_FOR_BUILD
@@ -276,18 +242,32 @@ in
       export HOSTLD=$LD_FOR_BUILD
 
       # Get a basic config file for later refinement with $generateConfig.
+      echo "Generating 'olddefconfig' config"
       make $makeFlags \
-          -C . O="$buildRoot" $kernelBaseConfig \
-          ARCH=$kernelArch \
-          HOSTCC=$HOSTCC HOSTCXX=$HOSTCXX HOSTAR=$HOSTAR HOSTLD=$HOSTLD \
-          CC=$CC OBJCOPY=$OBJCOPY OBJDUMP=$OBJDUMP READELF=$READELF \
-          $makeFlags
+          -C . \
+          O="$buildRoot" \
+          ARCH=x86_64 \
+          HOSTCC=$HOSTCC \
+          HOSTCXX=$HOSTCXX \
+          HOSTAR=$HOSTAR \
+          HOSTLD=$HOSTLD \
+          CC=$CC \
+          OBJCOPY=$OBJCOPY \
+          OBJDUMP=$OBJDUMP \
+          READELF=$READELF \
+          $makeFlags \
+          olddefconfig
 
       # Create the config file.
-      echo "generating kernel configuration..."
+      echo "Generating kernel configuration"
       ln -s "$kernelConfigPath" "$buildRoot/kernel-config"
-      DEBUG=1 ARCH=$kernelArch KERNEL_CONFIG="$buildRoot/kernel-config" \
-        PREFER_BUILTIN=$preferBuiltin BUILD_ROOT="$buildRoot" SRC=. MAKE_FLAGS="$makeFlags" \
+      DEBUG=1 \
+        ARCH=x86_64 \
+        KERNEL_CONFIG="$buildRoot/kernel-config" \
+        PREFER_BUILTIN=false \
+        BUILD_ROOT="$buildRoot" \
+        SRC=. \
+        MAKE_FLAGS="$makeFlags" \
         perl -w $generateConfig
     '';
 
@@ -296,30 +276,17 @@ in
     enableParallelBuilding = true;
 
     passthru = rec {
-      module = import "${nixpkgs}/nixos/modules/system/boot/kernel_config.nix";
-      # used also in apache
-      # { modules = [ { options = res.options; config = svc.config or svc; } ];
-      #   check = false;
       # The result is a set of two attributes
       moduleStructuredConfig =
         (lib.evalModules {
           modules =
             [
-              module
-            ]
-            ++ lib.optionals enableCommonConfig [
+              (import ./kernel_config.nix)
               {
-                settings = commonStructuredConfig;
-                _file = "pkgs/os-specific/linux/kernel/common-config.nix";
-              }
-            ]
-            ++ [
-              {
-                settings = structuredExtraConfig // defaultConfig;
+                settings = kconfig // defaultConfig;
                 _file = "structuredExtraConfig";
               }
-            ]
-            ++ structuredConfigFromPatches;
+            ];
         })
         .config;
 
