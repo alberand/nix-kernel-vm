@@ -61,10 +61,14 @@
     };
   };
 in {
-  shell = nix-kernel-vm.lib.${system}.mkLinuxShell {
+  shell = (nix-kernel-vm.lib.${system}.mkLinuxShell {
     inherit pkgs root name;
     no-vm = true;
-  };
+  }).overrideAttrs(_final: prev: {
+    shellHook = prev.shellHooks + ''
+      echo "$(tput setaf 161)Welcome to xfsprogs dev-shell.$(tput sgr0)"
+    '';
+  });
 
   iso = nix-kernel-vm.lib.${system}.mkIso {
     inherit pkgs user-config;
