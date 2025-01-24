@@ -28,7 +28,7 @@
       packages = {
         inherit xfsprogs xfstests;
       };
-      devShells = rec {
+      devShells = {
         xfstests = xfstests.shell;
         xfsprogs = xfsprogs.shell;
       };
