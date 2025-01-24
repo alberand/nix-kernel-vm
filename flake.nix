@@ -52,68 +52,6 @@
             prev.nativeBuildInputs;
         });
 
-      devShells."xfsprogs" = with pkgs;
-        pkgs.mkShell {
-          nativeBuildInputs = [
-            icu
-            gettext
-            pkg-config
-            libuuid # codegen tool uses libuuid
-            liburcu # required by crc32selftest
-            libtool
-            autoconf
-            automake
-            attr
-            (pkgs.writeScriptBin "nix-fix" ''
-              #!${pkgs.stdenv.shell}
-              git am -3 ${./0001-xfsprogs-force-copy-install-sh-to-always-overwrite.patch}
-            '')
-            guilt
-          ];
-          buildInputs = [readline icu inih liburcu];
-          shellHook = ''
-            echo ""
-            echo "Build with ccache:"
-            echo -e '\tmake CC="ccache cc" -j$(nproc)'
-            echo "Apply NixOS fix:"
-            echo -e '\tnix-fix'
-            echo ""
-          '';
-        };
-
-      devShells."xfstests" = with pkgs; let
-        xfstests-env = writeShellScriptBin "xfstests-env" (builtins.readFile ./xfstests-env.sh);
-      in
-        pkgs.mkShell {
-          nativeBuildInputs = [
-            autoconf
-            automake
-            libtool
-            guilt
-            acl
-            attr
-            gawk
-            libaio
-            libuuid
-            libxfs
-            openssl
-            perl
-            xfstests-env
-            libtool
-            liburing
-            pkg-config
-          ];
-
-          shellHook = ''
-            export AWK=$(type -P awk)
-            export ECHO=$(type -P echo)
-            export LIBTOOL=$(type -P libtool)
-            export MAKE=$(type -P make)
-            export SED=$(type -P sed)
-            export SORT=$(type -P sort)
-          '';
-        };
-
       # Config file derivation
       packages = rec {
         default = vmtest;
@@ -236,17 +174,17 @@
         path = ./templates/xfsprogs;
         description = "VM for testing xfsprogs with xfstests";
         welcomeText = ''
-            This is template for testing 'xfsprogs' package.
+          This is template for testing 'xfsprogs' package.
 
-            To modify an image modify parameters in xfsprogs.nix
+          To modify an image modify parameters in xfsprogs.nix
 
-            To build runnable image run:
+          To build runnable image run:
 
-            $ nix build .#iso
+          $ nix build .#iso
 
-            To activate development shell:
+          To activate development shell:
 
-            $ nix develop .#
+          $ nix develop .#
         '';
       };
       templates.default = self.templates."xfsprogs";

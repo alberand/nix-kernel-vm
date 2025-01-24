@@ -185,7 +185,7 @@
             libmnl
             numactl
 
-            (vmtest-deploy {inherit pkgs;})
+            (deploy {inherit pkgs;})
             (pkgs.writeScriptBin "vmtest-build" ''
               nix build ${root}#vm
             '')
@@ -193,7 +193,21 @@
               nix build ${root}#iso
             '')
           ]
-          ++ packages;
+          ++ packages
+          ++ [
+            # xfsprogs
+            icu
+            libuuid # codegen tool uses libuuid
+            liburcu # required by crc32selftest
+            readline
+            inih
+          ]
+          ++ [
+            # xfstests
+            gawk
+            libuuid
+            libxfs
+          ];
 
         buildInputs = with pkgs; [
           elfutils
@@ -216,6 +230,13 @@
             export KBUILD_BUILD_TIMESTAMP=""
             alias make='make CC="ccache gcc"'
           fi
+
+          export AWK=$(type -P awk)
+          export ECHO=$(type -P echo)
+          export LIBTOOL=$(type -P libtool)
+          export MAKE=$(type -P make)
+          export SED=$(type -P sed)
+          export SORT=$(type -P sort)
         '';
       };
     };
