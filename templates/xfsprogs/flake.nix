@@ -1,5 +1,5 @@
 {
-  description = "xfsprogs development environment";
+  description = "Linux Kernel development environment";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     flake-utils.url = "github:numtide/flake-utils";
@@ -21,15 +21,16 @@
       xfsprogs = import ./xfsprogs.nix {
         inherit nix-kernel-vm system nixpkgs pkgs root;
       };
+      xfstests = import ./xfstests.nix {
+        inherit nix-kernel-vm system nixpkgs pkgs root;
+      };
     in {
-      packages = rec {
-        iso = xfsprogs.iso;
-        vm = xfsprogs.vm;
-        default = iso;
+      packages = {
+        inherit xfsprogs xfstests;
       };
       devShells = rec {
-        shell = xfsprogs.shell;
-        default = shell;
+        xfstests = xfstests.shell;
+        xfsprogs = xfsprogs.shell;
       };
     });
 }
