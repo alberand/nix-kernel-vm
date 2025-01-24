@@ -65,7 +65,7 @@ in {
     inherit pkgs root name;
     no-vm = true;
   }).overrideAttrs(_final: prev: {
-    shellHook = prev.shellHooks + ''
+    shellHook = prev.shellHook + ''
       echo "$(tput setaf 161)Welcome to xfsprogs dev-shell.$(tput sgr0)"
     '';
   });

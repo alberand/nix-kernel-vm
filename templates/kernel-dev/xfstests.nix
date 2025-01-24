@@ -56,7 +56,7 @@ in {
     inherit pkgs root name;
     no-vm = true;
   }).overrideAttrs(_final: prev: {
-    shellHook = prev.shellHooks + ''
+    shellHook = prev.shellHook + ''
       echo "$(tput setaf 214)Welcome to xfstests dev-shell.$(tput sgr0)"
     '';
   });
