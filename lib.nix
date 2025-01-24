@@ -186,7 +186,7 @@
             libmnl
             numactl
 
-            (deploy {inherit pkgs;})
+            (vmtest-deploy {inherit pkgs;})
             (pkgs.writeScriptBin "vmtest-build" ''
               nix build ${root}#$PNAME.vm
             '')
@@ -246,8 +246,8 @@
   buildKernelConfig = pkgs.callPackage ./kernel-config.nix {};
   buildKernel = pkgs.callPackage ./kernel.nix {};
 
-  deploy = {pkgs}:
+  vmtest-deploy = {pkgs}:
     builtins.getAttr "script" {
-      script = pkgs.writeScriptBin "deploy" (builtins.readFile ./deploy.sh);
+      script = pkgs.writeScriptBin "vmtest-deploy" (builtins.readFile ./deploy.sh);
     };
 }
