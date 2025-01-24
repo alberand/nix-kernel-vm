@@ -170,11 +170,11 @@
         drv = packages.vmtest;
       };
 
-      templates."xfsprogs" = {
-        path = ./templates/xfsprogs;
-        description = "VM for testing xfsprogs with xfstests";
+      templates."kernel-dev" = {
+        path = ./templates/kernel-dev;
+        description = "Development shell for Linux kernel with image builder";
         welcomeText = ''
-          This is template for testing 'xfsprogs' package.
+          This is template for testing 'xfsprogs'/'xfstests' package.
 
           To modify an image modify parameters in xfsprogs.nix
 
@@ -187,7 +187,7 @@
           $ nix develop .#
         '';
       };
-      templates.default = self.templates."xfsprogs";
+      templates.default = self.templates."kernel-dev";
 
       #nixosConfigurations.xfstests-env = import ./xfstests-env.nix { inherit nixpkgs pkgs;};
     });
