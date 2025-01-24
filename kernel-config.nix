@@ -46,6 +46,7 @@
     FPROBE = yes;
     FUNCTION_PROFILER = yes;
     FTRACE_SYSCALLS = yes;
+    KEXEC = yes;
 
     LOCALVERSION_AUTO = no;
 
