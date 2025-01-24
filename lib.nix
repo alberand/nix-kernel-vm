@@ -96,6 +96,7 @@
     user-config ? {},
     packages ? [],
     name ? "test-node",
+    pname ? "test-package",
   }:
     builtins.getAttr "shell" {
       shell = pkgs.mkShell {
@@ -187,10 +188,10 @@
 
             (deploy {inherit pkgs;})
             (pkgs.writeScriptBin "vmtest-build" ''
-              nix build ${root}#vm
+              nix build ${root}#$PNAME.vm
             '')
             (pkgs.writeScriptBin "vmtest-build-iso" ''
-              nix build ${root}#iso
+              nix build ${root}#$PNAME.iso
             '')
           ]
           ++ packages
@@ -218,6 +219,7 @@
 
         SHARE_DIR = "${sharedir}";
         NODE_NAME = "${name}";
+        PNAME = "${pname}";
 
         shellHook = ''
           curdir="$(pwd)"

@@ -55,6 +55,7 @@ in {
   shell = (nix-kernel-vm.lib.${system}.mkLinuxShell {
     inherit pkgs root name;
     no-vm = true;
+    pname = "xfstests"; # don't change
   }).overrideAttrs(_final: prev: {
     shellHook = prev.shellHook + ''
       echo "$(tput setaf 214)Welcome to xfstests dev-shell.$(tput sgr0)"
