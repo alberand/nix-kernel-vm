@@ -187,6 +187,9 @@
             numactl
 
             (vmtest-deploy {inherit pkgs;})
+            (pkgs.writeScriptBin "vmtest-run" ''
+              nix run ${root}#$PNAME.vm
+            '')
             (pkgs.writeScriptBin "vmtest-build" ''
               nix build ${root}#$PNAME.vm
             '')
