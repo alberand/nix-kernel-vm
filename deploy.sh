@@ -42,7 +42,7 @@ if [ -z "$NODE_NAME" ]; then
 fi
 
 if [ "$#" -ne 1 ]; then
-    echo "Illegal number of parameters"
+    echo "Required path to image is missing"
     help
 fi
 
