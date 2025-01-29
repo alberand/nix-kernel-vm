@@ -11,41 +11,44 @@
   rustPlatform,
 }: {
   src,
-  configfile,
-  modDirVersion,
+  kconfig,
   version,
-  enableRust ? false, # Install the Rust Analyzer
-  enableGdb ? false, # Install the GDB scripts
+  modDirVersion,
+  nixpkgs,
   kernelPatches ? [],
-  nixpkgs, # Nixpkgs source
 }: let
   kernel =
     ((callPackage "${nixpkgs}/pkgs/os-specific/linux/kernel/manual-config.nix" {})
       {
-        inherit src modDirVersion version kernelPatches lib configfile;
+        inherit src version modDirVersion lib;
+        configfile = kconfig;
 
+        extraMakeFlags = ["SOURCE_DATE_EPOCH=0"];
         allowImportFromDerivation = true;
         stdenv = ccacheStdenv;
       })
     .overrideAttrs (old: {
-      nativeBuildInputs =
-        old.nativeBuildInputs
-        ++ lib.optionals enableRust [rustc cargo rust-bindgen];
-      RUST_LIB_SRC = lib.optionalString enableRust rustPlatform.rustLibSrc;
+      nativeBuildInputs = old.nativeBuildInputs ++ [pkgs.cpio];
       dontStrip = true;
+        patches =
+          [
+              ./randstruct-provide-seed.patch
+          ];
       preConfigure = ''
         export CCACHE_DEBUG=1
         export CCACHE_MAXSIZE=10G
-        export CCACHE_DEBUGDIR=/var/cache/ccache/ccache-debug-2
-        export CCACHE_DIR=/var/cache/ccache
+        export CCACHE_DEBUGDIR=/var/cache/ccache/ccache-debug-5
+        export CCACHE_DIR=/var/cache/ccache/
+        export CCACHE_SLOPPINESS=random_seed
         export KBUILD_BUILD_TIMESTAMP=""
-        export SOURCE_DATE_EPOCH=100
+        export SOURCE_DATE_EPOCH=0
       '';
     });
 
   kernelPassthru = {
-    inherit (configfile) structuredConfig;
-    inherit modDirVersion configfile;
+    inherit (kconfig) structuredConfig;
+    inherit modDirVersion;
+    configfile = kconfig;
     passthru = kernel.passthru // (removeAttrs kernelPassthru ["passthru"]);
   };
 in

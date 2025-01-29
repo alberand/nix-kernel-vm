@@ -39,16 +39,38 @@
         };
 
         kconfig = lib.buildKernelConfig {
-          src = pkgs.fetchgit {
-            url = "git@github.com:alberand/linux.git";
-            rev = "xfs-xattrat";
-            hash = "sha256-uP7gBhVhGxy0ADazteJ5u1vvftlCua8jTkylwDrLQZY=";
+          src = pkgs.fetchFromGitHub {
+            owner = "alberand";
+            repo = "linux";
+            rev = "testing-ccache";
+            hash = "sha256-ATTckJxW+/qD8hjpHDm0HTfIMyR41Qgd65ndNvsxsa4=";
           };
           version = "xfs-xattrat";
           kconfig = with pkgs.lib.kernel; {
             FS_VERITY = yes;
           };
         };
+
+        kernel = let
+          src = pkgs.fetchFromGitHub {
+            owner = "alberand";
+            repo = "linux";
+            rev = "testing-ccache";
+            hash = "sha256-10Xm3ZInyjRB2CrRyTilFOFpeTwJz2+k/PvwmN90fOo=";
+          };
+        in
+          lib.buildKernel {
+            inherit src nixpkgs;
+            version = "testing-ccache";
+            modDirVersion = "6.13.0-rc4";
+            kconfig = lib.buildKernelConfig {
+              inherit src;
+              version = "testing-ccache";
+              kconfig = with pkgs.lib.kernel; {
+                FS_VERITY = yes;
+              };
+            };
+          };
       };
 
       apps.default = flake-utils.lib.mkApp {

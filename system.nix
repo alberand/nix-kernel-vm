@@ -17,20 +17,6 @@
   ...
 }: {
   boot = {
-    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor (
-      buildKernel rec {
-        inherit (pkgs.linuxPackages_latest.kernel) src version;
-        inherit nixpkgs;
-        modDirVersion = version;
-
-        configfile = buildKernelConfig {
-          inherit nixpkgs pkgs src version;
-          structuredExtraConfig = with pkgs.lib.kernel; {
-            XFS_FS = yes;
-          };
-        };
-      }
-    ));
     kernelParams = [
       # consistent eth* naming
       "net.ifnames=0"
