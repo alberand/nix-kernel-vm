@@ -24,13 +24,17 @@
       xfstests = import ./xfstests.nix {
         inherit nix-kernel-vm system nixpkgs pkgs root;
       };
+      kernel = import ./kernel.nix {
+        inherit nix-kernel-vm system nixpkgs pkgs root;
+      };
     in {
       packages = {
-        inherit xfsprogs xfstests;
+        inherit xfsprogs xfstests kernel;
       };
       devShells = {
         xfstests = xfstests.shell;
         xfsprogs = xfsprogs.shell;
+        kernel = kernel.shell;
       };
     });
 }
