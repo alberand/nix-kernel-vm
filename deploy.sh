@@ -122,4 +122,4 @@ virt-install --connect $SYSURI \
 	--transient
 
 echo "Open console with:"
-echo "\tvirsh --connect $SYSURI console $NODE"
+echo -e "\tvirsh --connect $SYSURI console $NODE"
