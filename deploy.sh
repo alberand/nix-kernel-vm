@@ -52,13 +52,18 @@ SYSURI="qemu+ssh://$TEST_HOST/system"
 NODE="$PREFIX-$NODE_NAME"
 TEST_SYSTEM_XML="$NODE.xml"
 
-if ! virsh --connect $SYSURI version; then
+if ! virsh --connect $SYSURI version > /dev/null; then
     echo "Not able to connect to $SYSURI. Is your user in 'libvirt' group?"
     exit 1
 fi
 
-state=$(virsh --connect $SYSURI list --all | grep " $NODE " | awk '{ print $3}')
-if [ "$state" != "" ]; then
+dominfo=$(virsh --connect qemu+ssh://tester/system dominfo "$NODE" )
+if [ $? -eq 0 ]; then
+	if [ "$(echo $dominfo | grep -F running)" != "" ]; then
+		echo "Node '$NODE' is running. Either stop it or rename new one"
+		exit 1
+	fi
+
 	remove_node $SYSURI $NODE
 fi
 
