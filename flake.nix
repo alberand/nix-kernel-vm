@@ -31,6 +31,11 @@
         user-config = {
           vm.disks = [5000 5000];
         };
+        packages = [
+            (pkgs.writeScriptBin "vmtest-config" ''
+              nix build ${self}#kconfig
+            '')
+        ];
       };
 
       packages = {
