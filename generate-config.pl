@@ -17,7 +17,7 @@ use Cwd;
 my $debug = $ENV{'DEBUG'};
 my $autoModules = $ENV{'AUTO_MODULES'};
 my $preferBuiltin = $ENV{'PREFER_BUILTIN'};
-my $ignoreConfigErrors = $ENV{'ignoreConfigErrors'};
+my $ignoreConfigErrors = '1';
 my $buildRoot = $ENV{'BUILD_ROOT'};
 my $makeFlags = $ENV{'MAKE_FLAGS'};
 $SIG{PIPE} = 'IGNORE';
