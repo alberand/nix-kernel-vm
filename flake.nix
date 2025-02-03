@@ -74,7 +74,6 @@
         iso = lib.mkIso {
           inherit pkgs;
           user-config = {
-            networking.hostName = "kernel";
             networking.useDHCP = pkgs.lib.mkForce true;
             boot.kernelPackages = pkgs.linuxPackagesFor kernel;
             vm.disks = [5000 5000];
@@ -86,7 +85,6 @@
         vm = lib.mkVmTest {
           inherit pkgs;
           user-config = {
-            networking.hostName = "kernel";
             networking.useDHCP = pkgs.lib.mkForce true;
             boot.kernelPackages = pkgs.linuxPackagesFor kernel;
             vm.disks = [5000 5000];
