@@ -32,45 +32,39 @@
           vm.disks = [5000 5000];
         };
         packages = [
-            (pkgs.writeScriptBin "vmtest-config" ''
-              nix build ${self}#kconfig
-            '')
+          (pkgs.writeScriptBin "vmtest-config" ''
+            nix build ${self}#kconfig
+          '')
         ];
       };
 
-      packages = {
+      packages = let
+        src = pkgs.fetchFromGitHub {
+          owner = "alberand";
+          repo = "linux";
+          rev = "xfs-xattrat";
+          hash = "sha256-PTR5lUeULW9hbe8VUPuvtTf5jG92D7UFr0WmvlLcgUw=";
+        };
+      in {
         configs = {
           xfstests = import ./xfstests/configs.nix;
         };
 
         kconfig = lib.buildKernelConfig {
-          src = pkgs.fetchFromGitHub {
-            owner = "alberand";
-            repo = "linux";
-            rev = "testing-ccache";
-            hash = "sha256-ATTckJxW+/qD8hjpHDm0HTfIMyR41Qgd65ndNvsxsa4=";
-          };
+          inherit src;
           version = "xfs-xattrat";
           kconfig = with pkgs.lib.kernel; {
             FS_VERITY = yes;
           };
         };
 
-        kernel = let
-          src = pkgs.fetchFromGitHub {
-            owner = "alberand";
-            repo = "linux";
-            rev = "testing-ccache";
-            hash = "sha256-10Xm3ZInyjRB2CrRyTilFOFpeTwJz2+k/PvwmN90fOo=";
-          };
-        in
-          lib.buildKernel {
+        kernel = lib.buildKernel {
             inherit src nixpkgs;
-            version = "testing-ccache";
+            version = "xfs-xattrat";
             modDirVersion = "6.13.0-rc4";
             kconfig = lib.buildKernelConfig {
               inherit src;
-              version = "testing-ccache";
+              version = "xfs-xattrat";
               kconfig = with pkgs.lib.kernel; {
                 FS_VERITY = yes;
               };
