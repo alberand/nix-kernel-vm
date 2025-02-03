@@ -40,36 +40,58 @@
 
       packages = let
         src = pkgs.fetchFromGitHub {
-          owner = "alberand";
+          owner = "torvalds";
           repo = "linux";
-          rev = "xfs-xattrat";
-          hash = "sha256-PTR5lUeULW9hbe8VUPuvtTf5jG92D7UFr0WmvlLcgUw=";
+          rev = "v6.13";
+          hash = "sha256-FD22KmTFrIhED5X3rcjPTot1UOq1ir1zouEpRWZkRC0=";
         };
-      in {
+      in rec {
         configs = {
           xfstests = import ./xfstests/configs.nix;
         };
 
         kconfig = lib.buildKernelConfig {
           inherit src;
-          version = "xfs-xattrat";
+          version = "v6.13";
           kconfig = with pkgs.lib.kernel; {
             FS_VERITY = yes;
           };
         };
 
         kernel = lib.buildKernel {
-            inherit src nixpkgs;
-            version = "xfs-xattrat";
-            modDirVersion = "6.13.0-rc4";
-            kconfig = lib.buildKernelConfig {
-              inherit src;
-              version = "xfs-xattrat";
-              kconfig = with pkgs.lib.kernel; {
-                FS_VERITY = yes;
-              };
+          inherit src nixpkgs;
+          version = "v6.13";
+          modDirVersion = "6.13.0";
+          kconfig = lib.buildKernelConfig {
+            inherit src;
+            version = "v6.13";
+            kconfig = with pkgs.lib.kernel; {
+              FS_VERITY = yes;
             };
           };
+        };
+
+        iso = lib.mkIso {
+          inherit pkgs;
+          user-config = {
+            networking.hostName = "kernel";
+            networking.useDHCP = pkgs.lib.mkForce true;
+            boot.kernelPackages = pkgs.linuxPackagesFor kernel;
+            vm.disks = [5000 5000];
+          };
+          test-disk = "/dev/sda";
+          scratch-disk = "/dev/sdb";
+        };
+
+        vm = lib.mkVmTest {
+          inherit pkgs;
+          user-config = {
+            networking.hostName = "kernel";
+            networking.useDHCP = pkgs.lib.mkForce true;
+            boot.kernelPackages = pkgs.linuxPackagesFor kernel;
+            vm.disks = [5000 5000];
+          };
+        };
       };
 
       apps.default = flake-utils.lib.mkApp {
