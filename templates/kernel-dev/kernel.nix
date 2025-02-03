@@ -98,6 +98,19 @@ in {
         '';
     });
 
+  kconfig = nix-kernel-vm.lib.${system}.buildKernelConfig {
+    src = pkgs.fetchFromGitHub {
+      owner = "alberand";
+      repo = "linux";
+      rev = "xfs-xattrat";
+      hash = "sha256-PTR5lUeULW9hbe8VUPuvtTf5jG92D7UFr0WmvlLcgUw=";
+    };
+    version = "xfs-xattrat";
+    kconfig = with pkgs.lib.kernel; {
+      FS_VERITY = yes;
+    };
+  };
+
   iso = nix-kernel-vm.lib.${system}.mkIso {
     inherit pkgs user-config;
     test-disk = "/dev/sda";
