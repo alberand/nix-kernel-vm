@@ -29,12 +29,14 @@
     };
   };
 
-  system.requiredKernelConfig = with config.lib.kernelConfig; [
-    # TODO fill this
-    (isYes "SERIAL_8250_CONSOLE")
-    (isYes "SERIAL_8250")
-    (isEnabled "VIRTIO_CONSOLE")
-  ];
+  #system.requiredKernelConfig = with config.lib.kernelConfig; [
+  #  # TODO fill this
+  #  (isYes "SERIAL_8250_CONSOLE")
+  #  (isYes "SERIAL_8250")
+  #  (isEnabled "VIRTIO_CONSOLE")
+  #  # UBSAN does not seem to work with QEMU (kernel hangs)
+  #  (isNo "UBSAN")
+  #];
 
   # Auto-login with empty password
   users.extraUsers.root.initialHashedPassword =

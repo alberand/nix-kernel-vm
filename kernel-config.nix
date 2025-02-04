@@ -15,62 +15,38 @@
   version,
 }: let
   defaultConfig = with lib.kernel; {
-    DEBUG_FS = yes;
-    DEBUG_KERNEL = yes;
-    DEBUG_MISC = yes;
-    DEBUG_BOOT_PARAMS = yes;
-    DEBUG_STACK_USAGE = yes;
-    DEBUG_SHIRQ = yes;
-    DEBUG_ATOMIC_SLEEP = yes;
-    DEBUG_KMEMLEAK = yes;
-    DEBUG_INFO_DWARF5 = yes;
-    DEBUG_INFO_COMPRESSED_NONE = yes;
-    DEBUG_VM = yes;
-    KERNEL_XZ = yes;
-    FUNCTION_TRACER = yes;
-    FUNCTION_GRAPH_TRACER = yes;
-    FUNCTION_GRAPH_RETVAL = yes;
-    FPROBE = yes;
-    FUNCTION_PROFILER = yes;
-    FTRACE_SYSCALLS = yes;
-    KEXEC = yes;
+    # Kernel BUG()s on detected corruption of in memory data
+    BUG_ON_DATA_CORRUPTION = yes;
+    # When call to schedule() check stack and in case of overflow panic()
+    SCHED_STACK_END_CHECK = yes;
+    # The thing which shows stack trace (degrade performance by 10%)
+    UNWINDER_FRAME_POINTER = yes;
 
+    # Support kernel compressed with X
+    KERNEL_GLIB = yes;
+    # Don't attach -dirty version (We won't be able to boot other kernel)
     LOCALVERSION_AUTO = no;
 
+    # Save kernel config in the kernel (also enable /proc/config.gz)
     IKCONFIG = yes;
     IKCONFIG_PROC = yes;
-    # Compile with headers
+
+    # Same as IKCONFIG but for headers in /sys/kernel/kheaders.tar.xz)
     IKHEADERS = yes;
 
-    SLUB_DEBUG = yes;
-    DEBUG_MEMORY_INIT = yes;
-    KASAN = yes;
-    #SLUB_TINY = no;
-
-    # FRAME_WARN - warn at build time for stack frames larger tahn this.
-
-    MAGIC_SYSRQ = yes;
-
-    LOCK_STAT = yes;
-    PROVE_LOCKING = yes;
-
-    FTRACE = yes;
-    STACKTRACE = yes;
-    IRQSOFF_TRACER = yes;
-
-    KGDB = yes;
-    UBSAN = yes;
-    BUG_ON_DATA_CORRUPTION = yes;
-    SCHED_STACK_END_CHECK = yes;
-    UNWINDER_FRAME_POINTER = yes;
+    # 64bit kernel
     "64BIT" = yes;
 
-    # initramfs/initrd ssupport
+    # initramfs/initrd support
     BLK_DEV_INITRD = yes;
 
+    # Support of printk
     PRINTK = yes;
     PRINTK_TIME = yes;
+    # Write printk to VGA/serial port
     EARLY_PRINTK = yes;
+    EARLY_PRINTK_DBGP = yes;
+    EARLY_PRINTK_USB_XDBC = yes;
 
     # Support elf and #! scripts
     BINFMT_ELF = yes;
@@ -80,41 +56,71 @@
     DEVTMPFS = yes;
     DEVTMPFS_MOUNT = yes;
 
+    # Console
     TTY = yes;
     SERIAL_8250 = yes;
     SERIAL_8250_CONSOLE = yes;
+    SERIAL_DEV_BUS = yes; # enables support for serial devices
+    SERIAL_DEV_CTRL_TTYPORT = yes; # enables support for TTY serial devices
 
+    # Required by profiles/qemu
+    NET_9P_VIRTIO = yes;
+    "9P_FS" = yes;
+    BLK_DEV = yes;
+    NETWORK_FILESYSTEMS = yes;
+
+    # /proc
     PROC_FS = yes;
+    # /sys
     SYSFS = yes;
+    # /proc/sys
     SYSCTL = yes;
 
+    # Can kernel load modules?
     MODULES = yes;
+    MODULE_FORCE_LOAD = yes;
     MODULE_UNLOAD = yes;
 
+    # No graphics
+    DRM = no;
+    DRM_I915 = no;
+
+    # No sound
+    SOUND = no;
+
     # QEMU stuff
+    VIRTIO = yes;
     VIRTIO_BLK = yes;
     VIRTIO_MENU = yes;
     VIRTIO_PCI = yes;
     VIRTIO_NET = yes;
     VIRTIO_MMIO = yes;
     VIRTIO_BALLOON = yes;
-    SCSI = yes;
+    VIRTIO_CONSOLE = yes;
     SCSI_VIRTIO = yes;
-    VIRTIO = yes;
-    AUTOFS_FS = yes;
-    EXT4_FS = yes;
-    NET_9P = yes;
-    NET_9P_VIRTIO = yes;
-    "9P_FS" = yes;
-    HW_RANDOM = yes;
     HW_RANDOM_VIRTIO = yes;
+
+    # Hard disks protocol
+    SCSI = yes;
+    BLK_DEV_SD = yes;
+    ATA = yes;
+    SATA_NV = no;
+    SATA_VIA = no;
+    SATA_SIS = no;
+    SATA_ULI = no;
+    ATA_PIIX = no;
+    SATA_AHCI = no;
+    PATA_MARVELL = no;
+    MMC = no;
+    MMC_BLOCK = no;
+
+    # Basic functionality
+    HW_RANDOM = yes;
     PCI = yes;
     NET = yes;
     NETDEVICES = yes;
     NET_CORE = yes;
     INET = yes;
-    OVERLAY_FS = yes;
-    VIRTIO_CONSOLE = yes;
     CGROUPS = yes;
     SIGNALFD = yes;
     TIMERFD = yes;
@@ -129,26 +135,21 @@
     TMPFS_XATTR = yes;
     SECCOMP = yes;
     SHMEM = yes;
-    SATA_NV = yes;
-    SATA_VIA = yes;
-    SATA_SIS = yes;
-    SATA_ULI = yes;
-    ATA_PIIX = yes;
-    PATA_MARVELL = yes;
-    SATA_AHCI = yes;
     RTC_CLASS = yes;
-    #MMC_BLOCK = yes;
-    ATA = yes;
-    TMPFS = yes;
     UNIX = yes;
     INOTIFY_USER = yes;
+
+    # Filesystems
+    EXT4_FS = yes;
+    TMPFS = yes;
+    OVERLAY_FS = yes;
+
+    # NVME
+    NVME_CORE = no;
+    BLK_DEV_NVME = no;
+
     # Systemd required modules
     # boot.initrd.includeDefaultModules = false;
-    BLK_DEV_NVME = yes;
-    BLK_DEV_SD = yes;
-    BLK_DEV_SR = yes;
-    MMC = yes;
-    MMC_BLOCK = yes;
     USB = yes;
     USB_PCI = yes;
     USB_SUPPORT = yes;
@@ -159,15 +160,16 @@
     USB_XHCI_PCI = yes;
     USB_XHCI_HCD = yes;
     HID_GENERIC = yes;
-    HID_LENOVO = yes;
-    HID_APPLE = yes;
-    HID_ROCCAT = yes;
-    HID_LOGITECH_HIDPP = yes;
     HIDRAW = yes;
-    HID_LOGITECH = yes;
-    HID_LOGITECH_DJ = yes;
-    HID_MICROSOFT = yes;
-    HID_CHERRY = yes;
+    HID_LENOVO = no;
+    HID_APPLE = no;
+    HID_ROCCAT = no;
+    HID_LOGITECH_HIDPP = no;
+    HID_LOGITECH = no;
+    HID_LOGITECH_DJ = no;
+    HID_MICROSOFT = no;
+    HID_CHERRY = no;
+    HID_CORSAIR = no;
     SERIO_PCIPS2 = yes;
     KEYBOARD_ATKBD = yes;
     SERIO_I8042 = yes;
@@ -175,8 +177,46 @@
     MD = yes;
     BLK_DEV_DM = yes;
     CRYPTO_SHA256 = yes;
-    HID_CORSAIR = yes;
     LIBCRC32C = yes;
+
+    # Debug
+    DEBUG_FS = yes;
+    DEBUG_KERNEL = yes;
+    DEBUG_MISC = yes;
+    DEBUG_BOOT_PARAMS = yes;
+    DEBUG_STACK_USAGE = yes;
+    DEBUG_SHIRQ = yes;
+    DEBUG_ATOMIC_SLEEP = yes;
+    DEBUG_KMEMLEAK = yes;
+    DEBUG_INFO_DWARF5 = yes;
+    DEBUG_INFO_COMPRESSED_NONE = yes;
+    DEBUG_VM = yes;
+    FUNCTION_TRACER = yes;
+    FUNCTION_GRAPH_TRACER = yes;
+    FUNCTION_GRAPH_RETVAL = yes;
+    FPROBE = yes;
+    FUNCTION_PROFILER = yes;
+    FTRACE_SYSCALLS = yes;
+    KEXEC = yes;
+    SLUB_DEBUG = yes;
+    DEBUG_MEMORY_INIT = yes;
+    KASAN = yes;
+    # Sending special commands with SysRq key (ALT+PrintScreen)
+    MAGIC_SYSRQ = yes;
+    # Lock usage statistics
+    LOCK_STAT = yes;
+    # Mathematically calculate and then report deadlocks before they occures
+    PROVE_LOCKING = yes;
+    # Enable kernel tracers
+    FTRACE = yes;
+    # Creates /proc/pid/stack which shows current stack for each process
+    STACKTRACE = yes;
+    # Max time spent in interrupt critical section
+    IRQSOFF_TRACER = yes;
+    # Kernel debugger
+    KGDB = yes;
+    # Detector of undefined behavior, in runtime
+    UBSAN = no;
   };
 in
   stdenv.mkDerivation rec {
