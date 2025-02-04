@@ -86,6 +86,31 @@
           inherit pkgs;
           user-config = {
             networking.useDHCP = pkgs.lib.mkForce true;
+            boot.kernelPackages =
+              pkgs.linuxPackagesFor
+              ((pkgs.linuxManualConfig
+                  {
+                    inherit src;
+                    version = "v6.13";
+                    modDirVersion = "6.13.0";
+                    configfile = kconfig;
+                    allowImportFromDerivation = true;
+                    stdenv = pkgs.ccacheStdenv;
+                  })
+                .overrideAttrs (old: {
+                  nativeBuildInputs = old.nativeBuildInputs ++ [pkgs.cpio];
+                  stdenv = pkgs.ccacheStdenv;
+                  dontStrip = true;
+                  patches = [
+                    ./randstruct-provide-seed.patch
+                  ];
+                  preConfigure = ''
+                    export CCACHE_MAXSIZE=5G
+                    export CCACHE_DIR=/var/cache/ccache/
+                    export CCACHE_SLOPPINESS=random_seed
+                    export KBUILD_BUILD_TIMESTAMP=""
+                  '';
+                }));
             vm.disks = [5000 5000];
           };
         };
