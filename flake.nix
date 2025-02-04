@@ -86,7 +86,6 @@
           inherit pkgs;
           user-config = {
             networking.useDHCP = pkgs.lib.mkForce true;
-            boot.kernelPackages = pkgs.linuxPackagesFor kernel;
             vm.disks = [5000 5000];
           };
         };

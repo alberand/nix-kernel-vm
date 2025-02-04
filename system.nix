@@ -7,10 +7,6 @@
 #   Note that your kernel must have some features enabled. The list of features
 #   could be found here https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix#L1142
 {
-  buildKernel,
-  buildKernelConfig,
-  nixpkgs,
-}: {
   config,
   pkgs,
   lib,
@@ -121,5 +117,5 @@
   in
     builtins.readFile "${motd}/bin/motd";
 
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.11";
 }

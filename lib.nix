@@ -17,7 +17,7 @@
         ./xfstests/xfstests.nix
         ./xfsprogs.nix
         ./simple-test.nix
-        (pkgs.callPackage ./system.nix {inherit buildKernel buildKernelConfig nixpkgs;})
+        ./system.nix
         ./vm.nix
         ({...}: user-config)
       ];
@@ -36,7 +36,7 @@
         modules = [
           ./xfstests/xfstests.nix
           ./xfsprogs.nix
-          (pkgs.callPackage ./system.nix {inherit buildKernel buildKernelConfig nixpkgs;})
+          ./system.nix
           ({
             config,
             pkgs,
