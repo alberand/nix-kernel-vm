@@ -114,6 +114,10 @@
             vm.disks = [5000 5000];
           };
         };
+
+        vmtest = {
+          inherit vm iso kconfig kernel;
+        };
       };
 
       apps.default = flake-utils.lib.mkApp {

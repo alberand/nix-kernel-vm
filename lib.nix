@@ -95,8 +95,8 @@
     qemu-options ? [],
     user-config ? {},
     packages ? [],
-    name ? "test-node",
-    pname ? "test-package",
+    name ? "vmtest",
+    pname ? "vmtest",
   }:
     builtins.getAttr "shell" {
       shell = pkgs.mkShell {

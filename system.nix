@@ -44,7 +44,7 @@
   services.getty.autologinUser = lib.mkDefault "root";
 
   networking.firewall.enable = false;
-  networking.hostName = lib.mkDefault "test-node";
+  networking.hostName = lib.mkDefault "vmtest";
   networking.useDHCP = true;
   #networking.interfaces.eth0 = {
   #  ipv4.addresses = [{
