@@ -84,7 +84,7 @@ in {
   options.programs.xfstests = {
     enable = mkEnableOption {
       name = "xfstests";
-      default = false;
+      default = true;
       example = true;
     };
 
@@ -250,6 +250,7 @@ in {
         User = "root";
         Group = "root";
         WorkingDirectory = "/root";
+        ConditionPathExists = "/root/vmtest.toml";
       };
       after = ["network.target" "network-online.target" "local-fs.target"];
       wants = ["network.target" "network-online.target" "local-fs.target"];
@@ -267,21 +268,47 @@ in {
       script = ''
         ${cfg.pre-test-hook}
 
-        arguments=""
-        if [ -f ${cfg.sharedir}/totest ]; then
-          arguments="$(cat ${cfg.sharedir}/totest)"
-        else
-          arguments="${cfg.arguments}"
+        if [ $(tq /root/vmtest.toml 'xfstests.args') == "" ] || [ $("${cfg.arguments}" == "") ]; then
+          echo "No tests to run according to /root/vmtest.toml"
+          exit 0
         fi
 
+        arguments=""
+        if [ $(tq /root/vmtest.toml 'xfstests.args') != "" ]; then
+          arguments="$(tq /root/vmtest.toml 'xfstests.args')"
+        else
+          arguments="${cfg.arguments}"
+        fi;
+
+        mkfs_opts=""
+        if [ $(tq /root/vmtest.toml 'xfstests.mkfs_opts') != "" ]; then
+          mkfs_opts="$(tq /root/vmtest.toml 'xfstests.mkfs_opts')"
+        else
+          mkfs_opts="${cfg.mkfs-opt}"
+        fi;
+
+        test_dev=""
+        if [ $(tq /root/vmtest.toml 'xfstests.test_dev') != "" ]; then
+          test_dev="$(tq /root/vmtest.toml 'xfstests.test_dev')"
+        else
+          test_dev="${cfg.test-dev}"
+        fi;
+
+        scratch_dev=""
+        if [ $(tq /root/vmtest.toml 'xfstests.scratch_dev') != "" ]; then
+          scratch_dev="$(tq /root/vmtest.toml 'xfstests.scratch_dev')"
+        else
+          scratch_dev="${cfg.scratch-dev}"
+        fi;
+
         if ${pkgs.util-linux}/bin/mountpoint /mnt/test; then
-          ${pkgs.util-linux}/bin/umount ${cfg.test-dev}
+          ${pkgs.util-linux}/bin/umount $test_dev
         fi
         if ${pkgs.util-linux}/bin/mountpoint /mnt/scratch; then
-          ${pkgs.util-linux}/bin/umount ${cfg.scratch-dev}
+          ${pkgs.util-linux}/bin/umount $scratch_dev
         fi
-        ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L test ${cfg.test-dev}
-        ${cfg.mkfs-cmd} ${cfg.mkfs-opt} -L scratch ${cfg.scratch-dev}
+        ${cfg.mkfs-cmd} $mkfs_opts -L test ${cfg.test-dev}
+        ${cfg.mkfs-cmd} $mkfs_opts -L scratch ${cfg.scratch-dev}
 
         export PATH="${cfg.sharedir}/bin:$PATH"
         ${pkgs.bash}/bin/bash -lc \

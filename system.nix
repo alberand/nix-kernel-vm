@@ -87,6 +87,7 @@
     fscrypt-experimental
     lsof
     gdb
+    tomlq
   ];
 
   environment.variables = {

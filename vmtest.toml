@@ -1,0 +1,5 @@
+[xfstests]
+args = "-s xfs_4k generic/110"
+test_dev = ""
+scratch_dev = ""
+mkfs_opts = ""
