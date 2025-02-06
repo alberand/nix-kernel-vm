@@ -259,17 +259,6 @@ in {
           ${cfg.post-test-hook}
           # Beep beep... Human... back to work
           echo -ne '\007'
-
-          # Unload kernel module if we are in VM
-          if [ -d ${cfg.sharedir}/modules ]; then
-            # Handle case when there's no modules glob -> empty
-            shopt -s nullglob
-            for module in ${cfg.sharedir}/modules/*.ko; do
-              if cat /proc/modules | grep -c "$module"; then
-                ${pkgs.kmod}/bin/rmmod $module;
-              fi
-            done;
-          fi
         ''
         + optionalString cfg.autoshutdown ''
           # Auto poweroff
@@ -277,14 +266,6 @@ in {
         '';
       script = ''
         ${cfg.pre-test-hook}
-
-        # Handle case when there's no modules glob -> empty
-        if [ -d ${cfg.sharedir}/modules ]; then
-          shopt -s nullglob
-          for module in ${cfg.sharedir}/modules/*.ko; do
-              ${pkgs.kmod}/bin/insmod $module;
-          done;
-        fi
 
         arguments=""
         if [ -f ${cfg.sharedir}/totest ]; then
