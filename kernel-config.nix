@@ -198,9 +198,9 @@
     FUNCTION_PROFILER = yes;
     FTRACE_SYSCALLS = yes;
     KEXEC = yes;
-    SLUB_DEBUG = yes;
+    SLUB_DEBUG = no;
     DEBUG_MEMORY_INIT = yes;
-    KASAN = yes;
+    KASAN = no;
     # Sending special commands with SysRq key (ALT+PrintScreen)
     MAGIC_SYSRQ = yes;
     # Lock usage statistics
@@ -212,9 +212,9 @@
     # Creates /proc/pid/stack which shows current stack for each process
     STACKTRACE = yes;
     # Max time spent in interrupt critical section
-    IRQSOFF_TRACER = yes;
+    IRQSOFF_TRACER = no;
     # Kernel debugger
-    KGDB = yes;
+    KGDB = no;
     # Detector of undefined behavior, in runtime
     UBSAN = no;
   };
