@@ -8,7 +8,7 @@ if [[ $? -ne 0 ]]; then
     exit 1;
 fi
 
-LOCAL_CONFIG=".vmtest"
+LOCAL_CONFIG=".vmtest.toml"
 SHARE_DIR="${SHARE_DIR:-/tmp/vmtest}"
 KERNEL="$KERNEL"
 MODULE="$MODULE"
@@ -62,18 +62,23 @@ function eecho() {
 }
 
 function load_config() {
-	shopt -s extglob
-	while IFS='= ' read -r lhs rhs
-	do
-		if [[ ! $lhs =~ ^\ *# && -n $lhs ]]; then
-			rhs="${rhs%%\#*}"    # Del in line right comments
-			rhs="${rhs%%*( )}"   # Del trailing spaces
-			rhs="${rhs%\"*}"     # Del opening string quotes
-			rhs="${rhs#\"*}"     # Del closing string quotes
-			export $lhs="$rhs"
-			eecho "Option $lhs = '$rhs'"
-		fi
-	done < $1
+	config=$1
+
+	if tq --file $config 'share_dir' > /dev/null; then
+		SHARE_DIR="$(tq --file $config 'share_dir')"
+	fi
+	if tq --file $config 'kernel.kernel' > /dev/null; then
+		KERNEL="$(tq --file $config 'kernel.kernel')"
+	fi
+	if tq --file $config 'xfstests.config' > /dev/null; then
+		TEST_CONFIG="$(tq --file $config 'xfstests.config')"
+	fi
+	if tq --file $config 'qemu.opts' > /dev/null; then
+		QEMU_OPTS="$(tq --file $config 'qemu.opts')"
+	fi
+	LOG_FILE="/tmp/vmtest-$(date +%s).log"
+
+	cp "$config" $SHARE_DIR/vmtest.toml
 }
 
 function parse_args() {
@@ -165,10 +170,10 @@ function set_kernel() {
 		eecho "File $1 is not a kernel (vmlinuz or bzImage)"
 	fi
 
-	export NIXPKGS_QEMU_KERNEL_test_node="$(realpath $1)"
+	export NIXPKGS_QEMU_KERNEL_vmtest="$(realpath $1)"
 	export QEMU_OPTS="$QEMU_OPTS"
 	export NIX_DISK_IMAGE="$SHARE_DIR/test-node.qcow2"
-	eecho "Kernel is set to $NIXPKGS_QEMU_KERNEL_test_node"
+	eecho "Kernel is set to $NIXPKGS_QEMU_KERNEL_vmtest"
 }
 
 function add_module() {

@@ -13,13 +13,28 @@
     nixos-generators.nixosGenerate {
       system = "x86_64-linux";
       specialArgs = {diskSize = "20000";};
-      modules = [
+      modules = let
+        xfstests = import ./xfstests/configs.nix;
+      in [
         ./xfstests/xfstests.nix
         ./xfsprogs.nix
         ./simple-test.nix
         ./system.nix
         ./vm.nix
         ({...}: user-config)
+        ({...}: {
+          programs.xfstests = {
+            enable = true;
+            testconfig = xfstests.xfstests-all;
+            test-dev = "/dev/vdb";
+            scratch-dev = "/dev/vdc";
+            src = pkgs.fetchgit {
+              url = "git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git";
+              rev = "v2024.12.22";
+              sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
+            };
+          };
+        })
       ];
       format = "vm";
     };

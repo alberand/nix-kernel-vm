@@ -25,7 +25,10 @@ with lib; let
       paths =
         [
           (prev.xfstests.overrideAttrs (prev: {
-            src = if (cfg.src != null) then cfg.src else prev.src;
+            src =
+              if (cfg.src != null)
+              then cfg.src
+              else prev.src;
             version = "git";
             patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
             patches =
@@ -97,7 +100,7 @@ in {
 
     sharedir = mkOption {
       description = "path to the share directory inside VM";
-      default = "";
+      default = "/root/vmtest";
       example = "/root/vmtest";
       type = types.str;
     };
@@ -177,6 +180,7 @@ in {
 
     environment.systemPackages = with pkgs; [
       xfstests
+      xfsprogs
     ];
 
     # Setup envirionment
@@ -250,7 +254,9 @@ in {
         User = "root";
         Group = "root";
         WorkingDirectory = "/root";
-        ConditionPathExists = "/root/vmtest.toml";
+      };
+      unitConfig = {
+        ConditionPathExists = "${cfg.sharedir}/vmtest.toml";
       };
       after = ["network.target" "network-online.target" "local-fs.target"];
       wants = ["network.target" "network-online.target" "local-fs.target"];
@@ -268,35 +274,39 @@ in {
       script = ''
         ${cfg.pre-test-hook}
 
-        if [ $(tq /root/vmtest.toml 'xfstests.args') == "" ] || [ $("${cfg.arguments}" == "") ]; then
-          echo "No tests to run according to /root/vmtest.toml"
+        function get_config {
+          ${pkgs.tomlq}/bin/tq --file ${cfg.sharedir}/vmtest.toml $@
+        }
+
+        if [ "$(get_config 'xfstests.args')" == "" ] && [ "${cfg.arguments}" == "" ]; then
+          echo "No tests to run according to ${cfg.sharedir}/vmtest.toml"
           exit 0
         fi
 
         arguments=""
-        if [ $(tq /root/vmtest.toml 'xfstests.args') != "" ]; then
-          arguments="$(tq /root/vmtest.toml 'xfstests.args')"
+        if [ "$(get_config 'xfstests.args')" != "" ]; then
+          arguments="$(get_config 'xfstests.args')"
         else
           arguments="${cfg.arguments}"
         fi;
 
         mkfs_opts=""
-        if [ $(tq /root/vmtest.toml 'xfstests.mkfs_opts') != "" ]; then
-          mkfs_opts="$(tq /root/vmtest.toml 'xfstests.mkfs_opts')"
+        if [ "$(get_config 'xfstests.mkfs_opts')" != "" ]; then
+          mkfs_opts="$(get_config 'xfstests.mkfs_opts')"
         else
           mkfs_opts="${cfg.mkfs-opt}"
         fi;
 
         test_dev=""
-        if [ $(tq /root/vmtest.toml 'xfstests.test_dev') != "" ]; then
-          test_dev="$(tq /root/vmtest.toml 'xfstests.test_dev')"
+        if [ "$(get_config 'xfstests.test_dev')" != "" ]; then
+          test_dev="$(get_config 'xfstests.test_dev')"
         else
           test_dev="${cfg.test-dev}"
         fi;
 
         scratch_dev=""
-        if [ $(tq /root/vmtest.toml 'xfstests.scratch_dev') != "" ]; then
-          scratch_dev="$(tq /root/vmtest.toml 'xfstests.scratch_dev')"
+        if [ "$(get_config 'xfstests.scratch_dev')" != "" ]; then
+          scratch_dev="$(get_config 'xfstests.scratch_dev')"
         else
           scratch_dev="${cfg.scratch-dev}"
         fi;

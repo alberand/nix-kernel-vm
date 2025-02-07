@@ -1,3 +1,6 @@
+[kernel]
+kernel = "arch/x86_64/boot/bzImage"
+
 [xfstests]
 args = "-s xfs_4k generic/110"
 test_dev = ""
