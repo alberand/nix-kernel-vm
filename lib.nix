@@ -23,6 +23,9 @@
         ./vm.nix
         ({...}: user-config)
         ({...}: {
+          programs.simple-test = {
+            enable = true;
+          };
           programs.xfstests = {
             enable = true;
             testconfig = xfstests.xfstests-all;
@@ -168,6 +171,7 @@
             liburing # for btrfs-progs
             guilt
             nix-prefetch-git
+            tomlq
 
             # probably better to move it to separate module
             sqlite

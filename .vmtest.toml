@@ -1,5 +1,7 @@
-[kernel]
-kernel = "arch/x86_64/boot/bzImage"
+simple-test = "~/Projects/kernel/prj-quota-syscall/test.sh"
+
+[qemu]
+opts = "--invalid"
 
 [xfstests]
 args = "-s xfs_4k generic/110"

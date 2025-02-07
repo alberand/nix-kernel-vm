@@ -16,6 +16,7 @@ TOTEST="$TOTEST"
 TEST_CONFIG="$TEST_CONFIG"
 QEMU_OPTS="$QEMU_OPTS"
 LOG_FILE="/tmp/vmtest-$(date +%s).log"
+SIMPLE_TEST="$SIMPLE_TEST"
 
 function help() {
 	cat <<EOF
@@ -67,6 +68,10 @@ function load_config() {
 	if tq --file $config 'share_dir' > /dev/null; then
 		SHARE_DIR="$(tq --file $config 'share_dir')"
 	fi
+	if tq --file $config 'simple-test' > /dev/null; then
+		SIMPLE_TEST="$(tq --file $config 'simple-test')"
+	fi
+	eecho $SIMPLE_TEST
 	if tq --file $config 'kernel.kernel' > /dev/null; then
 		KERNEL="$(tq --file $config 'kernel.kernel')"
 	fi
@@ -115,6 +120,12 @@ function parse_args() {
 				shift
 				shift
 				;;
+			--simple-test)
+				eecho "Processing 'simple-test' option: $2"
+				SIMPLE_TEST="$2"
+				shift
+				shift
+				;;
 			-s | --share-dir)
 				eecho "Processing 'share-dir' option: $2"
 				SHARE_DIR="$2"
@@ -154,7 +165,7 @@ function init_share() {
 	mkdir -p $SHARE_DIR
 
 	if [ ! -w "$SHARE_DIR" ]; then
-		echo "$SHARE_DIR is not writable"
+		eecho "$SHARE_DIR is not writable"
 		return
 	fi
 	mkdir -p $SHARE_DIR/modules
@@ -236,6 +247,10 @@ set_kernel $KERNEL
 add_module $MODULE
 set_totest "$TOTEST" "$TEST_CONFIG"
 
+if [ -e "$SIMPLE_TEST" ]; then
+	eecho "$SIMPLE_TEST will be used as simple test"
+	cp "$SIMPLE_TEST" "$SHARE_DIR/simple-test.sh"
+fi
 
 NODE_NAME=${NODE_NAME:-test-node}
 # After this line nix will insert more bash code. Don't exit
