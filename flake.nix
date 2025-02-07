@@ -25,13 +25,21 @@
         inherit pkgs nixos-generators nixpkgs;
       };
 
-      devShells.default = lib.mkLinuxShell {
-        inherit pkgs root;
-        no-vm = true;
-        user-config = {
-          vm.disks = [5000 5000];
-        };
-      };
+      devShells.default =
+        (lib.mkLinuxShell {
+          inherit pkgs root;
+          no-vm = true;
+          user-config = {
+            vm.disks = [5000 5000];
+          };
+        })
+        .overrideAttrs (_final: prev: {
+          shellHook =
+            prev.shellHook
+            + ''
+              echo "$(tput setaf 214)Welcome to kernel dev-shell.$(tput sgr0)"
+            '';
+        });
 
       packages = let
         src = pkgs.fetchFromGitHub {
