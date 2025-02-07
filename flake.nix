@@ -40,30 +40,24 @@
           rev = "v6.13";
           hash = "sha256-FD22KmTFrIhED5X3rcjPTot1UOq1ir1zouEpRWZkRC0=";
         };
-      in rec {
-        configs = {
-          xfstests = import ./xfstests/configs.nix;
-        };
-
-        kconfig = lib.buildKernelConfig {
+        kernel-config = lib.buildKernelConfig {
           inherit src;
           version = "v6.13";
           kconfig = with pkgs.lib.kernel; {
             FS_VERITY = yes;
           };
         };
+      in rec {
+        configs = {
+          xfstests = import ./xfstests/configs.nix;
+        };
+
+        kconfig = kernel-config;
 
         kernel = lib.buildKernel {
-          inherit src nixpkgs;
+          inherit src nixpkgs kconfig;
           version = "v6.13";
           modDirVersion = "6.13.0";
-          kconfig = lib.buildKernelConfig {
-            inherit src;
-            version = "v6.13";
-            kconfig = with pkgs.lib.kernel; {
-              FS_VERITY = yes;
-            };
-          };
         };
 
         iso = lib.mkIso {
