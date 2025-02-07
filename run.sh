@@ -145,10 +145,16 @@ function parse_args() {
 }
 
 function init_share() {
+	rm -rf "$SHARE_DIR/modules"
+	rm -rf "$SHARE_DIR/results"
+	rm -rf "$SHARE_DIR/simple-test.sh"
+	rm -rf "$SHARE_DIR/vmtest.toml"
+	rm -rf "$SHARE_DIR/totest"
+	rm -rf "$SHARE_DIR/xfstests-config"
 	mkdir -p $SHARE_DIR
 
 	if [ ! -w "$SHARE_DIR" ]; then
-		eecho "$SHARE_DIR is not writable"
+		echo "$SHARE_DIR is not writable"
 		return
 	fi
 	mkdir -p $SHARE_DIR/modules
