@@ -122,19 +122,6 @@
             (mkVmTest {
               inherit pkgs sharedir qemu-options user-config;
             })
-            #(pkgs.writeScriptBin "kernel-config" ''
-            #  cat ${user-config.boot.kernelPackages.kernel.configfile} > new-config
-            #  echo "Wrote config to new-config. Run to use:"
-            #  echo "mv new-config .config"
-            #'')
-            (pkgs.writeScriptBin "kernel-build" ''
-              if [ ! -f .config ]; then
-                kernel-config
-                mv new-config .config
-              fi
-              echo "Building Kernel"
-              make -j$(nproc)
-            '')
           ];
 
         nativeBuildInputs = with pkgs;
@@ -201,19 +188,26 @@
             libmnl
             numactl
 
+            (
+              let
+                name = "vmtest";
+                vmtest = (pkgs.writeScriptBin name (builtins.readFile ./vmtest.sh)).overrideAttrs (old: {
+                  buildCommand = ''
+                    ${old.buildCommand}
+                    patchShebangs $out
+                    substituteInPlace $out/bin/${name} \
+                      --subst-var-by root ${root}
+                  '';
+                });
+              in
+                pkgs.symlinkJoin {
+                  name = name;
+                  paths = [vmtest];
+                  buildInputs = [pkgs.makeWrapper];
+                  postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
+                }
+            )
             (vmtest-deploy {inherit pkgs;})
-            (pkgs.writeScriptBin "vmtest-config" ''
-              nix build ${root}#$PNAME.kconfig
-            '')
-            (pkgs.writeScriptBin "vmtest-run" ''
-              nix run ${root}#$PNAME.vm
-            '')
-            (pkgs.writeScriptBin "vmtest-build" ''
-              nix build ${root}#$PNAME.vm
-            '')
-            (pkgs.writeScriptBin "vmtest-build-iso" ''
-              nix build ${root}#$PNAME.iso
-            '')
           ]
           ++ packages
           ++ [
