@@ -66,23 +66,21 @@ function load_config() {
 	config=$1
 
 	if tq --file $config 'share_dir' > /dev/null; then
-		SHARE_DIR="$(tq --file $config 'share_dir')"
+		export SHARE_DIR="$(tq --file $config 'share_dir')"
 	fi
 	if tq --file $config 'simple-test' > /dev/null; then
-		SIMPLE_TEST="$(tq --file $config 'simple-test')"
+		export SIMPLE_TEST="$(tq --file $config 'simple-test')"
 	fi
 	if tq --file $config 'kernel.kernel' > /dev/null; then
-		KERNEL="$(tq --file $config 'kernel.kernel')"
+		export KERNEL="$(tq --file $config 'kernel.kernel')"
 	fi
 	if tq --file $config 'xfstests.config' > /dev/null; then
-		TEST_CONFIG="$(tq --file $config 'xfstests.config')"
+		export TEST_CONFIG="$(tq --file $config 'xfstests.config')"
 	fi
 	if tq --file $config 'qemu.opts' > /dev/null; then
-		QEMU_OPTS="$(tq --file $config 'qemu.opts')"
+		export QEMU_OPTS="$(tq --file $config 'qemu.opts')"
 	fi
 	LOG_FILE="/tmp/vmtest-$(date +%s).log"
-
-	cp "$(pwd)/$config" "$SHARE_DIR/vmtest.toml"
 
 	eecho "config: $(pwd)/$config"
 	eecho "SHARE_DIR: $SHARE_DIR"
@@ -253,7 +251,10 @@ set_kernel $KERNEL
 add_module $MODULE
 set_totest "$TOTEST" "$TEST_CONFIG"
 
-if [ -e "$SIMPLE_TEST" ]; then
+
+cp "$(pwd)/$config" "$SHARE_DIR/vmtest.toml"
+
+if [[ -f "$SIMPLE_TEST" ]]; then
 	eecho "$SIMPLE_TEST will be used as simple test"
 	cp "$SIMPLE_TEST" "$SHARE_DIR/simple-test.sh"
 fi
