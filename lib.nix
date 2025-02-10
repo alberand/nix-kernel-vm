@@ -28,9 +28,9 @@
           };
           programs.xfstests = {
             enable = true;
-            testconfig = xfstests.xfstests-all;
-            test-dev = "/dev/vdb";
-            scratch-dev = "/dev/vdc";
+            testconfig = pkgs.lib.mkDefault xfstests.xfstests-all;
+            test-dev = pkgs.lib.mkDefault "/dev/vdb";
+            scratch-dev = pkgs.lib.mkDefault "/dev/vdc";
             src = pkgs.fetchgit {
               url = "git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git";
               rev = "v2024.12.22";
