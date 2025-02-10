@@ -71,7 +71,6 @@ function load_config() {
 	if tq --file $config 'simple-test' > /dev/null; then
 		SIMPLE_TEST="$(tq --file $config 'simple-test')"
 	fi
-	eecho $SIMPLE_TEST
 	if tq --file $config 'kernel.kernel' > /dev/null; then
 		KERNEL="$(tq --file $config 'kernel.kernel')"
 	fi
@@ -83,7 +82,14 @@ function load_config() {
 	fi
 	LOG_FILE="/tmp/vmtest-$(date +%s).log"
 
-	cp "$config" $SHARE_DIR/vmtest.toml
+	cp "$(pwd)/$config" "$SHARE_DIR/vmtest.toml"
+
+	eecho "config: $(pwd)/$config"
+	eecho "SHARE_DIR: $SHARE_DIR"
+	eecho "SIMPLE_TEST: $SIMPLE_TEST"
+	eecho "KERNEL: $KERNEL"
+	eecho "TEST_CONFIG: $TEST_CONFIG"
+	eecho "QEMU_OPTS: $QEMU_OPTS"
 }
 
 function parse_args() {
@@ -189,7 +195,7 @@ function set_kernel() {
 
 	export NIXPKGS_QEMU_KERNEL_vmtest="$(realpath $1)"
 	export QEMU_OPTS="$QEMU_OPTS"
-	export NIX_DISK_IMAGE="$SHARE_DIR/test-node.qcow2"
+	export NIX_DISK_IMAGE="$SHARE_DIR/vmtest.qcow2"
 	eecho "Kernel is set to $NIXPKGS_QEMU_KERNEL_vmtest"
 }
 
@@ -252,5 +258,5 @@ if [ -e "$SIMPLE_TEST" ]; then
 	cp "$SIMPLE_TEST" "$SHARE_DIR/simple-test.sh"
 fi
 
-NODE_NAME=${NODE_NAME:-test-node}
+NODE_NAME=${NODE_NAME:-vmtest}
 # After this line nix will insert more bash code. Don't exit
