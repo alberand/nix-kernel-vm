@@ -169,7 +169,11 @@ in {
 
     src = mkOption {
       type = types.nullOr types.package;
-      default = null;
+      default = pkgs.fetchgit {
+        url = "git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git";
+        rev = "v2024.12.22";
+        sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
+      };
     };
   };
 
