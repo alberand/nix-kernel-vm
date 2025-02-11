@@ -258,7 +258,7 @@
     };
 
   buildKernelConfig = pkgs.callPackage ./kernel-config.nix {};
-  buildKernel = pkgs.callPackage ./kernel.nix {};
+  buildKernel = pkgs.callPackage ./kernel-build.nix {};
 
   vmtest-deploy = {pkgs}:
     builtins.getAttr "script" {
