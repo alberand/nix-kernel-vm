@@ -321,8 +321,8 @@ in {
         if ${pkgs.util-linux}/bin/mountpoint /mnt/scratch; then
           ${pkgs.util-linux}/bin/umount $scratch_dev
         fi
-        ${cfg.mkfs-cmd} $mkfs_opts -L test ${cfg.test-dev}
-        ${cfg.mkfs-cmd} $mkfs_opts -L scratch ${cfg.scratch-dev}
+        ${cfg.mkfs-cmd} $mkfs_opts -L test $test_dev
+        ${cfg.mkfs-cmd} $mkfs_opts -L scratch $scratch_dev
 
         export PATH="${cfg.sharedir}/bin:$PATH"
         ${pkgs.bash}/bin/bash -lc \
