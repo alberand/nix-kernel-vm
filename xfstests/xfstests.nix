@@ -192,8 +192,6 @@ in {
       HOST_OPTIONS =
         pkgs.writeText "xfstests.config"
         (builtins.readFile cfg.testconfig);
-      TEST_DEV = cfg.test-dev;
-      SCRATCH_DEV = cfg.scratch-dev;
     };
 
     users = {
@@ -324,6 +322,8 @@ in {
         ${cfg.mkfs-cmd} $mkfs_opts -L test $test_dev
         ${cfg.mkfs-cmd} $mkfs_opts -L scratch $scratch_dev
 
+        export TEST_DEV="$test_dev"
+        export SCRATCH_DEV="$scratch_dev"
         export PATH="${cfg.sharedir}/bin:$PATH"
         ${pkgs.bash}/bin/bash -lc \
           "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
