@@ -191,10 +191,10 @@ function set_kernel() {
 		eecho "File $1 is not a kernel (vmlinuz or bzImage)"
 	fi
 
-	export NIXPKGS_QEMU_KERNEL_vmtest="$(realpath $1)"
+	export NIXPKGS_QEMU_KERNEL_${NODE_NAME}="$(realpath $1)"
 	export QEMU_OPTS="$QEMU_OPTS"
-	export NIX_DISK_IMAGE="$SHARE_DIR/vmtest.qcow2"
-	eecho "Kernel is set to $NIXPKGS_QEMU_KERNEL_vmtest"
+	export NIX_DISK_IMAGE="$SHARE_DIR/$NODE_NAME.qcow2"
+	eecho "Kernel is set to $(realpath $1)"
 }
 
 function add_module() {
