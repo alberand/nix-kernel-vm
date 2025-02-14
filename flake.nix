@@ -82,11 +82,28 @@
           inherit pkgs;
           user-config = {
             networking.useDHCP = pkgs.lib.mkForce true;
-            boot.kernelPackages = pkgs.linuxPackagesFor kernel;
-            vm.disks = [5000 5000];
+            boot.kernelPackages = pkgs.linuxPackagesFor (
+              lib.buildKernel {
+                inherit src;
+                kconfig = ./kconfigs/kvm-config;
+                version = "v6.13";
+                modDirVersion = "6.13.0";
+              }
+            );
+
+            programs.xfstests = {
+              enable = true;
+              src = pkgs.fetchgit {
+                url = "git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git";
+                rev = "v2024.12.22";
+                sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
+              };
+              testconfig = packages.xfstests-configs.xfstests-all;
+              test-dev = "/dev/sda";
+              scratch-dev = "/dev/sdb";
+              arguments = "-R xunit -s xfs_4k generic/110";
+            };
           };
-          test-disk = "/dev/sda";
-          scratch-disk = "/dev/sdb";
         };
 
         vm = lib.mkVmTest {

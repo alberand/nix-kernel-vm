@@ -37,8 +37,6 @@
 
   mkIso = {
     pkgs,
-    test-disk,
-    scratch-disk,
     user-config ? {},
   }:
     builtins.getAttr "iso" {
