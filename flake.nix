@@ -23,6 +23,7 @@
     in rec {
       lib = import ./lib.nix {
         inherit pkgs nixos-generators nixpkgs;
+        inherit (packages) xfstests-configs;
       };
 
       devShells.default =
@@ -52,8 +53,21 @@
           };
         };
       in rec {
-        configs = {
-          xfstests = import ./xfstests/configs.nix;
+        xfstests-configs = pkgs.stdenv.mkDerivation {
+          name = "xfstests-configs";
+          version = "v1";
+          src = ./xfstests;
+          installPhase = ''
+            mkdir -p $out
+            cp $src/*.conf $out
+          '';
+          passthru = {
+            xfstests-all = ./xfstests/xfstests-all.conf;
+            xfstests-xfs-1k = ./xfstests/xfstests-xfs-1k.conf;
+            xfstests-xfs-4k = ./xfstests/xfstests-xfs-4k.conf;
+            xfstests-ext4-1k = ./xfstests/xfstests-ext4-1k.conf;
+            xfstests-ext4-4k = ./xfstests/xfstests-ext4-4k.conf;
+          };
         };
 
         kconfig = kernel-config;

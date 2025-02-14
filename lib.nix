@@ -2,6 +2,7 @@
   pkgs,
   nixos-generators,
   nixpkgs,
+  xfstests-configs,
   ...
 }: rec {
   mkVM = {
@@ -13,10 +14,8 @@
     nixos-generators.nixosGenerate {
       system = "x86_64-linux";
       specialArgs = {diskSize = "20000";};
-      modules = let
-        xfstests = import ./xfstests/configs.nix;
-      in [
-        ./xfstests/xfstests.nix
+      modules = [
+        ((import ./xfstests/xfstests.nix) {inherit xfstests-configs;})
         ./xfsprogs.nix
         ./simple-test.nix
         ./system.nix
@@ -28,7 +27,6 @@
           };
           programs.xfstests = {
             enable = true;
-            testconfig = pkgs.lib.mkDefault xfstests.xfstests-all;
             test-dev = pkgs.lib.mkDefault "/dev/vdb";
             scratch-dev = pkgs.lib.mkDefault "/dev/vdc";
           };

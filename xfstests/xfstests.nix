@@ -1,4 +1,4 @@
-{
+{xfstests-configs}: {
   lib,
   pkgs,
   config,
@@ -121,6 +121,7 @@ in {
 
     testconfig = mkOption {
       description = "xfstests configuration file";
+      default = "${xfstests-configs.xfstests-all}";
       example = "./local.config.example";
       type = types.path;
     };
