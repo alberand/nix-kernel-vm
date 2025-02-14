@@ -259,6 +259,23 @@ in {
       "d /mnt/scratch 1777 root root"
     ];
 
+    # TODO Do we need this at all? Shouldn't this be done by service
+    fileSystems =
+      lib.mkIf (cfg.test-dev != "") {
+        "/mnt/test" = {
+          device = cfg.test-dev;
+          fsType = "xfs";
+          autoFormat = true;
+        };
+      }
+      // lib.mkIf (cfg.scratch-dev != "") {
+        "/mnt/scratch" = {
+          device = cfg.scratch-dev;
+          fsType = "xfs";
+          autoFormat = true;
+        };
+      };
+
     systemd.services.xfstests = {
       enable = true;
       serviceConfig = {

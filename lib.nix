@@ -45,7 +45,7 @@
       iso = nixos-generators.nixosGenerate {
         system = "x86_64-linux";
         modules = [
-          ./xfstests/xfstests.nix
+          ((import ./xfstests/xfstests.nix) {inherit xfstests-configs;})
           ./xfsprogs.nix
           ./system.nix
           ({
@@ -56,20 +56,7 @@
             {
               # Don't shutdown system as libvirtd will remove the VM
               programs.xfstests.autoshutdown = false;
-
               networking.networkmanager.enable = true;
-
-              fileSystems."/mnt/test" = {
-                device = test-disk;
-                fsType = "xfs";
-                autoFormat = true;
-              };
-
-              fileSystems."/mnt/scratch" = {
-                device = scratch-disk;
-                fsType = "xfs";
-                autoFormat = true;
-              };
             }
             // user-config)
         ];
