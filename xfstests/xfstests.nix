@@ -20,6 +20,7 @@ with lib; let
         runHook postInstall
       '';
     };
+    github-upload = pkgs.writeShellScriptBin "github-upload" ../github-upload.sh;
     xfstests = pkgs.symlinkJoin {
       name = "xfstests";
       paths =
@@ -176,6 +177,20 @@ in {
         sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
       };
     };
+
+    uploader = mkOption {
+      description = "Enable results uploader (the repository must be provided)";
+      default = false;
+      example = true;
+      type = types.bool;
+    };
+
+    repository = mkOption {
+      description = "GitHub repository to upload results to";
+      default = "";
+      example = "https://github.com/alberand/xfstests-results";
+      type = types.str;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -328,6 +343,11 @@ in {
         export PATH="${cfg.sharedir}/bin:$PATH"
         ${pkgs.bash}/bin/bash -lc \
           "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
+
+        ${pkgs.github-upload}/bin/github-upload \
+          ${cfg.repository} \
+          ${config.networking.hostName} \
+          /root/results
       '';
     };
   };
