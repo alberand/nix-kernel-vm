@@ -273,9 +273,6 @@ in {
         Group = "root";
         WorkingDirectory = "/root";
       };
-      unitConfig = {
-        ConditionPathExists = "${cfg.sharedir}/vmtest.toml";
-      };
       after = ["network.target" "network-online.target" "local-fs.target"];
       wants = ["network.target" "network-online.target" "local-fs.target"];
       wantedBy = ["multi-user.target"];

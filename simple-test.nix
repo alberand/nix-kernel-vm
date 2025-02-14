@@ -57,9 +57,6 @@ in {
         Group = "root";
         WorkingDirectory = "/root";
       };
-      unitConfig = {
-        ConditionPathExists = "${cfg.sharedir}/simple-test.sh";
-      };
       after = ["network.target" "network-online.target" "local-fs.target"];
       wants = ["network.target" "network-online.target" "local-fs.target"];
       wantedBy = ["multi-user.target"];
