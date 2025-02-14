@@ -94,6 +94,7 @@ in {
 
     arguments = mkOption {
       description = "command line arguments for xfstests";
+      # Has to be empty by default to not run anything in VM
       default = "";
       example = "-g auto";
       type = types.str;
@@ -292,6 +293,11 @@ in {
         function get_config {
           ${pkgs.tomlq}/bin/tq --file ${cfg.sharedir}/vmtest.toml $@
         }
+
+        if [ ! -f "${cfg.sharedir}/vmtest.toml" ] && [ "${cfg.arguments}" == "" ]; then
+          echo "${cfg.sharedir}/vmtest.toml: file doesn't exist"
+          exit 0
+        fi
 
         if [ "$(get_config 'xfstests.args')" == "" ] && [ "${cfg.arguments}" == "" ]; then
           echo "No tests to run according to ${cfg.sharedir}/vmtest.toml"
