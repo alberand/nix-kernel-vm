@@ -3,3 +3,4 @@ result*
 *.log
 *.qcow2
 modules
+.vmtest.toml
