@@ -28,10 +28,6 @@
       devShells.default =
         (lib.mkLinuxShell {
           inherit pkgs root;
-          no-vm = true;
-          user-config = {
-            vm.disks = [5000 5000];
-          };
         })
         .overrideAttrs (_final: prev: {
           shellHook =

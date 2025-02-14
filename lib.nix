@@ -103,25 +103,13 @@
   mkLinuxShell = {
     pkgs,
     root,
-    no-vm ? false,
     sharedir ? "/tmp/vmtest",
-    qemu-options ? [],
-    user-config ? {},
     packages ? [],
     name ? "vmtest",
     pname ? "vmtest",
   }:
     builtins.getAttr "shell" {
       shell = pkgs.mkShell {
-        packages =
-          if no-vm
-          then []
-          else [
-            (mkVmTest {
-              inherit pkgs sharedir qemu-options user-config;
-            })
-          ];
-
         nativeBuildInputs = with pkgs;
           [
             ctags
