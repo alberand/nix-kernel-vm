@@ -157,6 +157,14 @@
             alsa-lib
             libmnl
             numactl
+            (smatch.overrideAttrs(final: prev: {
+              version = "git";
+              src = fetchgit {
+                url = "git://repo.or.cz/smatch.git";
+                rev = "b8540ba87345cda269ef4490dd533aa6e8fb9229";
+                hash = "sha256-LQhNwhSbEP3BjBrT3OFjOjAoJQ1MU0HhyuBQPffOO48=";
+              };
+            }))
 
             (
               let
