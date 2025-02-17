@@ -166,6 +166,13 @@
               };
             }))
 
+            python312
+            python312Packages.flake8
+            python312Packages.pylint
+            cargo
+            rustc
+            (pkgs.callPackage ./virtme-ng.nix {})
+
             (
               let
                 name = "vmtest";
