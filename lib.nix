@@ -205,6 +205,8 @@
         SHARE_DIR = "${sharedir}";
         NODE_NAME = "${name}";
         PNAME = "${pname}";
+        KBUILD_BUILD_TIMESTAMP = "";
+        SOURCE_DATE_EPOCH = 0;
 
         shellHook = ''
           curdir="$(pwd)"
@@ -214,7 +216,6 @@
           fi
 
           if type -p ccache; then
-            export KBUILD_BUILD_TIMESTAMP=""
             alias make='make CC="ccache gcc"'
           fi
 
