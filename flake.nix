@@ -84,8 +84,7 @@
             networking.useDHCP = pkgs.lib.mkForce true;
             boot.kernelPackages = pkgs.linuxPackagesFor (
               lib.buildKernel {
-                inherit src;
-                kconfig = ./kconfigs/kvm-config;
+                inherit src kconfig;
                 version = "v6.13";
                 modDirVersion = "6.13.0";
               }
