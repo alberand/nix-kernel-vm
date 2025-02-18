@@ -220,12 +220,30 @@
 
     # ISO
     SQUASHFS = yes;
+    SQUASHFS_XZ = yes;
+    SQUASHFS_ZSTD = yes;
     ISO9660_FS = yes;
     USB_UAS = module;
     BLK_DEV_LOOP = yes;
     CRYPTO_ZSTD = yes;
     INITRAMFS_COMPRESSION_ZSTD = yes;
-    SQUASHFS_ZSTD = yes;
+
+    # other
+    NET_9P = yes;
+    VT = yes;
+    UNIX98_PTYS = yes;
+    SCSI_LOWLEVEL = yes;
+    WATCHDOG = yes;
+    WATCHDOG_CORE = yes;
+    I6300ESB_WDT = yes;
+    DAX = yes;
+    DAX_DRIVER = yes;
+    FS_DAX = yes;
+    MEMORY_HOTPLUG = yes;
+    MEMORY_HOTREMOVE = yes;
+    ZONE_DEVICE = yes;
+    FUFE_FS = yes;
+    VIRTIO_FS = yes;
   };
 in
   stdenv.mkDerivation rec {
