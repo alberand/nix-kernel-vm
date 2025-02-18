@@ -13,6 +13,8 @@
   kconfig,
   src,
   version,
+  debug ? false,
+  iso ? false,
 }: let
   defaultConfig = with lib.kernel; {
     # Kernel BUG()s on detected corruption of in memory data
@@ -104,15 +106,6 @@
     SCSI = yes;
     BLK_DEV_SD = yes;
     ATA = yes;
-    SATA_NV = no;
-    SATA_VIA = no;
-    SATA_SIS = no;
-    SATA_ULI = no;
-    ATA_PIIX = no;
-    SATA_AHCI = no;
-    PATA_MARVELL = no;
-    MMC = no;
-    MMC_BLOCK = no;
 
     # Basic functionality
     HW_RANDOM = yes;
@@ -144,32 +137,9 @@
     TMPFS = yes;
     OVERLAY_FS = yes;
 
-    # NVME
-    NVME_CORE = no;
-    BLK_DEV_NVME = no;
-
     # Systemd required modules
     # boot.initrd.includeDefaultModules = false;
-    USB = yes;
-    USB_PCI = yes;
-    USB_SUPPORT = yes;
-    USB_UHCI_HCD = no;
-    USB_EHCI_HCD = no;
-    USB_EHCI_PCI = no;
-    USB_OHCI_HCD = no;
-    USB_XHCI_PCI = no;
-    USB_XHCI_HCD = no;
-    HID_GENERIC = yes;
     HIDRAW = yes;
-    HID_LENOVO = no;
-    HID_APPLE = no;
-    HID_ROCCAT = no;
-    HID_LOGITECH_HIDPP = no;
-    HID_LOGITECH = no;
-    HID_LOGITECH_DJ = no;
-    HID_MICROSOFT = no;
-    HID_CHERRY = no;
-    HID_CORSAIR = no;
     SERIO_PCIPS2 = yes;
     KEYBOARD_ATKBD = yes;
     SERIO_I8042 = yes;
@@ -178,7 +148,9 @@
     BLK_DEV_DM = yes;
     CRYPTO_SHA256 = yes;
     LIBCRC32C = yes;
+  };
 
+  debugConfig = with lib.kernel; {
     # Debug
     DEBUG_FS = yes;
     DEBUG_KERNEL = yes;
@@ -217,7 +189,9 @@
     KGDB = no;
     # Detector of undefined behavior, in runtime
     UBSAN = no;
+  };
 
+  isoConfig = with lib.kernel; {
     # ISO
     SQUASHFS = yes;
     SQUASHFS_XZ = yes;
@@ -227,6 +201,57 @@
     BLK_DEV_LOOP = yes;
     CRYPTO_ZSTD = yes;
     INITRAMFS_COMPRESSION_ZSTD = yes;
+    SATA_AHCI = yes;
+    SATA_NV = yes;
+    ISO9660 = yes;
+    AHCI = yes;
+    SATA_VIA = yes;
+    SATA_SIS = yes;
+    SATA_ULI = yes;
+    ATA_PIIX = yes;
+    PATA_MARVELL = yes;
+    NVME = module;
+    SD_MOD = yes;
+    SR_MOD = yes;
+    MMC = yes;
+    MMC_BLOCK = yes;
+    UHCI_HCD = yes;
+    EHCI_HCD = yes;
+    EHCI_PCI = yes;
+    OHCI_HCD = yes;
+    OHCI_PCI = yes;
+    XHCI_HCD = yes;
+    XHCI_PCI = yes;
+    USBHID = yes;
+    HID_GENERIC = yes;
+    HID_LENOVO = yes;
+    HID_APPLE = yes;
+    HID_ROCCAT = yes;
+    HID_LOGITECH_HIDPP = yes;
+    HID_LOGITECH_DJ = yes;
+    HID_MICROSOFT = yes;
+    HID_CHERRY = yes;
+    HID_CORSAIR = yes;
+    PCIPS2 = yes;
+    ATKBD = yes;
+    I8042 = yes;
+    RTC_CMOS = yes;
+    LOOP = yes;
+    OVERLAY = yes;
+    DM_MOD = yes;
+    # NVME
+    NVME_CORE = yes;
+    BLK_DEV_NVME = yes;
+    # USB
+    USB = yes;
+    USB_PCI = yes;
+    USB_SUPPORT = yes;
+    USB_UHCI_HCD = yes;
+    USB_EHCI_HCD = yes;
+    USB_EHCI_PCI = yes;
+    USB_OHCI_HCD = yes;
+    USB_XHCI_PCI = yes;
+    USB_XHCI_HCD = yes;
 
     # other
     NET_9P = yes;
@@ -350,7 +375,10 @@ in
             [
               (import ./kernel_config.nix)
               {
-                settings = kconfig // defaultConfig;
+                settings = kconfig //
+                  defaultConfig //
+                  lib.optionalAttrs debug debugConfig //
+                  lib.optionalAttrs iso isoConfig;
                 _file = "structuredExtraConfig";
               }
             ];

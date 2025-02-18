@@ -26,7 +26,6 @@
     crashDump.enable = true;
     initrd = {
       enable = true;
-      includeDefaultModules = false;
     };
   };
 
