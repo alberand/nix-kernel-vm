@@ -221,7 +221,7 @@
     # ISO
     SQUASHFS = yes;
     ISO9660_FS = yes;
-    UAS = yes;
+    USB_UAS = module;
     BLK_DEV_LOOP = yes;
     CRYPTO_ZSTD = yes;
     INITRAMFS_COMPRESSION_ZSTD = yes;
