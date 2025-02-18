@@ -107,6 +107,11 @@
     BLK_DEV_SD = yes;
     ATA = yes;
 
+    # Filesystems
+    EXT4_FS = yes;
+    TMPFS = yes;
+    OVERLAY_FS = yes;
+
     # Basic functionality
     HW_RANDOM = yes;
     PCI = yes;
@@ -120,9 +125,6 @@
     EPOLL = yes;
     FHANDLE = yes;
     CRYPTO_USER_API_HASH = yes;
-    CRYPTO_HMAC = yes;
-    CRYPTO_CRC32C = yes;
-    DMI = yes;
     DMIID = yes;
     TMPFS_POSIX_ACL = yes;
     TMPFS_XATTR = yes;
@@ -132,22 +134,12 @@
     UNIX = yes;
     INOTIFY_USER = yes;
 
-    # Filesystems
-    EXT4_FS = yes;
-    TMPFS = yes;
-    OVERLAY_FS = yes;
-
     # Systemd required modules
     # boot.initrd.includeDefaultModules = false;
-    HIDRAW = yes;
-    SERIO_PCIPS2 = yes;
     KEYBOARD_ATKBD = yes;
     SERIO_I8042 = yes;
-    RTC_DRV_CMOS = yes;
     MD = yes;
     BLK_DEV_DM = yes;
-    CRYPTO_SHA256 = yes;
-    LIBCRC32C = yes;
   };
 
   debugConfig = with lib.kernel; {
