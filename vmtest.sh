@@ -33,7 +33,9 @@ FFF
 }
 
 function config {
-	nix build "$ROOT#$PNAME.kconfig"
+	#nix build "$ROOT#$PNAME.kconfig"
+	cp "$ROOT/kconfig/config-v6.13" .config
+	chmod 644 .config
 }
 
 function build {
