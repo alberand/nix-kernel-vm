@@ -261,6 +261,7 @@
     ZONE_DEVICE = yes;
     FUFE_FS = yes;
     VIRTIO_FS = yes;
+    SERIO_PCIPS2 = yes;
   };
 in
   stdenv.mkDerivation rec {
@@ -369,8 +370,8 @@ in
               {
                 settings = kconfig //
                   defaultConfig //
-                  lib.optionalAttrs debug debugConfig //
-                  lib.optionalAttrs iso isoConfig;
+                  (lib.optionalAttrs (debug) debugConfig) //
+                  (lib.optionalAttrs (iso) isoConfig);
                 _file = "structuredExtraConfig";
               }
             ];

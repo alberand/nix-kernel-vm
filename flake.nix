@@ -71,6 +71,14 @@
         };
 
         kconfig = kernel-config;
+        kconfig-iso = lib.buildKernelConfig {
+          inherit src;
+          version = "v6.13";
+          iso = true;
+          kconfig = with pkgs.lib.kernel; {
+            FS_VERITY = yes;
+          };
+        };
 
         kernel = lib.buildKernel {
           inherit src nixpkgs kconfig;
@@ -87,7 +95,7 @@
                 inherit src;
                 version = "v6.13";
                 modDirVersion = "6.13.0";
-                kconfig = kconfig.overrideAttrs {iso = true;};
+                kconfig = kconfig-iso;
               }
             );
 
