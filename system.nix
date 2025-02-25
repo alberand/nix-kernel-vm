@@ -39,13 +39,21 @@
   ];
 
   # Auto-login with empty password
-  users.extraUsers.root.initialHashedPassword =
-    "$y$j9T$TKzQNuxk898Qk7J6JC5NU1$xDW5NFyr0H/wW/k/MaTpbCRIMEsv.SbvBbj6Wu/1060"; # notsecret
+  users.extraUsers.root.initialHashedPassword = "$y$j9T$TKzQNuxk898Qk7J6JC5NU1$xDW5NFyr0H/wW/k/MaTpbCRIMEsv.SbvBbj6Wu/1060"; # notsecret
   services.getty.autologinUser = lib.mkDefault "root";
 
   networking.firewall.enable = false;
   networking.hostName = lib.mkDefault "vmtest";
   networking.useDHCP = true;
+  services.resolved = {
+    enable = true;
+    dnssec = "true";
+    domains = ["~."];
+    fallbackDns = ["1.1.1.1#one.one.one.one" "1.0.0.1#one.one.one.one"];
+    extraConfig = ''
+      DNSOverTLS=no
+    '';
+  };
   #networking.interfaces.eth0 = {
   #  ipv4.addresses = [{
   #    address = "192.168.10.2";
