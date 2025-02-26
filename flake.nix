@@ -1,6 +1,17 @@
 {
   description = "Linux Kernel development environment";
 
+  nixConfig = {
+    # override the default substituters
+    substituters = [
+      "http://192.168.0.100"
+    ];
+
+    trusted-public-keys = [
+      "192.168.0.100:T4If+3X03bZC62Jh+Uzuz+ElERtgQFlbarUQE1PzC94="
+    ];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     flake-utils.url = "github:numtide/flake-utils";
