@@ -110,6 +110,7 @@
               test-dev = "/dev/sda";
               scratch-dev = "/dev/sdb";
               arguments = "-R xunit -s xfs_4k generic/110";
+              upload-results = true;
             };
           };
         };

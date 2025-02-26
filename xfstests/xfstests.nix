@@ -192,6 +192,13 @@ in {
       example = "https://github.com/alberand/xfstests-results";
       type = types.str;
     };
+
+    upload-results = mkOption {
+      description = "Upload results to GitHub repository";
+      default = false;
+      example = true;
+      type = types.bool;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -364,6 +371,8 @@ in {
         ${pkgs.bash}/bin/bash -lc \
           "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
 
+        ''
+        + optionalString cfg.upload-results ''
         ${pkgs.github-upload}/bin/github-upload \
           ${cfg.repository} \
           ${config.networking.hostName} \
