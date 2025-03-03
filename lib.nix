@@ -181,7 +181,8 @@
                     ${old.buildCommand}
                     patchShebangs $out
                     substituteInPlace $out/bin/${name} \
-                      --subst-var-by root ${root}
+                      --subst-var-by root ${root} \
+                      --subst-var-by name ${name}
                   '';
                 });
               in
@@ -193,6 +194,10 @@
                 }
             )
             (vmtest-deploy {inherit pkgs;})
+
+            # vmtest deps
+            nurl
+            nixfmt-classic
           ]
           ++ packages
           ++ [

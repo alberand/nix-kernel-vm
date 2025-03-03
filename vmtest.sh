@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 ROOT=@root@
+NAME=@name@
 VERBOSE=0
 
 usage() {
@@ -39,19 +40,56 @@ function config {
 }
 
 function build {
-case $1 in
-  vm)
-    shift
-	nix build "$ROOT#$PNAME.vm"
-    ;;
-  iso)
-    shift
-	nix build "$ROOT#$PNAME.iso"
-    ;;
-  *)
-	usage
-    ;;
-esac
+	WORKDIR="$HOME/.vmtest/$NAME"
+	# TODO this should be in workdir
+	mkdir -p "$WORKDIR"
+	pushd "$WORKDIR"
+	nix flake init --template "$ROOT#x86_64-linux.vm"
+	popd
+
+	# TODO this should be in workdir
+	local config="$(pwd)/.vmtest.toml"
+	echo "Using config $config"
+	if [ -f "$config" ]; then
+		local xfstestsrev=$(tq -f "$config" 'xfstests.rev')
+		local xfsprogsrev=$(tq -f "$config" 'xfsprogs.rev')
+		XFSTESTS=""
+		if [ "$xfstestsrev" != "" ]; then
+IFS='' read -r -d '' XFSTESTS <<EOF
+	programs.xfstests.src = $(nurl git@github.com:alberand/xfstests.git $xfstestsrev);
+EOF
+		fi
+		XFSPROGS=""
+		if [ "$xfsprogsrev" != "" ]; then
+IFS='' read -r -d '' XFSPROGS <<EOF
+	programs.xfsprogs.src = $(nurl git@github.com:alberand/xfsprogs.git $xfsprogsrev);
+EOF
+		fi
+		cat << EOF > "$WORKDIR/sources.nix"
+{pkgs, ...}: with pkgs; {
+$XFSTESTS
+$XFSPROGS
+}
+EOF
+		nixfmt "$WORKDIR/sources.nix"
+	fi
+
+	ssh-agent sh -c 'ssh-add; ssh-add -L' > "$WORKDIR/ssh-key.pub"
+
+	case $1 in
+	  vm)
+	    shift
+		echo Running \'nix build "$WORKDIR#$PNAME.vm"\'
+		nix build "$WORKDIR#$PNAME.vm"
+	    ;;
+	  iso)
+	    shift
+		echo nix build "$ROOT#$PNAME.iso"
+	    ;;
+	  *)
+		usage
+	    ;;
+	esac
 }
 
 function run {

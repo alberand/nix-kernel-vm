@@ -18,15 +18,15 @@
         inherit system;
       };
       root = builtins.toString ./.;
-      vmsys = import ./system.nix {
+      vmtest = import ./system.nix {
         inherit nix-kernel-vm system nixpkgs pkgs root;
       };
     in {
       packages = {
-        inherit vmsys;
+        inherit vmtest;
       };
       devShells = {
-        vmsys = vmsys.shell;
+        vmtest = vmtest.shell;
       };
     });
 }

@@ -7,76 +7,74 @@
 }: let
   # Global name used for image deploy, node hostname
   name = "vm";
-  user-config = {
-    imports = [
-      ./sources.nix
-    ];
-
-    # Hostname to identify the node
-    networking.hostName = name;
-    # Your ssh key to connect to node with root user
-    users.users.root.openssh.authorizedKeys.keys = [
-      (
-        builtins.readFile
+  user-config =
+    {
+      imports = [ ./sources.nix ];
+      # Hostname to identify the node
+      networking.hostName = name;
+      # Your ssh key to connect to node with root user
+      users.users.root.openssh.authorizedKeys.keys = [
         (
-          if ! builtins.pathExists ./ssh-key.pub
-          then abort "Please provide ./ssh-key.pub"
-          else ./ssh-key.pub
+          builtins.readFile
+          (
+            if ! builtins.pathExists ./ssh-key.pub
+            then abort "Please provide ./ssh-key.pub"
+            else ./ssh-key.pub
+          )
         )
-      )
-    ];
-    # Any additional packages to include into the image
-    # https://search.nixos.org/packages
-    environment.systemPackages = with pkgs; [
-      btrfs-progs
-      f2fs-tools
-      keyutils
-    ];
-    # Kernel version
-    boot.kernelPackages = let
-      linux-custom-pkg = {
-        fetchurl,
-        buildLinux,
-        ...
-      } @ args:
-        buildLinux (args
-          // rec {
-            version = "6.13-rc4";
-            modDirVersion = version;
+      ];
+      # Any additional packages to include into the image
+      # https://search.nixos.org/packages
+      environment.systemPackages = with pkgs; [
+        btrfs-progs
+        f2fs-tools
+        keyutils
+      ];
+      # Kernel version
+      boot.kernelPackages = let
+        linux-custom-pkg = {
+          fetchurl,
+          buildLinux,
+          ...
+        } @ args:
+          buildLinux (args
+            // rec {
+              version = "6.13-rc4";
+              modDirVersion = version;
 
-            src = pkgs.fetchgit {
-              url = "git@github.com:alberand/linux.git";
-              rev = "9c913654d7bb78d9132eb32b1ed7739674c75e8c";
-              sha256 = "sha256-uP7gBhVhGxy0ADazteJ5u1vvftlCua8jTkylwDrLQZY=";
-            };
-            kernelPatches = [];
+              src = pkgs.fetchgit {
+                url = "git@github.com:alberand/linux.git";
+                rev = "9c913654d7bb78d9132eb32b1ed7739674c75e8c";
+                sha256 = "sha256-uP7gBhVhGxy0ADazteJ5u1vvftlCua8jTkylwDrLQZY=";
+              };
+              kernelPatches = [];
 
-            extraConfig = '''';
-          }
-          // (args.argsOverride or {}));
-      linux-custom = pkgs.callPackage linux-custom-pkg {};
-    in
-      pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux-custom);
-    # Get ip
-    networking.useDHCP = pkgs.lib.mkForce true;
+              extraConfig = '''';
+            }
+            // (args.argsOverride or {}));
+        linux-custom = pkgs.callPackage linux-custom-pkg {};
+      in
+        pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux-custom);
+      # Get ip
+      networking.useDHCP = pkgs.lib.mkForce true;
 
-    programs = {
-      # Custom version can be used
-      xfstests = {
-        enable = true;
-        # To create a custom config commit a config to this repository and use
-        # (builtins.readFile ./your-config)
-        testconfig = nix-kernel-vm.packages.${system}.configs.xfstests.xfstests-all;
-        test-dev = "/dev/sda";
-        scratch-dev = "/dev/sdb";
-        arguments = "-R xunit -s xfs_4k -g auto";
-      };
+      programs = {
+        # Custom version can be used
+        xfstests = {
+          enable = true;
+          # To create a custom config commit a config to this repository and use
+          # (builtins.readFile ./your-config)
+          testconfig = nix-kernel-vm.packages.${system}.xfstests-configs.xfstests-all;
+          test-dev = "/dev/sda";
+          scratch-dev = "/dev/sdb";
+          arguments = "-R xunit -s xfs_4k -g auto";
+        };
 
-      xfsprogs = {
-        enable = true;
+        xfsprogs = {
+          enable = true;
+        };
       };
     };
-  };
 in {
   shell =
     (nix-kernel-vm.lib.${system}.mkLinuxShell {
