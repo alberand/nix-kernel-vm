@@ -150,6 +150,13 @@
         drv = packages.vmtest;
       };
 
+      templates."vm" = {
+        path = ./templates/vm;
+        description = "Development shell for Linux kernel with image builder";
+        welcomeText = ''
+          This is template for testing Linux kernel with xfstests.
+        '';
+      };
       templates."kernel-dev" = {
         path = ./templates/kernel-dev;
         description = "Development shell for Linux kernel with image builder";
