@@ -8,10 +8,11 @@ with lib; let
   cfg = config.programs.xfsprogs;
   xfsprogs-overlay = {
     version,
-    src,
+    src ? null,
   }: final: prev: {
-    xfsprogs = prev.xfsprogs.overrideAttrs (_old: {
-      inherit version src;
+    xfsprogs = prev.xfsprogs.overrideAttrs (old: {
+      inherit version;
+      src = cfg.src ? old.src;
 
       # We need to add autoconfHook because if you look into nixpkgs#xfsprogs
       # the source code fetched is not a git tree - it's tarball. The tarball is
@@ -53,7 +54,8 @@ in {
     };
 
     src = mkOption {
-      type = types.package;
+      type = lib.nullOr types.package;
+      default = null;
     };
   };
 
