@@ -235,6 +235,9 @@
             "$curdir/scripts/clang-tools/gen_compile_commands.py"
           fi
 
+          export CCACHE_DIR=/var/cache/ccache/
+          export CCACHE_SLOPPINESS=random_seed
+          export CCACHE_UMASK=666
           if type -p ccache; then
             alias make='make CC="ccache gcc"'
           fi
