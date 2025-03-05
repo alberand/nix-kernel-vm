@@ -238,6 +238,7 @@
             "$curdir/scripts/clang-tools/gen_compile_commands.py"
           fi
 
+          export LLVM=1
           export MAKEFLAGS="-j$(nproc)"
           if type -p ccache; then
             export CC="ccache clang"
