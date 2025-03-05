@@ -78,11 +78,11 @@ EOF
 	case $1 in
 	  vm)
 	    shift
-		nix build "$WORKDIR#$PNAME.vm"
+		nix build "$WORKDIR#vm"
 	    ;;
 	  iso)
 	    shift
-		nix build "$WORKDIR#$PNAME.iso"
+		nix build "$WORKDIR#iso"
 	    ;;
 	  *)
 		usage
@@ -91,7 +91,7 @@ EOF
 }
 
 function run {
-	nix run "$WORKDIR#$PNAME.vm"
+	nix run "$WORKDIR#vm"
 }
 
 function deploy {
