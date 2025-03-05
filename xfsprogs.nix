@@ -54,7 +54,7 @@ in {
     };
 
     src = mkOption {
-      type = lib.nullOr types.package;
+      type = types.nullOr types.package;
       default = null;
     };
   };
