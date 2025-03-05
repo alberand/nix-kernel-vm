@@ -12,7 +12,7 @@ with lib; let
   }: final: prev: {
     xfsprogs = prev.xfsprogs.overrideAttrs (old: {
       inherit version;
-      src = cfg.src ? old.src;
+      src = if cfg.src != null then cfg.src else old.src;
 
       # We need to add autoconfHook because if you look into nixpkgs#xfsprogs
       # the source code fetched is not a git tree - it's tarball. The tarball is
