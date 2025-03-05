@@ -20,6 +20,7 @@
       root = builtins.toString ./.;
       vm = import ./system.nix {
         inherit nix-kernel-vm system nixpkgs pkgs root;
+        inherit (import ./name.nix) name;
       };
     in {
       packages = {

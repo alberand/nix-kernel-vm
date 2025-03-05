@@ -4,9 +4,10 @@
   nixpkgs,
   pkgs,
   root,
+  name ? "vm",
 }: let
   # Global name used for image deploy, node hostname
-  name = "vm";
+  inherit name;
   user-config = {
     imports = [./sources.nix];
     # Hostname to identify the node
