@@ -43,7 +43,7 @@ function config {
 function build {
 	# TODO this should be in workdir
 	pushd "$WORKDIR"
-	nix flake init --template "$ROOT#x86_64-linux.vm"
+	nix flake init --template "github:alberand/nix-kernel-vm#x86_64-linux.vm"
 	popd
 
 	# TODO this should be in workdir
