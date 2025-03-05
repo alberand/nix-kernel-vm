@@ -181,8 +181,7 @@
                     ${old.buildCommand}
                     patchShebangs $out
                     substituteInPlace $out/bin/${name} \
-                      --subst-var-by root ${root} \
-                      --subst-var-by name ${name}
+                      --subst-var-by root ${root}
                   '';
                 });
               in

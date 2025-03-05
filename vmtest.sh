@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 ROOT=@root@
-NAME=@name@
 VERBOSE=0
-WORKDIR="$HOME/.vmtest/$NAME"
+WORKDIR="$HOME/.vmtest/$PNAME"
 mkdir -p "$WORKDIR"
 
 usage() {
