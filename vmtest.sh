@@ -3,6 +3,8 @@
 ROOT=@root@
 NAME=@name@
 VERBOSE=0
+WORKDIR="$HOME/.vmtest/$NAME"
+mkdir -p "$WORKDIR"
 
 usage() {
     cat << FFF
@@ -40,9 +42,7 @@ function config {
 }
 
 function build {
-	WORKDIR="$HOME/.vmtest/$NAME"
 	# TODO this should be in workdir
-	mkdir -p "$WORKDIR"
 	pushd "$WORKDIR"
 	nix flake init --template "$ROOT#x86_64-linux.vm"
 	popd
@@ -79,12 +79,11 @@ EOF
 	case $1 in
 	  vm)
 	    shift
-		echo Running \'nix build "$WORKDIR#$PNAME.vm"\'
 		nix build "$WORKDIR#$PNAME.vm"
 	    ;;
 	  iso)
 	    shift
-		echo nix build "$ROOT#$PNAME.iso"
+		nix build "$WORKDIR#$PNAME.iso"
 	    ;;
 	  *)
 		usage
@@ -93,7 +92,7 @@ EOF
 }
 
 function run {
-	nix run "$ROOT#$PNAME.vm"
+	nix run "$WORKDIR#$PNAME.vm"
 }
 
 function deploy {
