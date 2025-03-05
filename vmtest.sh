@@ -73,7 +73,11 @@ EOF
 		nixfmt "$WORKDIR/sources.nix"
 	fi
 
-	ssh-agent sh -c 'ssh-add; ssh-add -L' > "$WORKDIR/ssh-key.pub"
+	if [ -f "$HOME/.ssh/id_rsa.pub" ]; then
+		cp "$HOME/.ssh/id_rsa.pub" "$WORKDIR/ssh-key.pub"
+	else
+		ssh-agent sh -c 'ssh-add; ssh-add -L' > "$WORKDIR/ssh-key.pub"
+	fi
 
 	case $1 in
 	  vm)
