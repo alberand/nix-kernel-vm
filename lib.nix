@@ -227,6 +227,9 @@
         PNAME = "${pname}";
         KBUILD_BUILD_TIMESTAMP = "";
         SOURCE_DATE_EPOCH = 0;
+        CCACHE_DIR="/var/cache/ccache/";
+        CCACHE_SLOPPINESS="random_seed";
+        CCACHE_UMASK=777;
 
         shellHook = ''
           curdir="$(pwd)"
@@ -235,11 +238,9 @@
             "$curdir/scripts/clang-tools/gen_compile_commands.py"
           fi
 
-          export CCACHE_DIR=/var/cache/ccache/
-          export CCACHE_SLOPPINESS=random_seed
-          export CCACHE_UMASK=666
+          export MAKEFLAGS="-j$(nproc)"
           if type -p ccache; then
-            alias make='make CC="ccache gcc"'
+            export CC="ccache clang"
           fi
 
           export AWK=$(type -P awk)
