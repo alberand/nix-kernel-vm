@@ -44,7 +44,7 @@
 
   networking.firewall.enable = false;
   networking.hostName = lib.mkDefault "vmtest";
-  networking.useDHCP = true;
+  networking.useDHCP = false;
   services.resolved = {
     enable = true;
     dnssec = "true";
@@ -60,6 +60,9 @@
   #    prefixLength = 24;
   #  }];
   #};
+
+  services.logrotate.enable = false;
+  security.audit.enable = false;
 
   # Not needed in VM
   documentation.doc.enable = false;
