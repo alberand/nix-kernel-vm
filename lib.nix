@@ -171,7 +171,6 @@
             python312Packages.pylint
             cargo
             rustc
-            (pkgs.callPackage ./virtme-ng.nix {})
 
             (
               let
