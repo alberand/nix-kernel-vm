@@ -30,11 +30,11 @@
     LOCALVERSION_AUTO = no;
 
     # Save kernel config in the kernel (also enable /proc/config.gz)
-    IKCONFIG = yes;
-    IKCONFIG_PROC = yes;
+    IKCONFIG = no;
+    IKCONFIG_PROC = no;
 
     # Same as IKCONFIG but for headers in /sys/kernel/kheaders.tar.xz)
-    IKHEADERS = yes;
+    IKHEADERS = no;
 
     # 64bit kernel
     "64BIT" = yes;
@@ -44,7 +44,7 @@
 
     # Support of printk
     PRINTK = yes;
-    PRINTK_TIME = yes;
+    PRINTK_TIME = no;
     # Write printk to VGA/serial port
     EARLY_PRINTK = yes;
     EARLY_PRINTK_DBGP = yes;
