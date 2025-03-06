@@ -241,6 +241,7 @@
           export MAKEFLAGS="-j$(nproc)"
           if type -p ccache; then
             export CC="ccache clang"
+            export HOSTCC="ccache clang"
           fi
 
           export AWK=$(type -P awk)
