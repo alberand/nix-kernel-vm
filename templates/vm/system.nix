@@ -65,9 +65,6 @@
         # To create a custom config commit a config to this repository and use
         # (builtins.readFile ./your-config)
         testconfig = nix-kernel-vm.packages.${system}.xfstests-configs.xfstests-all;
-        test-dev = "/dev/sda";
-        scratch-dev = "/dev/sdb";
-        arguments = "-R xunit -s xfs_4k -g auto";
       };
 
       xfsprogs = {
