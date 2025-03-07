@@ -56,11 +56,22 @@ EOF
 	echo "Using config $config"
 	if [ -f "$config" ]; then
 		local xfstestsrev=$(tq -f "$config" 'xfstests.rev')
+		local hooks=$(tq -f "$config" 'xfstests.hooks')
+		if [ "$hooks" != "" ]; then
+			echo "cp $(readlink -f $hooks) $WORKDIR/hooks"
+			cp -r $(readlink -f $hooks) $WORKDIR/hooks
+		fi;
 		local xfsprogsrev=$(tq -f "$config" 'xfsprogs.rev')
 		XFSTESTS=""
 		if [ "$xfstestsrev" != "" ]; then
 IFS='' read -r -d '' XFSTESTS <<EOF
 	programs.xfstests.src = $(nurl git@github.com:alberand/xfstests.git $xfstestsrev);
+EOF
+		fi
+		XFSTESTSHOOKS=""
+		if [ "$hooks" != "" ]; then
+IFS='' read -r -d '' XFSTESTSHOOKS <<EOF
+	programs.xfstests.hooks = ./hooks;
 EOF
 		fi
 		XFSPROGS=""
@@ -72,6 +83,7 @@ EOF
 		cat << EOF > "$WORKDIR/sources.nix"
 {pkgs, ...}: with pkgs; {
 $XFSTESTS
+$XFSTESTSHOOKS
 $XFSPROGS
 }
 EOF
