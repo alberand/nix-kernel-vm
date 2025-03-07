@@ -70,6 +70,19 @@ in {
           ${pkgs.systemd}/bin/systemctl poweroff;
         '';
       script = ''
+        function get_config {
+          ${pkgs.tomlq}/bin/tq --file ${cfg.sharedir}/vmtest.toml $@
+        }
+
+        if [ ! -f "${cfg.sharedir}/vmtest.toml" ]; then
+          exit 0
+        fi
+
+        if [ "$(get_config 'simple-test')" == "" ]; then
+          exit 0
+        fi
+
+        echo "Running test ${cfg.sharedir}/simple-test.sh"
         chmod u+x ${cfg.sharedir}/simple-test.sh
         ${pkgs.bash}/bin/bash -l -c 'exec ${cfg.sharedir}/simple-test.sh ${cfg.arguments}'
         exit $?
