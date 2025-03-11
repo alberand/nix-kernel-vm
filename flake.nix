@@ -3,11 +3,11 @@
 
   nixConfig = {
     # override the default substituters
-    substituters = [
+    extra-substituters = [
       "http://192.168.0.100"
     ];
 
-    trusted-public-keys = [
+    extra-trusted-public-keys = [
       "192.168.0.100:T4If+3X03bZC62Jh+Uzuz+ElERtgQFlbarUQE1PzC94="
     ];
   };
