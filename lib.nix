@@ -12,8 +12,11 @@
     user-config ? {},
   }:
     nixos-generators.nixosGenerate {
+      inherit pkgs;
       system = "x86_64-linux";
-      specialArgs = {diskSize = "20000";};
+      specialArgs = {
+        diskSize = "20000";
+      };
       modules = [
         ((import ./xfstests/xfstests.nix) {inherit xfstests-configs;})
         ./xfsprogs.nix
@@ -157,7 +160,7 @@
             alsa-lib
             libmnl
             numactl
-            (smatch.overrideAttrs(final: prev: {
+            (smatch.overrideAttrs (final: prev: {
               version = "git";
               src = fetchgit {
                 url = "git://repo.or.cz/smatch.git";
@@ -225,9 +228,9 @@
         PNAME = "${pname}";
         KBUILD_BUILD_TIMESTAMP = "";
         SOURCE_DATE_EPOCH = 0;
-        CCACHE_DIR="/var/cache/ccache/";
-        CCACHE_SLOPPINESS="random_seed";
-        CCACHE_UMASK=777;
+        CCACHE_DIR = "/var/cache/ccache/";
+        CCACHE_SLOPPINESS = "random_seed";
+        CCACHE_UMASK = 777;
 
         shellHook = ''
           curdir="$(pwd)"
