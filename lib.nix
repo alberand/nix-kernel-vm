@@ -258,6 +258,7 @@
 
   buildKernelConfig = pkgs.callPackage ./kernel-config.nix {};
   buildKernel = pkgs.callPackage ./kernel-build.nix {};
+  buildKernelHeaders = pkgs.makeLinuxHeaders;
 
   vmtest-deploy = {pkgs}:
     builtins.getAttr "script" {

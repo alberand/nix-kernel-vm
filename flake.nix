@@ -91,6 +91,11 @@
           };
         };
 
+        headers = lib.buildKernelHeaders {
+          inherit src;
+          version = "v6.13";
+        };
+
         kernel = lib.buildKernel {
           inherit src nixpkgs kconfig;
           version = "v6.13";
