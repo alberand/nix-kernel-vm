@@ -38,6 +38,9 @@ with lib; let
                 ./0001-common-link-.out-file-to-the-output-directory.patch
                 ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
               ];
+            nativeBuildInputs =
+              prev.nativeBuildInputs
+              ++ lib.optionals (cfg.kernelHeaders != null) [cfg.kernelHeaders];
             wrapperScript = with pkgs;
               writeScript "xfstests-check" (''
                   #!${pkgs.runtimeShell}
@@ -199,6 +202,12 @@ in {
       example = true;
       type = types.bool;
     };
+
+    kernelHeaders = mkOption {
+      type = types.nullOr types.package;
+      description = "Linux kernel headers to compile xfstests against";
+      default = null;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -311,73 +320,74 @@ in {
           # Auto poweroff
           ${pkgs.systemd}/bin/systemctl poweroff;
         '';
-      script = ''
-        ${cfg.pre-test-hook}
+      script =
+        ''
+          ${cfg.pre-test-hook}
 
-        function get_config {
-          ${pkgs.tomlq}/bin/tq --file ${cfg.sharedir}/vmtest.toml $@
-        }
+          function get_config {
+            ${pkgs.tomlq}/bin/tq --file ${cfg.sharedir}/vmtest.toml $@
+          }
 
-        if [ ! -f "${cfg.sharedir}/vmtest.toml" ] && [ "${cfg.arguments}" == "" ]; then
-          echo "${cfg.sharedir}/vmtest.toml: file doesn't exist"
-          exit 0
-        fi
+          if [ ! -f "${cfg.sharedir}/vmtest.toml" ] && [ "${cfg.arguments}" == "" ]; then
+            echo "${cfg.sharedir}/vmtest.toml: file doesn't exist"
+            exit 0
+          fi
 
-        if [ "$(get_config 'xfstests.args')" == "" ] && [ "${cfg.arguments}" == "" ]; then
-          echo "No tests to run according to ${cfg.sharedir}/vmtest.toml"
-          exit 0
-        fi
+          if [ "$(get_config 'xfstests.args')" == "" ] && [ "${cfg.arguments}" == "" ]; then
+            echo "No tests to run according to ${cfg.sharedir}/vmtest.toml"
+            exit 0
+          fi
 
-        arguments=""
-        if [ "$(get_config 'xfstests.args')" != "" ]; then
-          arguments="$(get_config 'xfstests.args')"
-        else
-          arguments="${cfg.arguments}"
-        fi;
+          arguments=""
+          if [ "$(get_config 'xfstests.args')" != "" ]; then
+            arguments="$(get_config 'xfstests.args')"
+          else
+            arguments="${cfg.arguments}"
+          fi;
 
-        mkfs_opts=""
-        if [ "$(get_config 'xfstests.mkfs_opts')" != "" ]; then
-          mkfs_opts="$(get_config 'xfstests.mkfs_opts')"
-        else
-          mkfs_opts="${cfg.mkfs-opt}"
-        fi;
+          mkfs_opts=""
+          if [ "$(get_config 'xfstests.mkfs_opts')" != "" ]; then
+            mkfs_opts="$(get_config 'xfstests.mkfs_opts')"
+          else
+            mkfs_opts="${cfg.mkfs-opt}"
+          fi;
 
-        test_dev=""
-        if [ "$(get_config 'xfstests.test_dev')" != "" ]; then
-          test_dev="$(get_config 'xfstests.test_dev')"
-        else
-          test_dev="${cfg.test-dev}"
-        fi;
+          test_dev=""
+          if [ "$(get_config 'xfstests.test_dev')" != "" ]; then
+            test_dev="$(get_config 'xfstests.test_dev')"
+          else
+            test_dev="${cfg.test-dev}"
+          fi;
 
-        scratch_dev=""
-        if [ "$(get_config 'xfstests.scratch_dev')" != "" ]; then
-          scratch_dev="$(get_config 'xfstests.scratch_dev')"
-        else
-          scratch_dev="${cfg.scratch-dev}"
-        fi;
+          scratch_dev=""
+          if [ "$(get_config 'xfstests.scratch_dev')" != "" ]; then
+            scratch_dev="$(get_config 'xfstests.scratch_dev')"
+          else
+            scratch_dev="${cfg.scratch-dev}"
+          fi;
 
-        if ${pkgs.util-linux}/bin/mountpoint /mnt/test; then
-          ${pkgs.util-linux}/bin/umount $test_dev
-        fi
-        if ${pkgs.util-linux}/bin/mountpoint /mnt/scratch; then
-          ${pkgs.util-linux}/bin/umount $scratch_dev
-        fi
-        ${cfg.mkfs-cmd} $mkfs_opts -L test $test_dev
-        ${cfg.mkfs-cmd} $mkfs_opts -L scratch $scratch_dev
+          if ${pkgs.util-linux}/bin/mountpoint /mnt/test; then
+            ${pkgs.util-linux}/bin/umount $test_dev
+          fi
+          if ${pkgs.util-linux}/bin/mountpoint /mnt/scratch; then
+            ${pkgs.util-linux}/bin/umount $scratch_dev
+          fi
+          ${cfg.mkfs-cmd} $mkfs_opts -L test $test_dev
+          ${cfg.mkfs-cmd} $mkfs_opts -L scratch $scratch_dev
 
-        export TEST_DEV="$test_dev"
-        export SCRATCH_DEV="$scratch_dev"
-        export PATH="${cfg.sharedir}/bin:$PATH"
-        ${pkgs.bash}/bin/bash -lc \
-          "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
+          export TEST_DEV="$test_dev"
+          export SCRATCH_DEV="$scratch_dev"
+          export PATH="${cfg.sharedir}/bin:$PATH"
+          ${pkgs.bash}/bin/bash -lc \
+            "${pkgs.xfstests}/bin/xfstests-check -d $arguments"
 
         ''
         + optionalString cfg.upload-results ''
-        ${pkgs.github-upload}/bin/github-upload \
-          ${cfg.repository} \
-          ${config.networking.hostName} \
-          /root/results
-      '';
+          ${pkgs.github-upload}/bin/github-upload \
+            ${cfg.repository} \
+            ${config.networking.hostName} \
+            /root/results
+        '';
     };
   };
 }
