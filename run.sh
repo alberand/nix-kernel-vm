@@ -65,6 +65,11 @@ function eecho() {
 function load_config() {
 	config=$1
 
+	if ! tq --file $config . ; then
+		echo "Invalid $config"
+		exit 1
+	fi
+
 	if tq --file $config 'share_dir' > /dev/null; then
 		export SHARE_DIR="$(tq --file $config 'share_dir')"
 	fi

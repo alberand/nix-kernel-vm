@@ -54,6 +54,11 @@ EOF
 	# TODO this should be in workdir
 	local config="$(pwd)/.vmtest.toml"
 	echo "Using config $config"
+	# validate
+	if ! tq --file $config . ; then
+		echo "Invalid $config"
+		exit 1
+	fi
 	if [ -f "$config" ]; then
 		local xfstestsrev=$(tq -f "$config" 'xfstests.rev')
 		local hooks=$(tq -f "$config" 'xfstests.hooks')
