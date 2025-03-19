@@ -40,6 +40,7 @@ with lib; let
               ];
             nativeBuildInputs =
               prev.nativeBuildInputs
+              ++ [autoreconfHook]
               ++ lib.optionals (cfg.kernelHeaders != null) [cfg.kernelHeaders];
             wrapperScript = with pkgs;
               writeScript "xfstests-check" (''
