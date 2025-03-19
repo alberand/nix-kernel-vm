@@ -31,17 +31,19 @@ with lib; let
               then cfg.src
               else prev.src;
             version = "git";
-            patchPhase = builtins.readFile ./patchPhase.sh + prev.patchPhase;
+            patchPhase =
+              builtins.readFile ./patchPhase.sh
+              + prev.patchPhase;
             patches =
               (prev.patches or [])
               ++ [
                 ./0001-common-link-.out-file-to-the-output-directory.patch
                 ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
               ];
-            nativeBuildInputs =
-              prev.nativeBuildInputs
-              ++ [autoreconfHook]
+            nativeBuildInputs = prev.nativeBuildInputs
+              ++ [pkgs.pkg-config]
               ++ lib.optionals (cfg.kernelHeaders != null) [cfg.kernelHeaders];
+
             wrapperScript = with pkgs;
               writeScript "xfstests-check" (''
                   #!${pkgs.runtimeShell}
