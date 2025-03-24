@@ -45,8 +45,9 @@
   networking.firewall.enable = false;
   networking.hostName = lib.mkDefault "vmtest";
   networking.useDHCP = false;
+  networking.dhcpcd.enable = false;
   services.resolved = {
-    enable = true;
+    enable = false;
     dnssec = "true";
     domains = ["~."];
     fallbackDns = ["1.1.1.1#one.one.one.one" "1.0.0.1#one.one.one.one"];
@@ -61,6 +62,8 @@
   #  }];
   #};
 
+  services.nscd.enable = false;
+  system.nssModules = lib.mkForce [];
   services.logrotate.enable = false;
   security.audit.enable = false;
 
