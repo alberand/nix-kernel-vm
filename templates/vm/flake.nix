@@ -19,17 +19,20 @@
     kd.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = {
-    self,
+    _self,
     nixpkgs,
     flake-utils,
     kd,
   }:
     flake-utils.lib.eachDefaultSystem (_: let
       system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+      };
       vm = kd.lib.${system}.mkEnv {
-        name = "wowo";
+        name = "demo";
         root = builtins.toString ./.;
-        sources = import ./system.nix;
+        uconfig = import ./uconfig.nix;
       };
     in {
       packages = {

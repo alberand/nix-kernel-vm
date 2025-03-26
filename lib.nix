@@ -267,15 +267,29 @@
   mkEnv = {
     name,
     root,
-    sources ? (import ./input.nix {
+    uconfig ? {},
+  }: let
+    sources = import ./input.nix {
       inherit pkgs;
       config = {};
-    }),
-  }: let
-    version = sources.options.kernel.version.default;
-    modDirVersion = sources.options.kernel.modDirVersion.default;
-    src = sources.options.kernel.src.default;
-    kkconfig = sources.options.kernel.kconfig.default;
+    };
+    useConfig = builtins.hasAttr "kernel" uconfig;
+    version =
+      if useConfig
+      then uconfig.kernel.version
+      else sources.options.kernel.version.default;
+    modDirVersion =
+      if useConfig
+      then uconfig.kernel.modDirVersion
+      else sources.options.kernel.modDirVersion.default;
+    src =
+      if useConfig
+      then uconfig.kernel.src
+      else sources.options.kernel.src.default;
+    kkconfig =
+      if useConfig
+      then uconfig.kernel.kconfig
+      else sources.options.kernel.kconfig.default;
   in rec {
     kconfig = buildKernelConfig {
       inherit src version;
@@ -297,39 +311,41 @@
 
     iso = mkIso {
       inherit pkgs;
-      user-config = {
-        networking.hostName = "${name}";
-        kernel = {
-          inherit src version modDirVersion;
-          kconfig = kconfig-iso;
-        };
-
-        programs.xfstests = {
-          enable = true;
-          src = pkgs.fetchgit {
-            url = "git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git";
-            rev = "v2024.12.22";
-            sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
+      user-config =
+        {
+          networking.hostName = "${name}";
+          kernel = {
+            inherit src version modDirVersion;
+            kconfig = kconfig-iso;
           };
-          testconfig = pkgs.xfstests-configs.xfstests-all;
-          test-dev = "/dev/sda";
-          scratch-dev = "/dev/sdb";
-          arguments = "-R xunit -s xfs_4k generic/110";
-          upload-results = true;
-        };
-      };
+
+          programs.xfstests = {
+            src = pkgs.fetchgit {
+              url = "git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git";
+              rev = "v2024.12.22";
+              sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
+            };
+            test-dev = "/dev/sda";
+            scratch-dev = "/dev/sdb";
+            arguments = "-R xunit -s xfs_4k generic/110";
+            upload-results = true;
+          };
+        }
+        // uconfig;
     };
 
     vm = mkVmTest {
       inherit pkgs;
-      user-config = {
-        networking.hostName = "${name}";
-        kernel = {
-          inherit src version modDirVersion;
-          kconfig = kkconfig;
-        };
-        vm.disks = [5000 5000];
-      };
+      user-config =
+        {
+          networking.hostName = "${name}";
+          kernel = {
+            inherit src version modDirVersion;
+            kconfig = kkconfig;
+          };
+          vm.disks = [5000 5000];
+        }
+        // uconfig;
     };
 
     shell = mkLinuxShell {
