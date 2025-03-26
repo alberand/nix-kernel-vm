@@ -7,6 +7,8 @@
 with lib; let
   cfg = config.programs.xfstests;
   xfstests-overlay-remote = final: prev: rec {
+    xfstests-configs = import ./configs.nix { inherit pkgs; };
+
     xfstests-hooks = pkgs.stdenv.mkDerivation {
       name = "xfstests-hooks";
       src = cfg.hooks;
@@ -40,7 +42,8 @@ with lib; let
                 ./0001-common-link-.out-file-to-the-output-directory.patch
                 ./0002-common-fix-linked-binaries-such-as-ls-and-true.patch
               ];
-            nativeBuildInputs = prev.nativeBuildInputs
+            nativeBuildInputs =
+              prev.nativeBuildInputs
               ++ [pkgs.pkg-config]
               ++ lib.optionals (cfg.kernelHeaders != null) [cfg.kernelHeaders];
 

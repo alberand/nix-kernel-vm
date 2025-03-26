@@ -3,6 +3,7 @@
 
   nixConfig = {
     # override the default substituters
+    # TODO this need to be replaced with public bucket or something
     extra-substituters = [
       "http://192.168.0.100"
     ];
@@ -28,13 +29,17 @@
     flake-utils.lib.eachSystem ["x86_64-linux" "aarch64-linux"] (system: let
       pkgs = import nixpkgs {
         inherit system;
+        overlays = [
+          (final: prev: {
+            xfstests-configs = (import ./xfstests/configs.nix) {pkgs = prev;};
+          })
+        ];
       };
       # default kernel if no custom kernel were specified
       root = builtins.toString ./.;
     in rec {
       lib = import ./lib.nix {
         inherit pkgs nixos-generators nixpkgs;
-        inherit (packages) xfstests-configs;
       };
 
       devShells.default =
@@ -45,7 +50,7 @@
           shellHook =
             prev.shellHook
             + ''
-              echo "$(tput setaf 214)Welcome to kernel dev-shell.$(tput sgr0)"
+              echo "$(tput setaf 166)Welcome to $(tput setaf 227)kd$(tput setaf 166) shell.$(tput sgr0)"
             '';
         });
 
@@ -56,39 +61,16 @@
           rev = "v6.13";
           hash = "sha256-FD22KmTFrIhED5X3rcjPTot1UOq1ir1zouEpRWZkRC0=";
         };
-        kernel-config = lib.buildKernelConfig {
+      in rec {
+        kconfig = lib.buildKernelConfig {
           inherit src;
           version = "v6.13";
-          kconfig = with pkgs.lib.kernel; {
-            FS_VERITY = yes;
-          };
-        };
-      in rec {
-        xfstests-configs = pkgs.stdenv.mkDerivation {
-          name = "xfstests-configs";
-          version = "v1";
-          src = ./xfstests;
-          installPhase = ''
-            mkdir -p $out
-            cp $src/*.conf $out
-          '';
-          passthru = {
-            xfstests-all = ./xfstests/xfstests-all.conf;
-            xfstests-xfs-1k = ./xfstests/xfstests-xfs-1k.conf;
-            xfstests-xfs-4k = ./xfstests/xfstests-xfs-4k.conf;
-            xfstests-ext4-1k = ./xfstests/xfstests-ext4-1k.conf;
-            xfstests-ext4-4k = ./xfstests/xfstests-ext4-4k.conf;
-          };
         };
 
-        kconfig = kernel-config;
         kconfig-iso = lib.buildKernelConfig {
           inherit src;
           version = "v6.13";
           iso = true;
-          kconfig = with pkgs.lib.kernel; {
-            FS_VERITY = yes;
-          };
         };
 
         headers = lib.buildKernelHeaders {
@@ -97,7 +79,7 @@
         };
 
         kernel = lib.buildKernel {
-          inherit src nixpkgs kconfig;
+          inherit src kconfig;
           version = "v6.13";
           modDirVersion = "6.13.0";
         };
@@ -105,7 +87,6 @@
         iso = lib.mkIso {
           inherit pkgs;
           user-config = {
-            networking.useDHCP = pkgs.lib.mkForce true;
             boot.kernelPackages = pkgs.linuxPackagesFor (
               lib.buildKernel {
                 inherit src;
@@ -122,7 +103,7 @@
                 rev = "v2024.12.22";
                 sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
               };
-              testconfig = packages.xfstests-configs.xfstests-all;
+              testconfig = pkgs.xfstests-configs.xfstests-all;
               test-dev = "/dev/sda";
               scratch-dev = "/dev/sdb";
               arguments = "-R xunit -s xfs_4k generic/110";

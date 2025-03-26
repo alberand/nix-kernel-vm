@@ -2,7 +2,6 @@
   pkgs,
   nixos-generators,
   nixpkgs,
-  xfstests-configs,
   ...
 }: rec {
   mkVM = {
@@ -18,7 +17,7 @@
         diskSize = "20000";
       };
       modules = [
-        ((import ./xfstests/xfstests.nix) {inherit xfstests-configs;})
+        ((import ./xfstests/xfstests.nix) {inherit (pkgs) xfstests-configs;})
         ./xfsprogs.nix
         ./simple-test.nix
         ./system.nix
@@ -46,7 +45,7 @@
       iso = nixos-generators.nixosGenerate {
         system = "x86_64-linux";
         modules = [
-          ((import ./xfstests/xfstests.nix) {inherit xfstests-configs;})
+          ((import ./xfstests/xfstests.nix) {inherit (pkgs) xfstests-configs;})
           ./xfsprogs.nix
           ./system.nix
           ({
@@ -57,7 +56,10 @@
             {
               # Don't shutdown system as libvirtd will remove the VM
               programs.xfstests.autoshutdown = false;
+
+              # Enable network
               networking.networkmanager.enable = true;
+              networking.useDHCP = pkgs.lib.mkForce true;
             }
             // user-config)
         ];

@@ -10,9 +10,9 @@
   pahole,
   buildPackages,
 }: {
-  kconfig,
   src,
   version,
+  kconfig ? {},
   debug ? false,
   iso ? false,
 }: let
