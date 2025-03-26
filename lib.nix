@@ -46,6 +46,7 @@
           ./xfstests/xfstests.nix
           ./xfsprogs.nix
           ./system.nix
+          ./input.nix
           ({
             config,
             pkgs,
@@ -250,6 +251,8 @@
           export MAKE=$(type -P make)
           export SED=$(type -P sed)
           export SORT=$(type -P sort)
+
+          echo "$(tput setaf 166)Welcome to $(tput setaf 227)kd$(tput setaf 166) shell.$(tput sgr0)"
         '';
       };
     };
@@ -262,4 +265,76 @@
     builtins.getAttr "script" {
       script = pkgs.writeScriptBin "vmtest-deploy" (builtins.readFile ./deploy.sh);
     };
+
+  mkEnv = {
+    name,
+    root,
+    sources ? (import ./input.nix {
+      inherit pkgs;
+      config = {};
+    }),
+  }: let
+    version = sources.options.kernel.version.default;
+    modDirVersion = sources.options.kernel.modDirVersion.default;
+    src = sources.options.kernel.src.default;
+    kkconfig = sources.options.kernel.kconfig.default;
+  in rec {
+    kconfig = buildKernelConfig {
+      inherit src version;
+      kconfig = kkconfig;
+    };
+
+    kconfig-iso = buildKernelConfig {
+      inherit src version;
+      iso = true;
+    };
+
+    headers = buildKernelHeaders {
+      inherit src version;
+    };
+
+    kernel = buildKernel {
+      inherit src kconfig version modDirVersion;
+    };
+
+    iso = mkIso {
+      inherit pkgs;
+      user-config = {
+        kernel = {
+          inherit src version modDirVersion;
+          kconfig = kconfig-iso;
+        };
+
+        programs.xfstests = {
+          enable = true;
+          src = pkgs.fetchgit {
+            url = "git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git";
+            rev = "v2024.12.22";
+            sha256 = "sha256-xZkCZVvlcnqsUnGGxSFqOHoC73M9ijM5sQnnRqamOk8=";
+          };
+          testconfig = pkgs.xfstests-configs.xfstests-all;
+          test-dev = "/dev/sda";
+          scratch-dev = "/dev/sdb";
+          arguments = "-R xunit -s xfs_4k generic/110";
+          upload-results = true;
+        };
+      };
+    };
+
+    vm = mkVmTest {
+      inherit pkgs;
+      user-config = {
+        kernel = {
+          inherit src version modDirVersion;
+          kconfig = kkconfig;
+        };
+        vm.disks = [5000 5000];
+      };
+    };
+
+    shell = mkLinuxShell {
+      inherit pkgs root name;
+      pname = "kernel"; # don't change
+    };
+  };
 }
