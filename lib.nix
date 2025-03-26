@@ -22,6 +22,7 @@
         ./dummy.nix
         ./system.nix
         ./vm.nix
+        ./input.nix
         ({...}: user-config)
         ({...}: {
           programs.dummy = {

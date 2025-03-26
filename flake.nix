@@ -87,14 +87,12 @@
         iso = lib.mkIso {
           inherit pkgs;
           user-config = {
-            boot.kernelPackages = pkgs.linuxPackagesFor (
-              lib.buildKernel {
-                inherit src;
-                version = "v6.13";
-                modDirVersion = "6.13.0";
-                kconfig = kconfig-iso;
-              }
-            );
+            kernel = {
+              inherit src;
+              version = "v6.13";
+              modDirVersion = "6.13.0";
+              kconfig = kconfig-iso;
+            };
 
             programs.xfstests = {
               enable = true;
@@ -116,13 +114,12 @@
           inherit pkgs;
           user-config = {
             networking.useDHCP = pkgs.lib.mkForce true;
-            boot.kernelPackages = pkgs.linuxPackagesFor (
-              lib.buildKernel {
-                inherit src kconfig;
-                version = "v6.13";
-                modDirVersion = "6.13.0";
-              }
-            );
+            kernel = {
+              src = src;
+              kconfig = kconfig;
+              version = "v6.13";
+              modDirVersion = "6.13.0";
+            };
             vm.disks = [5000 5000];
           };
         };
