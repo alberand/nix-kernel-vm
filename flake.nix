@@ -1,5 +1,5 @@
 {
-  description = "Linux Kernel development environment";
+  description = "kd - Linux Kernel development toolset";
 
   nixConfig = {
     # override the default substituters
