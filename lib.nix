@@ -1,13 +1,10 @@
 {
   pkgs,
   nixos-generators,
-  nixpkgs,
   ...
 }: rec {
   mkVM = {
     pkgs,
-    sharedir,
-    qemu-options ? [],
     user-config ? {},
   }:
     nixos-generators.nixosGenerate {
@@ -17,7 +14,7 @@
         diskSize = "20000";
       };
       modules = [
-        ((import ./xfstests/xfstests.nix) {inherit (pkgs) xfstests-configs;})
+        ./xfstests/xfstests.nix
         ./xfsprogs.nix
         ./dummy.nix
         ./system.nix
@@ -46,7 +43,7 @@
       iso = nixos-generators.nixosGenerate {
         system = "x86_64-linux";
         modules = [
-          ((import ./xfstests/xfstests.nix) {inherit (pkgs) xfstests-configs;})
+          ./xfstests/xfstests.nix
           ./xfsprogs.nix
           ./system.nix
           ({
@@ -70,13 +67,11 @@
 
   mkVmTest = {
     pkgs,
-    sharedir ? "/tmp/vmtest",
-    qemu-options ? [],
     user-config ? {},
   }:
     builtins.getAttr "vmtest" rec {
       nixos = mkVM {
-        inherit pkgs sharedir qemu-options user-config;
+        inherit pkgs user-config;
       };
 
       vmtest =
