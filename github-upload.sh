@@ -1,4 +1,7 @@
 #/usr/bin/env bash
+#
+# Script to upload xfstests results from a deployed node to Github repository
+#
 
 set -x
 
