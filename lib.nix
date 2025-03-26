@@ -19,12 +19,12 @@
       modules = [
         ((import ./xfstests/xfstests.nix) {inherit (pkgs) xfstests-configs;})
         ./xfsprogs.nix
-        ./simple-test.nix
+        ./dummy.nix
         ./system.nix
         ./vm.nix
         ({...}: user-config)
         ({...}: {
-          programs.simple-test = {
+          programs.dummy = {
             enable = true;
           };
           programs.xfstests = {

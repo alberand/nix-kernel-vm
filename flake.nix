@@ -127,13 +127,13 @@
           };
         };
 
-        vmtest = {
+        kd = {
           inherit vm iso kconfig kernel;
         };
       };
 
       apps.default = flake-utils.lib.mkApp {
-        drv = packages.vmtest;
+        drv = packages.kd;
       };
 
       templates.vm = {

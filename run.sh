@@ -73,8 +73,8 @@ function load_config() {
 	if tq --file $config 'share_dir' > /dev/null; then
 		export SHARE_DIR="$(tq --file $config 'share_dir')"
 	fi
-	if tq --file $config 'simple-test' > /dev/null; then
-		export SIMPLE_TEST="$(tq --file $config 'simple-test')"
+	if tq --file $config 'dummy' > /dev/null; then
+		export SIMPLE_TEST="$(tq --file $config 'dummy')"
 	fi
 	if tq --file $config 'kernel.kernel' > /dev/null; then
 		export KERNEL="$(tq --file $config 'kernel.kernel')"
@@ -129,8 +129,8 @@ function parse_args() {
 				shift
 				shift
 				;;
-			--simple-test)
-				eecho "Processing 'simple-test' option: $2"
+			--dummy)
+				eecho "Processing 'dummy' option: $2"
 				SIMPLE_TEST="$2"
 				shift
 				shift
@@ -167,7 +167,7 @@ function parse_args() {
 function init_share() {
 	rm -rf "$SHARE_DIR/modules"
 	rm -rf "$SHARE_DIR/results"
-	rm -rf "$SHARE_DIR/simple-test.sh"
+	rm -rf "$SHARE_DIR/dummy.sh"
 	rm -rf "$SHARE_DIR/vmtest.toml"
 	rm -rf "$SHARE_DIR/totest"
 	rm -rf "$SHARE_DIR/xfstests-config"
@@ -261,7 +261,7 @@ cp "$(pwd)/$config" "$SHARE_DIR/vmtest.toml"
 
 if [[ -f "$SIMPLE_TEST" ]]; then
 	eecho "$SIMPLE_TEST will be used as simple test"
-	cp "$SIMPLE_TEST" "$SHARE_DIR/simple-test.sh"
+	cp "$SIMPLE_TEST" "$SHARE_DIR/dummy.sh"
 fi
 
 NODE_NAME=${NODE_NAME:-vmtest}

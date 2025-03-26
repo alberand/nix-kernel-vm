@@ -5,11 +5,11 @@
   ...
 }:
 with lib; let
-  cfg = config.programs.simple-test;
+  cfg = config.programs.dummy;
 in {
-  options.programs.simple-test = {
+  options.programs.dummy = {
     enable = mkEnableOption {
-      name = "simple-test";
+      name = "dummy";
       default = true;
       example = true;
     };
@@ -42,7 +42,7 @@ in {
       "d /mnt/test 1777 root root"
     ];
 
-    systemd.services.simple-test = {
+    systemd.services.dummy = {
       enable = true;
       serviceConfig = {
         Type = "oneshot";
@@ -78,13 +78,13 @@ in {
           exit 0
         fi
 
-        if [ "$(get_config 'simple-test')" == "" ]; then
+        if [ "$(get_config 'dummy')" == "" ]; then
           exit 0
         fi
 
-        echo "Running test ${cfg.sharedir}/simple-test.sh"
-        chmod u+x ${cfg.sharedir}/simple-test.sh
-        ${pkgs.bash}/bin/bash -l -c 'exec ${cfg.sharedir}/simple-test.sh ${cfg.arguments}'
+        echo "Running test ${cfg.sharedir}/dummy.sh"
+        chmod u+x ${cfg.sharedir}/dummy.sh
+        ${pkgs.bash}/bin/bash -l -c 'exec ${cfg.sharedir}/dummy.sh ${cfg.arguments}'
         exit $?
       '';
     };
