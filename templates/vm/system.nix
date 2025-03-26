@@ -10,53 +10,6 @@
   inherit name;
   user-config = {
     imports = [./sources.nix];
-    # Hostname to identify the node
-    networking.hostName = name;
-    # Your ssh key to connect to node with root user
-    users.users.root.openssh.authorizedKeys.keys = [
-      (
-        builtins.readFile
-        (
-          if ! builtins.pathExists ./ssh-key.pub
-          then abort "Please provide ./ssh-key.pub"
-          else ./ssh-key.pub
-        )
-      )
-    ];
-    # Any additional packages to include into the image
-    # https://search.nixos.org/packages
-    environment.systemPackages = with pkgs; [
-      btrfs-progs
-      f2fs-tools
-      keyutils
-    ];
-    # Kernel version
-    boot.kernelPackages = let
-      src = pkgs.fetchFromGitHub {
-        owner = "torvalds";
-        repo = "linux";
-        rev = "v6.13";
-        hash = "sha256-FD22KmTFrIhED5X3rcjPTot1UOq1ir1zouEpRWZkRC0=";
-      };
-    in
-      pkgs.linuxPackagesFor
-      (nix-kernel-vm.lib.${system}.buildKernel
-        {
-          inherit src;
-          version = "v6.13";
-          modDirVersion = "6.13.0";
-          kconfig = nix-kernel-vm.lib.${system}.buildKernelConfig {
-            inherit src;
-            version = "v6.13";
-            kconfig = with pkgs.lib.kernel; {
-              FS_VERITY = yes;
-              XFS_FS = yes;
-              XFS_QUOTA = yes;
-            };
-          };
-        });
-    # Get ip
-    networking.useDHCP = pkgs.lib.mkForce true;
 
     programs = {
       # Custom version can be used
