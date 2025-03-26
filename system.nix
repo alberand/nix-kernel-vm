@@ -43,7 +43,7 @@
   services.getty.autologinUser = lib.mkDefault "root";
 
   networking.firewall.enable = false;
-  networking.hostName = lib.mkDefault "vmtest";
+  networking.hostName = lib.mkDefault "kd";
   networking.useDHCP = false;
   networking.dhcpcd.enable = false;
   services.resolved = {

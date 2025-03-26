@@ -76,7 +76,7 @@
       };
 
       vmtest =
-        pkgs.writeScriptBin "vmtest"
+        pkgs.writeScriptBin "kd-run-vm"
         ((builtins.readFile ./run.sh)
           + ''
             ${nixos}/bin/run-$NODE_NAME-vm 2>&1 | tee -a $LOG_FILE
@@ -91,7 +91,6 @@
     sharedir ? "/tmp/vmtest",
     packages ? [],
     name ? "vmtest",
-    pname ? "vmtest",
   }:
     builtins.getAttr "shell" {
       shell = pkgs.mkShell {
@@ -224,7 +223,6 @@
 
         SHARE_DIR = "${sharedir}";
         NODE_NAME = "${name}";
-        PNAME = "${pname}";
         KBUILD_BUILD_TIMESTAMP = "";
         SOURCE_DATE_EPOCH = 0;
         CCACHE_DIR = "/var/cache/ccache/";
@@ -300,6 +298,7 @@
     iso = mkIso {
       inherit pkgs;
       user-config = {
+        networking.hostName = "${name}";
         kernel = {
           inherit src version modDirVersion;
           kconfig = kconfig-iso;
@@ -324,6 +323,7 @@
     vm = mkVmTest {
       inherit pkgs;
       user-config = {
+        networking.hostName = "${name}";
         kernel = {
           inherit src version modDirVersion;
           kconfig = kkconfig;
@@ -334,7 +334,6 @@
 
     shell = mkLinuxShell {
       inherit pkgs root name;
-      pname = "kernel"; # don't change
     };
   };
 }

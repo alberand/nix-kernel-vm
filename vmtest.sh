@@ -2,7 +2,7 @@
 
 ROOT=@root@
 VERBOSE=0
-WORKDIR="$HOME/.vmtest/$PNAME"
+WORKDIR="$HOME/.vmtest/$NODE_NAME"
 mkdir -p "$WORKDIR"
 
 usage() {
@@ -35,7 +35,7 @@ FFF
 }
 
 function config {
-	#nix build "$ROOT#$PNAME.kconfig"
+	#nix build "$ROOT#$NODE_NAME.kconfig"
 	cp "$ROOT/kconfig/config-v6.13" .config
 	chmod 644 .config
 }
@@ -44,11 +44,6 @@ function build {
 	# TODO this should be in workdir
 	pushd "$WORKDIR"
 	nix flake init --refresh --template "github:alberand/nix-kernel-vm#x86_64-linux.vm"
-	cat << EOF > "$WORKDIR/name.nix"
-{
-	name = "$PNAME";
-}
-EOF
 	popd
 
 	# TODO this should be in workdir
