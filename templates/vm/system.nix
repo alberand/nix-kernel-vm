@@ -26,18 +26,10 @@
     };
   };
 in {
-  shell =
-    (nix-kernel-vm.lib.${system}.mkLinuxShell {
-      inherit pkgs root name;
-      pname = "kernel"; # don't change
-    })
-    .overrideAttrs (_final: prev: {
-      shellHook =
-        prev.shellHook
-        + ''
-          echo "$(tput setaf 161)Welcome to kernel dev-shell.$(tput sgr0)"
-        '';
-    });
+  shell = nix-kernel-vm.lib.${system}.mkLinuxShell {
+    inherit pkgs root name;
+    pname = "kernel"; # don't change
+  };
 
   kconfig = nix-kernel-vm.lib.${system}.buildKernelConfig {
     src = pkgs.fetchFromGitHub {

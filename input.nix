@@ -28,17 +28,21 @@ in {
     };
 
     kconfig = mkOption {
-      type = types.nullOr types.attrs;
+      type = types.attrs;
       default = {};
     };
   };
 
   config = let
     buildKernel = pkgs.callPackage ./kernel-build.nix {};
+    buildKernelConfig = pkgs.callPackage ./kernel-config.nix {};
   in {
     boot.kernelPackages = pkgs.linuxPackagesFor (
       buildKernel {
-        inherit (cfg) version modDirVersion src kconfig;
+        inherit (cfg) version modDirVersion src;
+        kconfig = buildKernelConfig {
+          inherit (cfg) src version kconfig;
+        };
       }
     );
   };

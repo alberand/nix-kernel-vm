@@ -116,7 +116,6 @@
             networking.useDHCP = pkgs.lib.mkForce true;
             kernel = {
               src = src;
-              kconfig = kconfig;
               version = "v6.13";
               modDirVersion = "6.13.0";
             };
