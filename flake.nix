@@ -155,31 +155,13 @@
         drv = packages.vmtest;
       };
 
-      templates."vm" = {
+      templates.vm = {
         path = ./templates/vm;
         description = "Development shell for Linux kernel with image builder";
         welcomeText = ''
           This is template for testing Linux kernel with xfstests.
         '';
       };
-      templates."kernel-dev" = {
-        path = ./templates/kernel-dev;
-        description = "Development shell for Linux kernel with image builder";
-        welcomeText = ''
-          This is template for testing 'xfsprogs'/'xfstests' package.
-
-          To modify an image modify parameters in xfsprogs.nix
-
-          To build runnable image run:
-
-          $ nix build .#iso
-
-          To activate development shell:
-
-          $ nix develop .#xfsprogs
-          $ nix develop .#xfstests
-        '';
-      };
-      templates.default = self.templates."kernel-dev";
+      templates.default = self.templates.vm;
     });
 }
