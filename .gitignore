@@ -5,3 +5,4 @@ result*
 modules
 .vmtest.toml
 .vmtest
+kd/target
