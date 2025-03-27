@@ -30,11 +30,11 @@
     LOCALVERSION_AUTO = no;
 
     # Save kernel config in the kernel (also enable /proc/config.gz)
-    IKCONFIG = no;
-    IKCONFIG_PROC = no;
+    IKCONFIG = yes;
+    IKCONFIG_PROC = yes;
 
     # Same as IKCONFIG but for headers in /sys/kernel/kheaders.tar.xz)
-    IKHEADERS = no;
+    IKHEADERS = yes;
 
     # 64bit kernel
     "64BIT" = yes;
@@ -140,6 +140,10 @@
     SERIO_I8042 = yes;
     MD = yes;
     BLK_DEV_DM = yes;
+    # Enable kernel tracers
+    FTRACE = yes;
+    # Creates /proc/pid/stack which shows current stack for each process
+    STACKTRACE = yes;
   };
 
   debugConfig = with lib.kernel; {
@@ -171,10 +175,6 @@
     LOCK_STAT = yes;
     # Mathematically calculate and then report deadlocks before they occures
     PROVE_LOCKING = yes;
-    # Enable kernel tracers
-    FTRACE = yes;
-    # Creates /proc/pid/stack which shows current stack for each process
-    STACKTRACE = yes;
     # Max time spent in interrupt critical section
     IRQSOFF_TRACER = no;
     # Kernel debugger
