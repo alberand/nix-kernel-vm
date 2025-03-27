@@ -1,7 +1,10 @@
-use std::path::PathBuf;
 use clap::{Parser, Subcommand};
-use tera::{Context, Tera};
+use std::path::PathBuf;
 use std::process::Command;
+use std::process::Stdio;
+use tera::{Context, Tera};
+use std::pipe;
+use std::io::Write;
 
 // kd config CONFIG_XFS_FS=y
 // kd build [vm|iso]
@@ -11,7 +14,6 @@ use std::process::Command;
 
 mod config;
 use config::Config;
-
 
 #[derive(Parser)]
 #[command(version)]
@@ -47,10 +49,95 @@ enum Commands {
     Run,
 }
 
+fn nurl(repo: &str, rev: &str) -> Result<String, std::string::FromUtf8Error> {
+    let output = Command::new("nurl")
+        .arg(repo)
+        .arg(rev)
+        .output()
+        .expect("Failed to execute command");
+
+    if !output.status.success() {
+        // TODO need to throw and error
+        println!("failed: {:?}", String::from_utf8(output.stderr));
+    }
+
+    String::from_utf8(output.stdout)
+}
+
+fn format_nix(code: String) -> Result<String, std::string::FromUtf8Error> {
+    // Actually run the command
+    let output = Command::new("alejandra")
+        .stdin({
+            // Unfortunately, it's not possible to provide a direct string as an input to a command
+            // We actually need to provide an actual file descriptor (as is a usual stdin "pipe")
+            // So we create a new pair of pipes here...
+            let (reader, mut writer) = std::pipe::pipe().unwrap();
+
+            // ...write the string to one end...
+            writer.write_all(code.as_bytes()).unwrap();
+
+            // ...and then transform the other to pipe it into the command as soon as it spawns!
+            Stdio::from(reader)
+        })
+        .output()
+        .expect("Failed to execute command");
+
+    if !output.status.success() {
+        // TODO need to throw and error
+        println!("failed: {:?}", String::from_utf8(output.stderr));
+    }
+
+    String::from_utf8(output.stdout)
+}
+
 fn main() {
     let cli = Cli::parse();
 
+    if Command::new("nurl")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .is_err()
+    {
+        panic!("No nurl");
+    }
+
+    if Command::new("alejandra")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .is_err()
+    {
+        println!("No alejandra. Your nix will be ugly");
+    }
+
     let config = Config::load(cli.config).unwrap();
+
+    let xfstests: String = if let Some(subconfig) = config.xfstests {
+        let output = if let Some(rev) = subconfig.rev {
+            nurl(&subconfig.repo.unwrap(), &rev).expect("Failed to parse xfstests source repo")
+        } else {
+            println!("no rev");
+            String::from("")
+        };
+
+        output
+    } else {
+        println!("no subconfig");
+        String::from("")
+    };
+
+    let xfsprogs: String = if let Some(subconfig) = config.xfsprogs {
+        let output = if let Some(rev) = subconfig.rev {
+            nurl(&subconfig.repo.unwrap(), &rev).expect("Failed to parse xfsprogs source repo")
+        } else {
+            String::from("")
+        };
+
+        output
+    } else {
+        String::from("")
+    };
 
     // You can see how many times a particular flag or argument occurred
     // Note, only flags can have multiple occurrences
@@ -72,15 +159,13 @@ fn main() {
             }
         }
         Some(Commands::Build { target }) => {
-                println!("build command {:?}", target);
+            println!("build command {:?}", target);
         }
         Some(Commands::Run) => {
-                println!("Run command");
+            println!("Run command");
         }
         None => {}
     }
-
-    // Continued program logic goes here...
 
     let mut tera = Tera::default();
 
@@ -99,10 +184,14 @@ fn main() {
             };
         }
     "#;
-    tera.add_raw_template("hello", source).unwrap();
+    tera.add_raw_template("top", source).unwrap();
 
     let mut context = Context::new();
-    context.insert("name", "Rust");
+    context.insert("xfstests", &xfstests);
+    context.insert("xfsprogs", &xfsprogs);
+    context.insert("kernel", "");
 
-    println!("{}", tera.render("hello", &context).unwrap());
+    let formatted = format_nix(tera.render("top", &context).unwrap()).unwrap();
+
+    println!("{}", formatted);
 }

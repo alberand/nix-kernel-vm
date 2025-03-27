@@ -1,42 +1,59 @@
-use serde::{Serialize, Deserialize};
-use toml;
-use std::path::PathBuf;
+use serde::{Deserialize, Serialize};
 use std::fs;
-use std::io::{Write,Error,ErrorKind};
+use std::io::{Error, ErrorKind, Write};
+use std::path::PathBuf;
+use toml;
 
-#[derive(Serialize, Deserialize, Default)]
-struct KernelConfig {
-    kernel: String,
+#[derive(Serialize, Deserialize)]
+pub struct KernelConfig {
+    pub kernel: String,
+}
+
+impl Default for KernelConfig {
+    fn default() -> Self {
+        Self {
+            kernel: String::from(""),
+        }
+    }
+}
+
+fn default_xfstests() -> Option<String> {
+    Some("git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git".to_string())
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct XfstestsConfig {
+    #[serde(default = "default_xfstests")]
+    pub repo: Option<String>,
+    pub rev: Option<String>,
+    pub args: Option<String>,
+    pub test_dev: Option<String>,
+    pub scratch_dev: Option<String>,
+    pub hooks: Option<String>,
+}
+
+fn default_xfsprogs() -> Option<String> {
+    Some("git://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git".to_string())
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct XfsprogsConfig {
+    #[serde(default = "default_xfsprogs")]
+    pub repo: Option<String>,
+    pub rev: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
-struct XfstestsConfig {
-    repo: String,
-    rev: String,
-    args: String,
-    test_dev: String,
-    scratch_dev: String,
-    hooks: String,
+pub struct DummyConfig {
+    pub script: String,
 }
-
-#[derive(Serialize, Deserialize, Default)]
-struct XfsprogsConfig {
-    repo: String,
-    rev: String,
-}
-
-#[derive(Serialize, Deserialize, Default)]
-struct DummyConfig {
-    script: String,
-}
-
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Config {
-   kernel: KernelConfig,
-   xfstests: XfstestsConfig,
-   xfsprogs: XfsprogsConfig,
-   dummy: DummyConfig,
+    pub kernel: Option<KernelConfig>,
+    pub xfstests: Option<XfstestsConfig>,
+    pub xfsprogs: Option<XfsprogsConfig>,
+    pub dummy: Option<DummyConfig>,
 }
 
 impl Config {
@@ -47,7 +64,7 @@ impl Config {
         let path = path.unwrap();
 
         if !path.exists() {
-            return Err(Error::new(ErrorKind::NotFound, "config file not found"))
+            return Err(Error::new(ErrorKind::NotFound, "config file not found"));
         }
         println!("Loading config: {}", path.display());
 
