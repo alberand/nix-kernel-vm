@@ -342,7 +342,7 @@
     };
 
     shell = mkLinuxShell {
-      inherit pkgs root name;
+      inherit root name;
     };
   };
 }
