@@ -29,36 +29,29 @@
     flake-utils.lib.eachSystem ["x86_64-linux" "aarch64-linux"] (system: let
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [
+        oerlays = [
           (_final: prev: {
             xfstests-configs = (import ./xfstests/configs.nix) {pkgs = prev;};
           })
         ];
       };
-      # default kernel if no custom kernel were specified
       lib = import ./lib.nix {
-        inherit pkgs nixos-generators nixpkgs;
+        inherit pkgs nixos-generators;
       };
       default = lib.mkEnv {
         name = "demo";
         root = builtins.toString ./.;
+        stdenv = pkgs.clangStdenv;
       };
     in {
-      inherit lib;
-
       devShells.default = default.shell;
 
       packages = {
         inherit (default) kconfig kconfig-iso headers kernel iso vm;
       };
 
-      templates.vm = {
+      templates.default = {
         path = ./templates/vm;
-        description = "Development shell for Linux kernel with image builder";
-        welcomeText = ''
-          This is template for testing Linux kernel with xfstests.
-        '';
       };
-      templates.default = self.templates.vm;
     });
 }

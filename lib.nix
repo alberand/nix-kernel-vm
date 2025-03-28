@@ -1,11 +1,9 @@
 {
   pkgs,
   nixos-generators,
-  ...
 }: rec {
   mkVM = {
-    pkgs,
-    user-config ? {},
+    uconfig ? {},
   }:
     nixos-generators.nixosGenerate {
       inherit pkgs;
@@ -20,7 +18,7 @@
         ./system.nix
         ./vm.nix
         ./input.nix
-        ({...}: user-config)
+        ({...}: uconfig)
         ({...}: {
           programs.dummy = {
             enable = true;
@@ -36,8 +34,7 @@
     };
 
   mkIso = {
-    pkgs,
-    user-config ? {},
+    uconfig ? {},
   }:
     builtins.getAttr "iso" {
       iso = nixos-generators.nixosGenerate {
@@ -60,19 +57,18 @@
               networking.networkmanager.enable = true;
               networking.useDHCP = pkgs.lib.mkForce true;
             }
-            // user-config)
+            // uconfig)
         ];
         format = "iso";
       };
     };
 
   mkVmTest = {
-    pkgs,
-    user-config ? {},
+    uconfig ? {},
   }:
     builtins.getAttr "vmtest" rec {
       nixos = mkVM {
-        inherit pkgs user-config;
+        inherit uconfig;
       };
 
       vmtest =
@@ -86,7 +82,6 @@
     };
 
   mkLinuxShell = {
-    pkgs,
     root,
     sharedir ? "/tmp/vmtest",
     packages ? [],
@@ -192,7 +187,7 @@
                   postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
                 }
             )
-            (vmtest-deploy {inherit pkgs;})
+            (vmtest-deploy {})
 
             # vmtest deps
             nurl
@@ -259,7 +254,7 @@
   buildKernel = pkgs.callPackage ./kernel-build.nix {};
   buildKernelHeaders = pkgs.makeLinuxHeaders;
 
-  vmtest-deploy = {pkgs}:
+  vmtest-deploy = {}:
     builtins.getAttr "script" {
       script = pkgs.writeScriptBin "vmtest-deploy" (builtins.readFile ./deploy.sh);
     };
@@ -267,6 +262,7 @@
   mkEnv = {
     name,
     root,
+    stdenv ? pkgs.stdenv,
     uconfig ? {},
   }: let
     sources = import ./input.nix {
@@ -311,7 +307,7 @@
 
     iso = mkIso {
       inherit pkgs;
-      user-config =
+      uconfig =
         {
           networking.hostName = "${name}";
           kernel = {
@@ -335,8 +331,7 @@
     };
 
     vm = mkVmTest {
-      inherit pkgs;
-      user-config =
+      uconfig =
         {
           networking.hostName = "${name}";
           kernel = {
