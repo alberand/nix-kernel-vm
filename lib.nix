@@ -2,9 +2,7 @@
   pkgs,
   nixos-generators,
 }: rec {
-  mkVM = {
-    uconfig ? {},
-  }:
+  mkVM = {uconfig ? {}}:
     nixos-generators.nixosGenerate {
       inherit pkgs;
       system = "x86_64-linux";
@@ -33,9 +31,7 @@
       format = "vm";
     };
 
-  mkIso = {
-    uconfig ? {},
-  }:
+  mkIso = {uconfig ? {}}:
     builtins.getAttr "iso" {
       iso = nixos-generators.nixosGenerate {
         system = "x86_64-linux";
@@ -63,9 +59,7 @@
       };
     };
 
-  mkVmTest = {
-    uconfig ? {},
-  }:
+  mkVmTest = {uconfig ? {}}:
     builtins.getAttr "vmtest" rec {
       nixos = mkVM {
         inherit uconfig;
@@ -250,8 +244,6 @@
       };
     };
 
-  buildKernelConfig = pkgs.callPackage ./kernel-config.nix {};
-  buildKernel = pkgs.callPackage ./kernel-build.nix {};
   buildKernelHeaders = pkgs.makeLinuxHeaders;
 
   vmtest-deploy = {}:
@@ -265,6 +257,12 @@
     stdenv ? pkgs.stdenv,
     uconfig ? {},
   }: let
+    buildKernelConfig = pkgs.callPackage ./kernel-config.nix {
+      inherit stdenv;
+    };
+    buildKernel = pkgs.callPackage ./kernel-build.nix {
+      inherit stdenv;
+    };
     sources = import ./input.nix {
       inherit pkgs;
       config = {};

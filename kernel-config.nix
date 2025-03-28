@@ -273,7 +273,7 @@ in
     kernelConfig = passthru.moduleStructuredConfig.intermediateNixConfig;
     passAsFile = ["kernelConfig"];
 
-    depsBuildBuild = [buildPackages.stdenv.cc];
+    depsBuildBuild = [stdenv.cc];
     nativeBuildInputs = [perl gmp libmpc mpfr bison flex bison flex pahole];
 
     makeFlags =
