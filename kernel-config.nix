@@ -1,5 +1,5 @@
 {
-  stdenv,
+  clangStdenv,
   lib,
   perl,
   gmp,
@@ -119,10 +119,10 @@
     NETDEVICES = yes;
     NET_CORE = yes;
     INET = yes;
-    CGROUPS = yes;
-    SIGNALFD = yes;
-    TIMERFD = yes;
-    EPOLL = yes;
+    CGROUPS = no;
+    SIGNALFD = no;
+    TIMERFD = no;
+    EPOLL = no;
     FHANDLE = yes;
     CRYPTO_USER_API_HASH = yes;
     DMIID = yes;
@@ -264,8 +264,9 @@
     SERIO_PCIPS2 = yes;
   };
 in
-  stdenv.mkDerivation rec {
+  clangStdenv.mkDerivation rec {
     inherit version src;
+    stdenv = clangStdenv;
     pname = "linux-config";
 
     generateConfig = ./generate-config.pl;
@@ -273,12 +274,12 @@ in
     kernelConfig = passthru.moduleStructuredConfig.intermediateNixConfig;
     passAsFile = ["kernelConfig"];
 
-    depsBuildBuild = [buildPackages.stdenv.cc];
+    depsBuildBuild = [buildPackages.clangStdenv.cc];
     nativeBuildInputs = [perl gmp libmpc mpfr bison flex bison flex pahole];
 
     makeFlags =
-      lib.optionals (stdenv.hostPlatform.linux-kernel ? makeFlags)
-      stdenv.hostPlatform.linux-kernel.makeFlags;
+      lib.optionals (clangStdenv.hostPlatform.linux-kernel ? makeFlags)
+      clangStdenv.hostPlatform.linux-kernel.makeFlags;
 
     postPatch = ''
       # Ensure that depmod gets resolved through PATH
